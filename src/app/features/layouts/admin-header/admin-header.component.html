@@ -1,0 +1,275 @@
+<header class="header-wrapper">
+  <div class="container-fluid">
+    <div class="row align-items-center">
+      <div class="col">
+        <div class="header-content d-flex align-items-center justify-content-between">
+
+          <!-- Logo/Brand Section -->
+          <div class="header-brand">
+            <a [routerLink]="routes.home" class="brand-logo d-flex align-items-center">
+              <img src="assets/img/logo.png" alt="Logo" class="logo-img me-2">
+              <!-- <span class="brand-text">Pyramide Admin</span> -->
+            </a>
+          </div>
+
+          <!-- Header Actions -->
+          <div class="header-actions d-flex align-items-center">
+
+            <!-- Theme Toggle -->
+            <div class="header-item me-3">
+              <div class="theme-switcher d-flex">
+                <button
+                  type="button"
+                  class="theme-toggle-btn"
+                  [class.active]="themeColor === 'light-mode'"
+                  (click)="sidebarService.changeThemeColor('dark-mode')"
+                  title="Light Mode">
+                  <i class="isax isax-sun-15"></i>
+                </button>
+                <button
+                  type="button"
+                  class="theme-toggle-btn"
+                  [class.active]="themeColor === 'dark-mode'"
+                  (click)="sidebarService.changeThemeColor('light-mode')"
+                  title="Dark Mode">
+                  <i class="isax isax-moon"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="header-item me-3">
+              <div class="dropdown">
+                <button class="header-icon-btn" type="button" data-bs-toggle="dropdown">
+                  <i class="isax isax-notification"></i>
+                  <span class="notification-badge">3</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end notification-dropdown">
+                  <div class="dropdown-header">
+                    <h6>Notifications</h6>
+                    <span class="badge bg-primary">3 New</span>
+                  </div>
+                  <!-- Notification items would go here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Shopping Cart -->
+            <!-- <div class="header-item me-3">
+              <a [routerLink]="routes.cart" class="header-icon-btn position-relative">
+                <i class="isax isax-shopping-cart5"></i>
+                <span class="cart-badge">1</span>
+              </a>
+            </div> -->
+
+            <!-- Profile Section -->
+            <div *ngIf="isLoggedIn" class="header-item">
+              <div class="dropdown profile-dropdown">
+                <button class="profile-btn d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                  <div class="profile-avatar me-2">
+                    <img [src]="currentUser?.avatar || getDefaultAvatar()" alt="Profile" class="avatar-img">
+                  </div>
+                  <div class="profile-info d-none d-md-block">
+                    <span class="profile-name">{{ currentUser?.prenom || 'User' }} {{ currentUser?.nom || 'Name' }}</span>
+                    <small class="profile-role">{{ getRoleLabel() }}</small>
+                  </div>
+                  <i class="isax isax-arrow-down-1 ms-2"></i>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end profile-menu">
+                  <!-- Profile Header -->
+                  <div class="profile-menu-header">
+                    <div class="d-flex align-items-center">
+                      <div class="profile-avatar me-3">
+                        <img [src]="currentUser?.avatar || getDefaultAvatar()" alt="Profile" class="avatar-img">
+                      </div>
+                      <div class="profile-details">
+                        <h6 class="profile-name mb-0">{{ currentUser?.prenom || 'User' }} {{ currentUser?.nom || 'Name' }}</h6>
+                        <p class="profile-email mb-1">{{ currentUser?.email || 'user@example.com' }}</p>
+                        <span class="badge bg-primary">{{ getRoleLabel() }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="dropdown-divider"></div>
+
+                  <!-- Profile Menu Items -->
+                  <div class="profile-menu-body" style="margin-left: 0;">
+                    <!-- <a class="dropdown-item" [routerLink]="getProfileRoute()">
+                      <i class="isax isax-security-user me-2"></i>
+                      <span>Mon Profil</span>
+                    </a> -->
+
+                    <!-- Admin Menu -->
+                    <ng-container *ngIf="isSuperAdmin()">
+                      <a class="dropdown-item" [routerLink]="routes.superadminUserList">
+                        <i class="isax isax-user-add me-2"></i>
+                        <span>Gestion utilisateurs</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.superadminClientList">
+                        <i class="isax isax-people5 me-2"></i>
+                        <span>Gestion des Clients</span>
+                      </a>
+                        <a class="dropdown-item" [routerLink]="routes.superadminCourse">
+                      <i class="isax isax-teacher5 me-2"></i>
+                        <span>Formations</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.superadmin_dashboard">
+                        <i class="isax isax-element-4 me-2"></i>
+                        <span>Tableau de bords Admin</span>
+                      </a>
+                      <!-- <a class="dropdown-item" [routerLink]="routes.superadminSettings">
+                      <i class="isax isax-setting-2 me-2"></i>
+                      <span>Parametres</span>
+                    </a> -->
+                    </ng-container>
+
+                    <!-- Instructor Menu -->
+                    <ng-container *ngIf="isInstructor()">
+                      <a class="dropdown-item" [routerLink]="routes.instructorCourse">
+                        <i class="isax isax-book-1 me-2"></i>
+                        <span>Mes Formations</span>
+                      </a>
+                         <a class="dropdown-item" [routerLink]="routes.instructorProfile">
+                      <i class="isax isax-security-user me-2"></i>
+                      <span>Mon Profil</span>
+                    </a>
+
+                      <!-- <a class="dropdown-item" [routerLink]="routes.instructorSettings">
+                      <i class="isax isax-setting-2 me-2"></i>
+                      <span>Parametres</span>
+                    </a> -->
+                    </ng-container>
+
+                    <!-- Employé Menu — visible si role_type = employe -->
+                    <ng-container *ngIf="isEmployee()">
+                      <a class="dropdown-item" [routerLink]="routes.students_profile">
+                        <i class="isax isax-security-user me-2"></i>
+                        <span>Mon Profil</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.studentMyCourses"
+                         *ngIf="hasPermission('voir mes formations') || hasPermission('participer formations')">
+                        <i class="isax isax-play-circle me-2"></i>
+                        <span>Formations</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.studentDemande"
+                         *ngIf="hasPermission('faire demande formation')">
+                        <i class="isax isax-send-2 me-2"></i>
+                        <span>Demandes</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.students_quiz"
+                         *ngIf="hasPermission('passer quiz')">
+                        <i class="isax isax-note-21 me-2"></i>
+                        <span>Quiz</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.studentCertificat"
+                         *ngIf="hasPermission('voir mes certificats') || hasPermission('lister certificat')">
+                        <i class="isax isax-medal me-2"></i>
+                        <span>Palmarès</span>
+                      </a>
+                    </ng-container>
+
+                    <!-- Admin RH Menu — visible si role_type = rh, items filtrés par permissions -->
+                    <ng-container *ngIf="isRhUser()">
+                      <a class="dropdown-item" [routerLink]="routes.adminrh_dashboard">
+                        <i class="isax isax-element-4 me-2"></i>
+                        <span>Tableau de bord RH</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.adminrhUserList"
+                         *ngIf="hasPermission('lister utilisateurs')">
+                        <i class="isax isax-user-add me-2"></i>
+                        <span>Employés</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.adminrhDemande"
+                         *ngIf="hasPermission('lister demandes formation')">
+                        <i class="isax isax-document-text me-2"></i>
+                        <span>Demandes</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.adminrhCourse"
+                         *ngIf="hasPermission('lister formations')">
+                        <i class="isax isax-book-1 me-2"></i>
+                        <span>Formations</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.adminrhQuiz"
+                         *ngIf="hasPermission('lister quiz')">
+                        <i class="isax isax-award me-2"></i>
+                        <span>Quiz &amp; évaluations</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.adminrhCertificate"
+                         *ngIf="hasPermission('lister certificat')">
+                        <i class="isax isax-medal me-2"></i>
+                        <span>Certificats</span>
+                      </a>
+                      <a class="dropdown-item" [routerLink]="routes.adminrhCompanyManagement"
+                         *ngIf="hasPermission('gerer parametres entreprise')">
+                        <i class="isax isax-setting-2 me-2"></i>
+                        <span>Paramètres entreprise</span>
+                      </a>
+                    </ng-container>
+
+                    <!-- Common Menu Items -->
+                    <!-- <a class="dropdown-item" [routerLink]="routes.instructorCourse">
+                      <i class="isax isax-messages-3 me-2"></i>
+                      <span>Messages</span>
+                      <span *ngIf="currentUser?.role_id === 3" class="badge bg-danger ms-auto">2</span>
+                    </a> -->
+                    <!-- <a class="dropdown-item" [routerLink]="getSettingsRoute()">
+                      <i class="isax isax-setting-2 me-2"></i>
+                      <span>Parametres</span>
+                    </a> -->
+                  </div>
+
+                  <div class="dropdown-divider"></div>
+
+                  <!-- Profile Footer -->
+                  <div class="profile-menu-footer">
+                    <!-- Mode employé -->
+                    <a *appHasPermission="'acceder-mode-employe'" class="learner-mode-btn" [routerLink]="routes.students_Dashboard">
+                      <span class="learner-mode-btn__icon"><i class="isax isax-user-octagon"></i></span>
+                      <span class="learner-mode-btn__text">
+                        <span class="learner-mode-btn__label">Mode employé</span>
+                        <span class="learner-mode-btn__sub">Accéder à votre espace employé</span>
+                      </span>
+                      <i class="isax isax-arrow-right-3 learner-mode-btn__arrow"></i>
+                    </a>
+
+                    <!-- Mode formateur -->
+                    <a *appHasPermission="'acceder-mode-formateur'" class="trainer-mode-btn" [routerLink]="routes.instructor_dashboard">
+                      <span class="trainer-mode-btn__icon"><i class="isax isax-teacher"></i></span>
+                      <span class="trainer-mode-btn__text">
+                        <span class="trainer-mode-btn__label">Mode formateur</span>
+                        <span class="trainer-mode-btn__sub">Créer et gérer des formations</span>
+                      </span>
+                      <i class="isax isax-arrow-right-3 trainer-mode-btn__arrow"></i>
+                    </a>
+
+                    <!-- Logout Button -->
+                    <button type="button" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center mt-2" (click)="logout()">
+                      <i class="isax isax-logout me-2"></i>
+                      <span>Déconnexion</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Login Buttons -->
+            <div *ngIf="!isLoggedIn" class="header-item">
+              <div class="auth-buttons d-flex align-items-center">
+                <a [routerLink]="routes.login" class="btn btn-outline-primary btn-sm me-2">
+                  <i class="isax isax-login me-1"></i>
+                  <span>Se connecter</span>
+                </a>
+                <!-- <a [routerLink]="routes.register" class="btn btn-primary btn-sm">
+                  <i class="isax isax-user-add me-1"></i>
+                  <span>Register</span>
+                </a> -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

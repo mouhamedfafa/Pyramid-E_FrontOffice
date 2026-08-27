@@ -1,0 +1,328 @@
+<div class="page-content">
+  <!-- En-tête de la page -->
+  <div class="page-title d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="fw-bold mb-1">Gestion des Entreprises</h4>
+      <p class="text-muted mb-0">
+        Gérez les entreprises {{ currentUser?.role_id === 5 || currentUser?.role_id === 14 ? 'de votre groupe' : currentUser?.role_id === 1 ? 'de la plateforme' : 'assignées' }}
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <!-- Statistiques rapides -->
+      <div class="d-flex align-items-center gap-3 me-3" *ngIf="hasData">
+        <div class="text-center">
+          <div class="fw-bold text-primary">{{ totalCompanies }}</div>
+          <small class="text-muted">Total</small>
+        </div>
+        <div class="text-center">
+          <div class="fw-bold text-success">{{ activeCompanies }}</div>
+          <small class="text-muted">Actives</small>
+        </div>
+        <div class="text-center" *ngIf="inactiveCompanies > 0">
+          <div class="fw-bold text-warning">{{ inactiveCompanies }}</div>
+          <small class="text-muted">Inactives</small>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <button class="btn btn-outline-primary" (click)="refreshData()" [disabled]="loading">
+        <i class="isax isax-refresh" [class.fa-spin]="loading"></i>
+        <span class="ms-1">Actualiser</span>
+      </button>
+      <!-- <button class="btn btn-primary"
+              (click)="openNew()"
+              [disabled]="loading"
+              *ngIf="canAddCompany()">
+        <i class="isax isax-add"></i>
+        <span class="ms-1">Ajouter</span>
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Messages de notification -->
+  <div class="alert alert-success alert-dismissible fade show"
+       *ngIf="successMessage"
+       role="alert">
+    <i class="isax isax-tick-circle me-2"></i>
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="clearMessages()"></button>
+  </div>
+
+  <div class="alert alert-danger alert-dismissible fade show"
+       *ngIf="error"
+       role="alert">
+    <i class="isax isax-warning-2 me-2"></i>
+    {{ error }}
+    <button type="button" class="btn-close" (click)="clearMessages()"></button>
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="isax isax-search-normal-1"></i>
+            </span>
+            <input
+              [(ngModel)]="searchDataValue"
+              [ngModelOptions]="{ standalone: true }"
+              type="search"
+              (ngModelChange)="searchData(searchDataValue)"
+              class="form-control"
+              placeholder="Rechercher par nom, email, téléphone, secteur..."
+              [disabled]="loading">
+          </div>
+        </div>
+        <div class="col-md-6 text-end">
+          <small class="text-muted" *ngIf="searchDataValue && hasData">
+            {{ tableData.length }} résultat(s) trouvé(s) sur {{ totalCompanies }}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- État de chargement -->
+  <div class="d-flex justify-content-center p-5" *ngIf="loading">
+    <div class="text-center">
+      <div class="spinner-border text-primary mb-3" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="text-muted">Chargement des entreprises...</p>
+    </div>
+  </div>
+
+  <!-- État vide -->
+  <div class="card" *ngIf="showEmptyState">
+    <div class="card-body text-center py-5">
+      <div class="mb-4">
+        <i class="isax isax-building display-1 text-muted"></i>
+      </div>
+      <h5 class="fw-bold mb-3">Aucune entreprise trouvée</h5>
+      <p class="text-muted mb-4">
+        {{ canAddCompany() ? 'Commencez par ajouter votre première entreprise.' : 'Aucune entreprise n\'est associée à votre profil.' }}
+      </p>
+      <!-- <button class="btn btn-primary"
+              (click)="openNew()"
+              *ngIf="canAddCompany()">
+        <i class="isax isax-add me-2"></i>
+        Ajouter une entreprise
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Tableau des entreprises -->
+  <div class="card" *ngIf="hasData && !loading">
+    <div class="card-header bg-white border-bottom">
+      <div class="d-flex align-items-center justify-content-between">
+        <h6 class="mb-0 fw-bold">Liste des Entreprises</h6>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-light text-dark">{{ tableData.length }} affichée(s)</span>
+          <div class="dropdown" *ngIf="hasData">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown">
+              {{ pageSize }} par page
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="javascript:void(0)" (click)="changePageSize(5)">5 par page</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" (click)="changePageSize(10)">10 par page</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" (click)="changePageSize(25)">25 par page</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" (click)="changePageSize(50)">50 par page</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table matSort (matSortChange)="sortData($event)" class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th mat-sort-header="ninea">NINEA</th>
+            <th mat-sort-header="nom">Entreprise</th>
+            <th mat-sort-header="client">Client/Groupe</th>
+            <th mat-sort-header="email">Email</th>
+            <th mat-sort-header="telephone">Téléphone</th>
+            <th mat-sort-header="secteur_activite">Secteur</th>
+            <th mat-sort-header="taille_effectif">Effectif</th>
+            <th mat-sort-header="pays">Pays</th>
+            <th mat-sort-header="statut">Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let company of tableData; trackBy: trackByCompanyId" class="align-middle">
+            <!-- NINEA -->
+            <td>
+              <div class="d-flex align-items-center">
+                <span class="badge bg-light text-dark font-monospace">
+                  {{ getCompanyField(company, 'ninea') }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Nom de l'entreprise -->
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-md bg-primary text-white rounded me-3 d-flex align-items-center justify-content-center">
+                  <span class="fw-bold">{{ getCompanyInitials(company.nom || '') }}</span>
+                </div>
+                <div>
+                  <a [routerLink]="['/adminrh/adminrh-company-details', company.id]"
+                     class="fw-semibold text-decoration-none text-dark">
+                    {{ company.nom || 'Nom non renseigné' }}
+                  </a>
+                  <div class="text-muted small">
+                    ID: {{ company.id }}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Client/Groupe - ✅ CORRECTION ICI -->
+            <td>
+              <div>
+                <div class="fw-medium">{{ getClientName(company.client) }}</div>
+                <small class="text-muted" *ngIf="getClientType(company.client)">
+                  {{ getClientType(company.client) | titlecase }}
+                </small>
+              </div>
+            </td>
+
+            <!-- Email -->
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="isax isax-sms text-muted me-2"></i>
+                <span>{{ getCompanyField(company, 'email') }}</span>
+              </div>
+            </td>
+
+            <!-- Téléphone -->
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="isax isax-call text-muted me-2"></i>
+                <span>{{ getCompanyField(company, 'telephone') }}</span>
+              </div>
+            </td>
+
+            <!-- Secteur -->
+            <td>
+              <span class="badge bg-light text-dark">
+                {{ getCompanyField(company, 'secteur_activite') }}
+              </span>
+            </td>
+
+            <!-- Effectif -->
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="isax isax-profile-2user text-muted me-2"></i>
+                <span class="fw-medium">{{ getCompanyField(company, 'taille_effectif') }}</span>
+              </div>
+            </td>
+
+            <!-- Pays -->
+            <td>
+              <div class="d-flex align-items-center">
+                <span class="me-2">{{ getCountryFlag(company.pays || '') }}</span>
+                <span>{{ getCountryName(company.pays || '') }}</span>
+              </div>
+            </td>
+
+            <!-- Statut -->
+            <td>
+              <span [class]="getStatusClass(company.statut)">
+                {{ getStatusLabel(company.statut) }}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="text-end">
+              <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-outline-primary"
+                        (click)="editCompany(company)"
+                        [disabled]="!canEditCompany(company)"
+                        title="Modifier">
+                  <i class="isax isax-edit"></i>
+                </button>
+                <!-- <button class="btn btn-outline-danger"
+                        (click)="deleteCompany(company)"
+                        [disabled]="!canDeleteCompany(company)"
+                        title="Supprimer">
+                  <i class="isax isax-trash"></i>
+                </button> -->
+                <a [routerLink]="['/adminrh/adminrh-company-details', company.id]"
+                   class="btn btn-outline-info"
+                   title="Voir détails">
+                  <i class="isax isax-eye"></i>
+                </a>
+                 <!-- Bouton Archiver pour les entreprises actives -->
+                <button
+                    *ngIf="company.statut === 'active'"
+                    class="btn btn-outline-warning"
+                    (click)="archiveCompany(company)"
+                    title="Archiver l'entreprise">
+                  <i class="isax isax-archive"></i>
+                </button>
+
+                <!-- Bouton Réactiver pour les entreprises inactives -->
+                <button
+                    *ngIf="company.statut === 'inactive'"
+                    class="btn btn-outline-success"
+                    (click)="reactivateCompany(company)"
+                    title="Réactiver l'entreprise">
+                  <i class="isax isax-refresh"></i>
+                </button>
+
+                <!-- Bouton Suspendre pour les entreprises actives -->
+                <!-- <button
+                    *ngIf="company.statut === 'active'"
+                    class="btn btn-outline-danger"
+                    (click)="suspendCompany(company)"
+                    title="Suspendre l'entreprise">
+                  <i class="isax isax-pause"></i>
+                </button> -->
+
+                <!-- Bouton Réactiver pour les entreprises suspendues -->
+                <!-- <button
+                    *ngIf="company.statut === 'suspendue'"
+                    class="btn btn-outline-success"
+                    (click)="reactivateCompany(company)"
+                    title="Réactiver l'entreprise">
+                  <i class="isax isax-refresh"></i>
+                </button> -->
+              </div>
+            </td>
+          </tr>
+
+          <!-- Message si recherche vide -->
+          <tr *ngIf="tableData.length === 0 && searchDataValue && !loading">
+            <td colspan="10" class="text-center py-4">
+              <div class="text-muted">
+                <i class="isax isax-search-normal-1 display-6 mb-3 d-block"></i>
+                <h6>Aucun résultat pour "{{ searchDataValue }}"</h6>
+                <p class="mb-0">Essayez avec d'autres termes de recherche.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card-footer bg-white border-top">
+      <app-custom-pagination></app-custom-pagination>
+    </div>
+  </div>
+</div>
+
+<!-- Modal d'ajout/modification -->
+<app-company-add
+  [visible]="companyDialog"
+  [isEditMode]="isEditMode"
+  [companyData]="selectedCompany"
+  (onClose)="hideDialog()"
+  (onSave)="onCompanySaved()">
+</app-company-add>

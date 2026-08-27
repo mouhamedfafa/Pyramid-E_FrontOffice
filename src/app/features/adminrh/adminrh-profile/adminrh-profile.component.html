@@ -1,0 +1,205 @@
+<div class="ap-page">
+
+  <!-- HERO -->
+  <div class="ap-hero">
+    <div class="ap-hero__bg"></div>
+    <div class="ap-hero__body">
+      <div class="ap-hero__identity">
+        <div class="ap-av">{{ getInitials() }}</div>
+        <div class="ap-hero__info">
+          <h2 class="ap-hero__name">{{ profile?.prenom }} {{ profile?.nom }}</h2>
+          <p class="ap-hero__fonction">{{ profile?.fonction || '—' }}</p>
+          <div class="ap-hero__meta">
+            <span *ngIf="profile?.email"><i class="isax isax-sms"></i>{{ profile?.email }}</span>
+            <span *ngIf="profile?.telephone"><i class="isax isax-call"></i>{{ profile?.telephone }}</span>
+            <span *ngIf="profile?.entreprise"><i class="isax isax-building-3"></i>{{ profile?.entreprise?.nom }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="ap-hero__actions">
+        <span class="ap-status" [class.ap-status--active]="profile?.statut === 1"
+                                [class.ap-status--inactive]="profile?.statut !== 1">
+          {{ getStatusText() }}
+        </span>
+        <button *ngIf="!isEditing" class="ap-btn ap-btn--edit" (click)="toggleEdit()">
+          <i class="isax isax-edit-2"></i> Modifier
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENU -->
+  <div class="ap-layout">
+
+    <!-- Aside -->
+    <aside class="ap-aside">
+      <div class="ap-card ap-aside__card">
+        <div class="ap-av ap-av--lg">{{ getInitials() }}</div>
+        <div class="ap-aside__name">{{ profile?.prenom }} {{ profile?.nom }}</div>
+        <div class="ap-aside__role">{{ profile?.role?.name || 'Admin RH' }}</div>
+        <span class="ap-status ap-status--sm"
+              [class.ap-status--active]="profile?.statut === 1"
+              [class.ap-status--inactive]="profile?.statut !== 1">
+          {{ getStatusText() }}
+        </span>
+        <div class="ap-aside__chips">
+          <div class="ap-chip">
+            <span class="ap-chip__lbl">ID</span>
+            <span class="ap-chip__val">#{{ profile?.id }}</span>
+          </div>
+          <div class="ap-chip" *ngIf="profile?.matricule">
+            <span class="ap-chip__lbl">Matricule</span>
+            <span class="ap-chip__val">{{ profile?.matricule }}</span>
+          </div>
+          <div class="ap-chip" *ngIf="profile?.entreprise">
+            <span class="ap-chip__lbl">Entreprise</span>
+            <span class="ap-chip__val">{{ profile?.entreprise?.nom }}</span>
+          </div>
+          <div class="ap-chip" *ngIf="profile?.client">
+            <span class="ap-chip__lbl">Client</span>
+            <span class="ap-chip__val">{{ profile?.client?.nom }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="ap-main">
+      <ng-container *ngIf="!isEditing && profile">
+
+        <!-- Informations personnelles -->
+        <div class="ap-card">
+          <div class="ap-card__header">
+            <i class="isax isax-user-square"></i>
+            <h4>Informations personnelles</h4>
+          </div>
+          <div class="ap-grid">
+            <div class="ap-field">
+              <span class="ap-field__lbl">Nom</span>
+              <span class="ap-field__val">{{ profile.nom }}</span>
+            </div>
+            <div class="ap-field">
+              <span class="ap-field__lbl">Prénom</span>
+              <span class="ap-field__val">{{ profile.prenom }}</span>
+            </div>
+            <div class="ap-field">
+              <span class="ap-field__lbl">Email</span>
+              <span class="ap-field__val">{{ profile.email }}</span>
+            </div>
+            <div class="ap-field">
+              <span class="ap-field__lbl">Téléphone</span>
+              <span class="ap-field__val">{{ profile.telephone || '—' }}</span>
+            </div>
+            <div class="ap-field">
+              <span class="ap-field__lbl">Fonction</span>
+              <span class="ap-field__val">{{ profile.fonction || '—' }}</span>
+            </div>
+            <div class="ap-field">
+              <span class="ap-field__lbl">Numéro matricule</span>
+              <span class="ap-field__val">{{ profile.matricule || profile.numero || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Organisation -->
+        <div class="ap-card">
+          <div class="ap-card__header">
+            <i class="isax isax-buildings-2"></i>
+            <h4>Organisation</h4>
+          </div>
+          <div class="ap-grid">
+            <div class="ap-field">
+              <span class="ap-field__lbl">Rôle</span>
+              <span class="ap-field__val">
+                <span class="ap-badge ap-badge--role">{{ profile.role?.name || 'Admin RH' }}</span>
+              </span>
+            </div>
+            <div class="ap-field" *ngIf="profile.direction">
+              <span class="ap-field__lbl">Direction</span>
+              <span class="ap-field__val">{{ profile.direction }}</span>
+            </div>
+            <div class="ap-field" *ngIf="profile.entreprise">
+              <span class="ap-field__lbl">Entreprise</span>
+              <span class="ap-field__val">{{ profile.entreprise.nom }}</span>
+            </div>
+            <div class="ap-field" *ngIf="profile.client">
+              <span class="ap-field__lbl">Client / Groupe</span>
+              <span class="ap-field__val">{{ profile.client.nom }}</span>
+            </div>
+            <div class="ap-field">
+              <span class="ap-field__lbl">Statut</span>
+              <span class="ap-field__val">
+                <span class="ap-badge" [class.ap-badge--active]="profile.statut === 1"
+                                       [class.ap-badge--inactive]="profile.statut !== 1">
+                  {{ getStatusText() }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historique -->
+        <div class="ap-card">
+          <div class="ap-card__header">
+            <i class="isax isax-calendar-1"></i>
+            <h4>Historique</h4>
+          </div>
+          <div class="ap-grid">
+            <div class="ap-field">
+              <span class="ap-field__lbl">Créé le</span>
+              <span class="ap-field__val">{{ profile.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+            <div class="ap-field">
+              <span class="ap-field__lbl">Dernière modification</span>
+              <span class="ap-field__val">{{ profile.updated_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- EDIT MODE -->
+      <div class="ap-card" *ngIf="isEditing">
+        <div class="ap-card__header">
+          <i class="isax isax-edit-2"></i>
+          <h4>Modifier le profil</h4>
+        </div>
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="ap-grid">
+            <div class="ap-form-group">
+              <label>Nom</label>
+              <input class="form-control" formControlName="nom" placeholder="Nom">
+            </div>
+            <div class="ap-form-group">
+              <label>Prénom</label>
+              <input class="form-control" formControlName="prenom" placeholder="Prénom">
+            </div>
+            <div class="ap-form-group">
+              <label>Email</label>
+              <input class="form-control" formControlName="email" type="email" placeholder="Email">
+            </div>
+            <div class="ap-form-group">
+              <label>Téléphone</label>
+              <input class="form-control" formControlName="telephone" placeholder="Téléphone">
+            </div>
+            <div class="ap-form-group">
+              <label>Fonction</label>
+              <input class="form-control" formControlName="fonction" placeholder="Fonction">
+            </div>
+            <div class="ap-form-group">
+              <label>Numéro matricule</label>
+              <input class="form-control" formControlName="numero" placeholder="Matricule">
+            </div>
+          </div>
+          <div class="ap-form-actions">
+            <button class="ap-btn ap-btn--primary" type="submit" [disabled]="profileForm.invalid || loading">
+              <i class="isax isax-tick-circle"></i> Sauvegarder
+            </button>
+            <button type="button" class="ap-btn ap-btn--light" (click)="toggleEdit()">Annuler</button>
+          </div>
+        </form>
+      </div>
+
+    </main>
+  </div>
+</div>

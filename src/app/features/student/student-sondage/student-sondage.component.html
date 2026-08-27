@@ -1,0 +1,164 @@
+<!-- Loading -->
+<div *ngIf="loading" class="ss-loader">
+  <div class="ss-spinner"></div>
+  <span>Chargement du sondage…</span>
+</div>
+
+<!-- Error -->
+<div *ngIf="!loading && error" class="ss-error-wrap">
+  <div class="ss-error-card">
+    <i class="isax isax-warning-2"></i>
+    <p>{{ error }}</p>
+    <button class="ss-btn ss-btn--ghost" (click)="goBack()">
+      <i class="isax isax-arrow-left-2"></i> Retour
+    </button>
+  </div>
+</div>
+
+<!-- Submitted -->
+<div *ngIf="!loading && submitted" class="ss-success-screen">
+  <div class="ss-success-icon"><i class="isax isax-tick-circle"></i></div>
+  <h4 class="ss-success-title">Merci !</h4>
+  <p class="ss-success-msg">{{ submitSuccess }}</p>
+  <button class="ss-btn ss-btn--ghost" (click)="goBack()">
+    <i class="isax isax-arrow-left-2"></i> Retour aux sondages
+  </button>
+</div>
+
+<!-- Sondage -->
+<ng-container *ngIf="!loading && !error && !submitted && sondage">
+
+  <!-- Header -->
+  <div class="ss-rep-header">
+    <button class="ss-back-btn" (click)="goBack()">
+      <i class="isax isax-arrow-left-2"></i>
+    </button>
+    <div class="ss-rep-title-wrap">
+      <h5 class="ss-rep-title">{{ sondage.titre }}</h5>
+      <p class="ss-rep-sub" *ngIf="sondage.introduction">{{ sondage.introduction }}</p>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="ss-progress-wrap">
+    <div class="ss-progress-bar">
+      <div class="ss-progress-fill" [style.width.%]="progress"></div>
+    </div>
+    <span class="ss-progress-label">{{ currentStep + 1 }} / {{ questions.length }}</span>
+  </div>
+
+  <!-- Question card -->
+  <div class="ss-question-card" *ngIf="currentQuestion">
+    <div class="ss-q-num">Question {{ currentStep + 1 }}</div>
+    <h5 class="ss-q-text">
+      {{ currentQuestion.question }}
+      <span *ngIf="currentQuestion.est_obligatoire" class="ss-required">*</span>
+    </h5>
+    <p *ngIf="currentQuestion.aide" class="ss-q-aide">
+      <i class="isax isax-info-circle"></i> {{ currentQuestion.aide }}
+    </p>
+
+    <!-- TEXT / EMAIL -->
+    <ng-container *ngIf="currentQuestion.type === 'text' || currentQuestion.type === 'email'">
+      <input [type]="currentQuestion.type" class="ss-input"
+             [(ngModel)]="reponses[currentQuestion.id!]"
+             [placeholder]="currentQuestion.placeholder || 'Votre réponse…'">
+    </ng-container>
+
+    <!-- TEXTAREA -->
+    <ng-container *ngIf="currentQuestion.type === 'textarea'">
+      <textarea class="ss-input ss-textarea" rows="4"
+                [(ngModel)]="reponses[currentQuestion.id!]"
+                [placeholder]="currentQuestion.placeholder || 'Votre réponse…'"></textarea>
+    </ng-container>
+
+    <!-- NUMBER -->
+    <ng-container *ngIf="currentQuestion.type === 'numero'">
+      <input type="number" class="ss-input ss-input--sm"
+             [(ngModel)]="reponses[currentQuestion.id!]"
+             [placeholder]="currentQuestion.placeholder || ''">
+    </ng-container>
+
+    <!-- DATE -->
+    <ng-container *ngIf="currentQuestion.type === 'date'">
+      <input type="date" class="ss-input ss-input--sm"
+             [(ngModel)]="reponses[currentQuestion.id!]">
+    </ng-container>
+
+    <!-- RADIO -->
+    <ng-container *ngIf="currentQuestion.type === 'radio'">
+      <div class="ss-options">
+        <label *ngFor="let opt of currentQuestion.options" class="ss-option"
+               [class.selected]="reponses[currentQuestion.id!] === opt">
+          <input type="radio" class="ss-option-input"
+                 [name]="'q' + currentQuestion.id"
+                 [value]="opt"
+                 [(ngModel)]="reponses[currentQuestion.id!]">
+          <span class="ss-option-dot"></span>
+          <span>{{ opt }}</span>
+        </label>
+      </div>
+    </ng-container>
+
+    <!-- SELECT -->
+    <ng-container *ngIf="currentQuestion.type === 'select'">
+      <select class="ss-input" [(ngModel)]="reponses[currentQuestion.id!]">
+        <option value="">— Choisir —</option>
+        <option *ngFor="let opt of currentQuestion.options" [value]="opt">{{ opt }}</option>
+      </select>
+    </ng-container>
+
+    <!-- CHECKBOX -->
+    <ng-container *ngIf="currentQuestion.type === 'checkbox'">
+      <div class="ss-options">
+        <label *ngFor="let opt of currentQuestion.options" class="ss-option"
+               [class.selected]="isChecked(currentQuestion.id!, opt)">
+          <input type="checkbox" class="ss-option-input"
+                 [checked]="isChecked(currentQuestion.id!, opt)"
+                 (change)="toggleCheckbox(currentQuestion.id!, opt)">
+          <span class="ss-option-check"></span>
+          <span>{{ opt }}</span>
+        </label>
+      </div>
+    </ng-container>
+
+    <!-- ÉCHELLE / NOTATION -->
+    <ng-container *ngIf="isEchelle(currentQuestion.type)">
+      <div class="ss-scale">
+        <button *ngFor="let v of echelleValues(currentQuestion)"
+                class="ss-scale-btn"
+                [class.selected]="reponses[currentQuestion.id!] == v"
+                (click)="reponses[currentQuestion.id!] = v">
+          <span *ngIf="currentQuestion.type === 'notation'">
+            <i class="isax" [class.isax-star]="reponses[currentQuestion.id!] >= v" [class.isax-star-1]="!(reponses[currentQuestion.id!] >= v)"></i>
+          </span>
+          <span *ngIf="currentQuestion.type !== 'notation'">{{ v }}</span>
+        </button>
+      </div>
+      <div class="ss-scale-labels" *ngIf="currentQuestion.type === 'echelle'">
+        <span>{{ currentQuestion.valeur_min ?? 1 }} — Min</span>
+        <span>{{ currentQuestion.valeur_max ?? 10 }} — Max</span>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Submit error -->
+  <div *ngIf="submitError" class="ss-alert ss-alert--danger">
+    <i class="isax isax-warning-2"></i> {{ submitError }}
+  </div>
+
+  <!-- Navigation -->
+  <div class="ss-nav">
+    <button class="ss-nav-btn ss-nav-btn--ghost" (click)="precedent()" [disabled]="currentStep === 0">
+      <i class="isax isax-arrow-left-2"></i> Précédent
+    </button>
+    <button *ngIf="!isLast" class="ss-nav-btn ss-nav-btn--primary" (click)="suivant()">
+      Suivant <i class="isax isax-arrow-right-3"></i>
+    </button>
+    <button *ngIf="isLast" class="ss-nav-btn ss-nav-btn--success" [disabled]="submitting" (click)="soumettre()">
+      <span *ngIf="!submitting"><i class="isax isax-tick-circle"></i> Soumettre</span>
+      <span *ngIf="submitting"><span class="ss-mini-spinner"></span> Envoi…</span>
+    </button>
+  </div>
+
+</ng-container>

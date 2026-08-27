@@ -1,0 +1,183 @@
+<div class="content">
+  <div class="container">
+
+    <!-- ── Header Formateur ── -->
+    <div class="ins-header">
+      <div class="ins-header-label">FORMATEUR — ESPACE PÉDAGOGIQUE</div>
+
+      <div class="ins-card">
+        <!-- Identité + Actions -->
+        <div class="ins-card-top">
+          <div class="ins-identity">
+            <div class="ins-av">{{ getInitials() }}</div>
+            <div class="ins-info">
+              <h5 class="ins-name">{{ getFullName() }}</h5>
+              <p class="ins-sub">
+                {{ getFonction() }}<ng-container *ngIf="getEntrepriseName()"> · {{ getEntrepriseName() }}</ng-container>
+              </p>
+              <div class="ins-tags">
+                <span class="ins-tag" *ngFor="let tag of getSpecialites()">
+                  <i class="isax" [ngClass]="tag.icon"></i>{{ tag.label }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="ins-actions">
+            <a [routerLink]="routes.instructorStatements" class="ins-btn-icon" title="Statistiques">
+              <i class="isax isax-chart-2"></i>
+            </a>
+            <a href="/courses/instructor-course-add" target="_blank" class="ins-btn-primary">
+              <i class="isax isax-add"></i>Nouvelle formation
+            </a>
+          </div>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="ins-stats">
+          <div class="ins-stat">
+            <i class="isax isax-book-1"></i>
+            <div>
+              <div class="ins-stat-val">{{ headerStats.formations }}</div>
+              <div class="ins-stat-lbl">Formations actives</div>
+            </div>
+          </div>
+          <div class="ins-stat">
+            <i class="isax isax-profile-2user"></i>
+            <div>
+              <div class="ins-stat-val">{{ headerStats.apprenants }}</div>
+              <div class="ins-stat-lbl">Employés</div>
+            </div>
+          </div>
+          <div class="ins-stat" [class.ins-stat--warn]="headerStats.enDifficulte > 0">
+            <i class="isax isax-clock"></i>
+            <div>
+              <div class="ins-stat-val">{{ headerStats.enDifficulte }}</div>
+              <div class="ins-stat-lbl">En difficulté</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prochaine session -->
+      <div class="ins-next" *ngIf="nextSession">
+        <i class="isax isax-video"></i>
+        <span>Prochaine session — <strong>{{ nextSession.titre }}</strong> · {{ nextSession.date }}</span>
+        <span class="ins-next-badge">{{ nextSession.delai }}</span>
+      </div>
+    </div>
+
+      <!-- Contenu selon la route -->
+      @if(last !== 'students-details') {
+        <div class="row">
+            <!-- sidebar -->
+            <app-instructor-sidebar class="col-lg-3"></app-instructor-sidebar>
+            <!-- /Sidebar -->
+
+            <!-- Instructor Dashboard -->
+            <div class="col-lg-9">
+              <router-outlet></router-outlet>
+            </div>
+            <!-- Instructor Dashboard -->
+        </div>
+      }
+
+      @if(last === 'students-details') {
+        <router-outlet></router-outlet>
+      }
+  </div>
+</div>
+<!-- Footer -->
+<footer class="footer">
+
+  <!-- <div class="footer-top">
+      <div class="container">
+          <div class="row row-gap-4">
+              <div class="col-lg-4">
+                  <div class="footer-about">
+                      <div class="footer-logo">
+                          <img src="assets/img/logo.svg" alt="">
+                      </div>
+                      <p>Platform designed to help organizations, educators, and learners manage, deliver, and track learning and training activities.</p>
+                      <div class="d-flex align-items-center">
+                          <a href="javascript:void(0);" class="me-2"><img src="assets/img/icon/appstore.svg" alt=""></a>
+                          <a href="javascript:void(0);"><img src="assets/img/icon/googleplay.svg" alt=""></a>
+                      </div>
+                  </div>
+              </div>
+              <div class="col-lg-8">
+                  <div class="row row-gap-4">
+                      <div class="col-lg-3">
+                          <div class="footer-widget footer-menu">
+                              <h5 class="footer-title">For Instructor</h5>
+                              <ul>
+                                <li><a [routerLink]="routes.courseGrid">Search Mentors</a></li>
+                                <li><a [routerLink]="routes.login">Login</a></li>
+                                <li><a [routerLink]="routes.register">Register</a></li>
+                                <li><a [routerLink]="routes.courseList">Booking</a></li>
+                                <li><a [routerLink]="routes.students_Dashboard">Students Dashboard</a></li>
+                            </ul>
+                          </div>
+                      </div>
+                      <div class="col-lg-3">
+                          <div class="footer-widget footer-menu">
+                              <h5 class="footer-title">For Student</h5>
+                              <ul>
+                                <li><a href="javascript:void(0);">Appointments</a></li>
+                                <li><a [routerLink]="routes.instructorMessage">Chat</a></li>
+                                <li><a [routerLink]="routes.login">Login</a></li>
+                                <li><a [routerLink]="routes.register">Register</a></li>
+                                <li><a [routerLink]="routes.instructor_dashboard">Instructor Dashboard</a></li>
+                            </ul>
+                          </div>
+                      </div>
+                      <div class="col-lg-6">
+                          <div class="footer-widget footer-contact">
+                              <h5 class="footer-title">Newsletter</h5>
+                              <div class="subscribe-input">
+                                  <form action="javascript:void(0);">
+                                      <input type="email" class="form-control" placeholder="Enter your Email Address">
+                                      <button type="submit" class="btn btn-primary btn-sm inline-flex align-items-center"><i class="isax isax-send-2 me-1"></i>Subscribe</button>
+                                  </form>
+                              </div>
+                              <div class="footer-contact-info">
+                                  <div class="footer-address d-flex align-items-center">
+                                      <img src="assets/img/icon/icon-20.svg" alt="Img" class="img-fluid me-2">
+                                      <p> 3556  Beech Street, San Francisco,<br> California, CA 94108 </p>
+                                  </div>
+                                  <div class="footer-address d-flex align-items-center">
+                                      <img src="assets/img/icon/icon-19.svg" alt="Img" class="img-fluid me-2">
+                                      <p>dreamslms&#64;example.com</p>
+                                  </div>
+                                  <div class="footer-address d-flex align-items-center">
+                                      <img src="assets/img/icon/icon-21.svg" alt="Img" class="img-fluid me-2">
+                                      <p>+19 123-456-7890</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div> -->
+ <div class="footer-bottom">
+      <div class="container">
+          <div class="row row-gap-2">
+              <div class="col-md-6">
+                  <div class="text-center text-md-start">
+                      <p class="text-white">Copyright &copy; 2025 Pyramide. tout droits reservés.</p>
+                  </div>
+              </div>
+              <div class="col-md-6">
+                  <div>
+                      <ul class="d-flex align-items-center justify-content-center justify-content-md-end footer-link">
+                        <li><a [routerLink]="routes.page_term_condition">Terms & Conditions</a></li>
+                        <li><a [routerLink]="routes.page_privacy_policy">Politique de Confidentialité</a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</footer>
+<!-- /Footer -->

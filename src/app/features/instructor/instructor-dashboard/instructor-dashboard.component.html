@@ -1,0 +1,456 @@
+<!-- ── HEADER ─────────────────────────────────────────────────── -->
+<div class="db-header">
+  <div class="db-header__info">
+    <div class="db-header__title">Tableau de bord — {{ displayName }}</div>
+    <div class="db-header__sub">Vos indicateurs pédagogiques en temps réel</div>
+  </div>
+  <a [routerLink]="routes.instructorStatements" class="db-btn db-btn--blue">
+    <i class="isax isax-receipt-item"></i> Voir les rapports
+  </a>
+</div>
+
+<!-- ── SKELETON / LOADING ──────────────────────────────────────── -->
+@if (loading) {
+  <div class="db-kpi-grid">
+    @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+      <div class="db-kpi-card db-kpi-card--skeleton"></div>
+    }
+  </div>
+} @else {
+
+  <!-- ── KPIs ──────────────────────────────────────────────────── -->
+  <div class="db-kpi-grid">
+    @for (k of kpis; track k.label) {
+      <div class="db-kpi-card">
+        <div class="db-kpi-icon db-kpi-icon--{{ k.color }}">
+          <i class="isax {{ k.icon }}"></i>
+        </div>
+        <div class="db-kpi-body">
+          <div class="db-kpi-val">{{ k.value }}</div>
+          <div class="db-kpi-lbl">{{ k.label }}</div>
+          @if (k.sub) { <div class="db-kpi-sub">{{ k.sub }}</div> }
+        </div>
+        @if (k.trend) {
+          <div class="db-kpi-trend db-kpi-trend--{{ k.trend }}">
+            <i class="isax {{ k.trend === 'up' ? 'isax-arrow-up-3' : 'isax-arrow-down-3' }}"></i>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── GRILLE CHARTS ─────────────────────────────────────────── -->
+  <div class="db-charts-row">
+
+    <!-- Complétion par formation -->
+    <div class="db-card db-card--chart">
+      <div class="db-card__head">
+        <i class="isax isax-book-1"></i>
+        <span class="db-card__title">Complétion par formation</span>
+        <span class="db-badge db-badge--blue">Top 5</span>
+      </div>
+      @if (completionChart) {
+        <apx-chart
+          [series]="completionChart.series"
+          [chart]="completionChart.chart"
+          [plotOptions]="completionChart.plotOptions"
+          [dataLabels]="completionChart.dataLabels"
+          [xaxis]="completionChart.xaxis"
+          [yaxis]="completionChart.yaxis"
+          [colors]="completionChart.colors"
+          [grid]="completionChart.grid"
+          [tooltip]="completionChart.tooltip">
+        </apx-chart>
+      } @else {
+        <div class="db-empty">Aucune donnée formation</div>
+      }
+    </div>
+
+    <!-- Quiz réussite vs abandon -->
+    <div class="db-card db-card--chart db-card--narrow">
+      <div class="db-card__head">
+        <i class="isax isax-award"></i>
+        <span class="db-card__title">Résultats quiz</span>
+      </div>
+      @if (quizChart) {
+        <apx-chart
+          [series]="quizChart.series"
+          [chart]="quizChart.chart"
+          [labels]="quizChart.labels"
+          [colors]="quizChart.colors"
+          [legend]="quizChart.legend"
+          [dataLabels]="quizChart.dataLabels"
+          [plotOptions]="quizChart.plotOptions"
+          [tooltip]="quizChart.tooltip">
+        </apx-chart>
+      } @else {
+        <div class="db-empty">Aucun résultat quiz</div>
+      }
+    </div>
+
+  </div>
+
+  <!-- ── MÉTRIQUES DÉTAILLÉES ───────────────────────────────────── -->
+  <div class="db-metrics-row">
+
+    <!-- Indicateurs pédagogiques -->
+    <div class="db-card">
+      <div class="db-card__head">
+        <i class="isax isax-chart-square"></i>
+        <span class="db-card__title">Indicateurs pédagogiques</span>
+      </div>
+      <div class="db-metric-list">
+
+        <div class="db-metric-item">
+          <span class="db-metric-lbl">Taux participation live</span>
+          <div class="db-metric-bar-wrap">
+            <div class="db-metric-bar">
+              <div class="db-metric-fill db-metric-fill--blue"
+                   [style.width.%]="dashStats?.taux_participation_live ?? tauxOccupation"></div>
+            </div>
+            <span class="db-metric-val">{{ dashStats?.taux_participation_live ?? tauxOccupation }}%</span>
+          </div>
+        </div>
+
+        <div class="db-metric-item">
+          <span class="db-metric-lbl">Taux complétion cours</span>
+          <div class="db-metric-bar-wrap">
+            <div class="db-metric-bar">
+              <div class="db-metric-fill"
+                   [class.db-metric-fill--green]="tauxCompletion >= 70"
+                   [class.db-metric-fill--orange]="tauxCompletion < 70"
+                   [style.width.%]="tauxCompletion"></div>
+            </div>
+            <span class="db-metric-val">{{ tauxCompletion }}%</span>
+          </div>
+        </div>
+
+        <div class="db-metric-item">
+          <span class="db-metric-lbl">Taux d'abandon</span>
+          <div class="db-metric-bar-wrap">
+            <div class="db-metric-bar">
+              <div class="db-metric-fill"
+                   [class.db-metric-fill--red]="tauxAbandons > 20"
+                   [class.db-metric-fill--green]="tauxAbandons <= 20"
+                   [style.width.%]="tauxAbandons"></div>
+            </div>
+            <span class="db-metric-val">{{ tauxAbandons }}%</span>
+          </div>
+        </div>
+
+        <div class="db-metric-item">
+          <span class="db-metric-lbl">Score moyen évaluations</span>
+          <div class="db-metric-bar-wrap">
+            <div class="db-metric-bar">
+              <div class="db-metric-fill db-metric-fill--purple"
+                   [style.width.%]="dashStats?.score_moyen ?? scoreMoyen"></div>
+            </div>
+            <span class="db-metric-val">{{ dashStats?.score_moyen ?? scoreMoyen }}%</span>
+          </div>
+        </div>
+
+        <div class="db-metric-item">
+          <span class="db-metric-lbl">Taux de réussite</span>
+          <div class="db-metric-bar-wrap">
+            <div class="db-metric-bar">
+              <div class="db-metric-fill"
+                   [class.db-metric-fill--green]="tauxReussite >= 60"
+                   [class.db-metric-fill--red]="tauxReussite < 60"
+                   [style.width.%]="tauxReussite"></div>
+            </div>
+            <span class="db-metric-val">{{ tauxReussite }}%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Résumé consultant -->
+    <div class="db-card">
+      <div class="db-card__head">
+        <i class="isax isax-profile-circle"></i>
+        <span class="db-card__title">Résumé consultant</span>
+      </div>
+      <div class="db-summary-grid">
+        <div class="db-summary-item">
+          <div class="db-summary-val db-summary-val--blue">{{ dashStats?.nb_sessions_animees ?? sessionsAnimees }}</div>
+          <div class="db-summary-lbl">Sessions animées</div>
+        </div>
+        <div class="db-summary-item">
+          <div class="db-summary-val db-summary-val--teal">{{ dashStats?.nb_apprenants_inscrits ?? apprenantsForms }}</div>
+          <div class="db-summary-lbl">Employés inscrits</div>
+        </div>
+        <div class="db-summary-item">
+          <div class="db-summary-val db-summary-val--purple">{{ heuresRealisees }}h</div>
+          <div class="db-summary-lbl">Heures facturables</div>
+        </div>
+        <div class="db-summary-item">
+          <div class="db-summary-val db-summary-val--orange">{{ dashStats?.taux_participation_live ?? tauxOccupation }}%</div>
+          <div class="db-summary-lbl">Taux participation</div>
+        </div>
+        <div class="db-summary-item">
+          <div class="db-summary-val db-summary-val--gold">{{ dashStats?.nb_certifications ?? certificatsDeliv }}</div>
+          <div class="db-summary-lbl">Certifications</div>
+        </div>
+        <div class="db-summary-item">
+          <div class="db-summary-val db-summary-val--green">{{ formationsCount }}</div>
+          <div class="db-summary-lbl">Formations actives</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!--  NOUVEAUX INDICATEURS — données API centralisées              -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+
+  <!-- ── Qualité & Satisfaction ──────────────────────────────────── -->
+  <div class="db-section-title">
+    <i class="isax isax-star"></i> Qualité & Satisfaction
+  </div>
+
+  <div class="db-kpi-grid db-kpi-grid--4">
+
+    <!-- Note moyenne formateur -->
+    <div class="db-card db-card--metric">
+      <div class="db-card__head">
+        <i class="isax isax-profile-circle text-warning"></i>
+        <span class="db-card__title">Note moyenne formateur</span>
+      </div>
+      @if (statsLoading) {
+        <div class="db-kpi-card--skeleton" style="height:48px;border-radius:8px;"></div>
+      } @else if (dashStats?.note_moyenne_formateur != null) {
+        <div class="db-metric-big">
+          <span class="db-metric-big__val">{{ dashStats!.note_moyenne_formateur }}</span>
+          <span class="db-metric-big__unit">/10</span>
+        </div>
+        <div class="db-stars">
+          @for (i of [1,2,3,4,5]; track i) {
+            <i class="isax"
+               [class.isax-star1]="i <= (dashStats!.note_moyenne_formateur! / 2)"
+               [class.isax-star]="i > (dashStats!.note_moyenne_formateur! / 2)"></i>
+          }
+        </div>
+      } @else {
+        <div class="db-empty db-empty--sm">Non encore évalué</div>
+      }
+    </div>
+
+    <!-- NPS formation -->
+    <div class="db-card db-card--metric">
+      <div class="db-card__head">
+        <i class="isax isax-smiley text-success"></i>
+        <span class="db-card__title">NPS formation</span>
+      </div>
+      @if (statsLoading) {
+        <div class="db-kpi-card--skeleton" style="height:48px;border-radius:8px;"></div>
+      } @else if (dashStats?.nps_formation != null) {
+        <div class="db-metric-big">
+          <span class="db-metric-big__val">{{ dashStats!.nps_formation }}</span>
+          <span class="db-metric-big__unit">/10</span>
+        </div>
+        <small class="text-muted">Score satisfaction employé</small>
+      } @else {
+        <div class="db-empty db-empty--sm">Pas de données</div>
+      }
+    </div>
+
+    <!-- Feedbacks employés -->
+    <div class="db-card db-card--metric">
+      <div class="db-card__head">
+        <i class="isax isax-message text-info"></i>
+        <span class="db-card__title">Feedback qualitatif</span>
+      </div>
+      @if (statsLoading) {
+        <div class="db-kpi-card--skeleton" style="height:48px;border-radius:8px;"></div>
+      } @else {
+        <div class="db-metric-big">
+          <span class="db-metric-big__val">{{ dashStats?.nb_feedbacks_apprenants ?? 0 }}</span>
+          <span class="db-metric-big__unit">commentaires</span>
+        </div>
+        <small class="text-muted">{{ dashStats?.nb_feedbacks_formateur ?? 0 }} annotations formateur</small>
+      }
+    </div>
+
+    <!-- Progression avant / après -->
+    <div class="db-card db-card--metric">
+      <div class="db-card__head">
+        <i class="isax isax-chart-2 text-primary"></i>
+        <span class="db-card__title">Progression avant / après</span>
+      </div>
+      @if (statsLoading) {
+        <div class="db-kpi-card--skeleton" style="height:48px;border-radius:8px;"></div>
+      } @else {
+        <div class="db-progress-compare">
+          <div class="db-progress-compare__item">
+            <span class="db-progress-compare__lbl">Avant</span>
+            <div class="db-metric-bar" style="flex:1; margin:0 8px;">
+              <div class="db-metric-fill db-metric-fill--orange"
+                   [style.width.%]="dashStats?.progression_avant ?? 0"></div>
+            </div>
+            <span class="db-progress-compare__val">{{ dashStats?.progression_avant ?? 0 }}%</span>
+          </div>
+          <div class="db-progress-compare__item">
+            <span class="db-progress-compare__lbl">Après</span>
+            <div class="db-metric-bar" style="flex:1; margin:0 8px;">
+              <div class="db-metric-fill db-metric-fill--green"
+                   [style.width.%]="dashStats?.progression_apres ?? dashStats?.taux_completion_global ?? 0"></div>
+            </div>
+            <span class="db-progress-compare__val">
+              {{ dashStats?.progression_apres ?? dashStats?.taux_completion_global ?? 0 }}%
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- ── Délais & Performance opérationnelle ─────────────────────── -->
+  <div class="db-section-title" style="margin-top:24px;">
+    <i class="isax isax-clock"></i> Délais & Performance opérationnelle
+  </div>
+
+  <div class="db-kpi-grid db-kpi-grid--3">
+
+    <!-- Temps moyen de correction -->
+    <div class="db-card db-card--metric">
+      <div class="db-card__head">
+        <i class="isax isax-edit text-warning"></i>
+        <span class="db-card__title">Temps moyen de correction</span>
+      </div>
+      @if (statsLoading) {
+        <div class="db-kpi-card--skeleton" style="height:48px;border-radius:8px;"></div>
+      } @else if (dashStats?.temps_moyen_correction_h != null) {
+        <div class="db-metric-big">
+          <span class="db-metric-big__val">{{ dashStats!.temps_moyen_correction_h }}</span>
+          <span class="db-metric-big__unit">heures</span>
+        </div>
+        <small class="text-muted">Délai moyen après fin de session</small>
+      } @else {
+        <div class="db-empty db-empty--sm">Pas encore de données</div>
+      }
+    </div>
+
+    <!-- Délai publication résultats -->
+    <div class="db-card db-card--metric">
+      <div class="db-card__head">
+        <i class="isax isax-send-2 text-success"></i>
+        <span class="db-card__title">Délai de publication résultats</span>
+      </div>
+      @if (statsLoading) {
+        <div class="db-kpi-card--skeleton" style="height:48px;border-radius:8px;"></div>
+      } @else if (dashStats?.delai_publication_resultats_h != null) {
+        <div class="db-metric-big">
+          <span class="db-metric-big__val">{{ dashStats!.delai_publication_resultats_h }}</span>
+          <span class="db-metric-big__unit">heures</span>
+        </div>
+        <small class="text-muted">Entre fin session et publication</small>
+      } @else {
+        <div class="db-empty db-empty--sm">Pas encore de données</div>
+      }
+    </div>
+
+    <!-- Nombre de sessions animées (détail) -->
+    <div class="db-card db-card--metric">
+      <div class="db-card__head">
+        <i class="isax isax-calendar-tick text-blue"></i>
+        <span class="db-card__title">Sessions animées</span>
+      </div>
+      @if (statsLoading) {
+        <div class="db-kpi-card--skeleton" style="height:48px;border-radius:8px;"></div>
+      } @else {
+        <div class="db-metric-big">
+          <span class="db-metric-big__val">{{ dashStats?.nb_sessions_animees ?? sessionsAnimees }}</span>
+          <span class="db-metric-big__unit">sessions</span>
+        </div>
+        <div class="db-metric-list" style="margin-top:8px;">
+          <div class="db-metric-item" style="margin-bottom:4px;">
+            <span class="db-metric-lbl" style="font-size:11px;">Terminées</span>
+            <span class="db-metric-val" style="font-size:11px; color:#22c55e;">
+              {{ dashStats?.nb_sessions_terminees ?? 0 }}
+            </span>
+          </div>
+          <div class="db-metric-item">
+            <span class="db-metric-lbl" style="font-size:11px;">Employés (sessions)</span>
+            <span class="db-metric-val" style="font-size:11px; color:#1D9CFD;">
+              {{ dashStats?.nb_apprenants_sessions ?? 0 }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- ── Évolution inscriptions ──────────────────────────────────── -->
+  @if (inscriptionsChart) {
+    <div class="db-card" style="margin-top:24px;">
+      <div class="db-card__head">
+        <i class="isax isax-people"></i>
+        <span class="db-card__title">Évolution des inscriptions</span>
+        <span class="db-badge db-badge--blue">6 mois</span>
+      </div>
+      <apx-chart
+        [series]="inscriptionsChart.series"
+        [chart]="inscriptionsChart.chart"
+        [plotOptions]="inscriptionsChart.plotOptions"
+        [dataLabels]="inscriptionsChart.dataLabels"
+        [xaxis]="inscriptionsChart.xaxis"
+        [colors]="inscriptionsChart.colors"
+        [grid]="inscriptionsChart.grid"
+        [tooltip]="inscriptionsChart.tooltip">
+      </apx-chart>
+    </div>
+  }
+
+  <!-- ── TABLE FORMATIONS ───────────────────────────────────────── -->
+  <div class="db-card db-card--table" style="margin-top:24px;">
+    <div class="db-card__head">
+      <i class="isax isax-book-1"></i>
+      <span class="db-card__title">Mes formations</span>
+      <a [routerLink]="routes.instructorCourse" class="db-link">Tout voir →</a>
+    </div>
+    <div class="db-table-wrap">
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>Formation</th>
+            <th class="db-th-center">Inscrits</th>
+            <th>Complétion</th>
+            <th class="db-th-center">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (!formations.length) {
+            <tr><td colspan="4" class="db-empty-row">Aucune formation trouvée</td></tr>
+          }
+          @for (f of formations; track f.id) {
+            <tr>
+              <td class="db-td-title">{{ f.titre }}</td>
+              <td class="db-td-center">
+                <span class="db-pill db-pill--blue">{{ f.inscrits }}</span>
+              </td>
+              <td>
+                <div class="db-row-bar">
+                  <div class="db-row-fill"
+                       [class.db-row-fill--green]="f.completion >= 70"
+                       [class.db-row-fill--orange]="f.completion < 70"
+                       [style.width.%]="f.completion"></div>
+                </div>
+                <span class="db-row-pct">{{ f.completion }}%</span>
+              </td>
+              <td class="db-td-center">
+                <span class="db-badge-pill" [ngClass]="getStatutClass(f.statut)">
+                  {{ getStatutLabel(f.statut) }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+}

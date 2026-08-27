@@ -1,0 +1,227 @@
+<div class="sp-page">
+
+  <!-- ══════════════════════════════════════════════
+       HERO BANNER
+  ══════════════════════════════════════════════ -->
+  <div class="sp-hero">
+    <div class="sp-hero__bg"></div>
+
+    <div class="sp-hero__body">
+      <!-- Avatar + identité -->
+      <div class="sp-hero__identity">
+        <div class="sp-av">{{ getInitials() }}</div>
+        <div class="sp-hero__info">
+          <h2 class="sp-hero__name">{{ studentProfile?.prenom }} {{ studentProfile?.nom }}</h2>
+          <p class="sp-hero__fonction">{{ studentProfile?.fonction || '—' }}</p>
+          <div class="sp-hero__meta">
+            <span *ngIf="studentProfile?.email">
+              <i class="isax isax-sms"></i>{{ studentProfile?.email }}
+            </span>
+            <span *ngIf="studentProfile?.telephone">
+              <i class="isax isax-call"></i>{{ studentProfile?.telephone }}
+            </span>
+            <span *ngIf="studentProfile?.entreprise">
+              <i class="isax isax-building-3"></i>{{ studentProfile?.entreprise?.nom }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badge statut + bouton -->
+      <div class="sp-hero__actions">
+        <span class="sp-status" [class.sp-status--active]="studentProfile?.statut === 1"
+                                [class.sp-status--inactive]="studentProfile?.statut !== 1">
+          {{ getStatusText() }}
+        </span>
+        <!-- <button *ngIf="!isEditing" type="button" class="sp-btn sp-btn--edit" (click)="toggleEdit()">
+          <i class="isax isax-edit-2"></i> Modifier
+        </button> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       CONTENU
+  ══════════════════════════════════════════════ -->
+  <div class="sp-layout">
+
+    <!-- ── Colonne gauche : récapitulatif ─────── -->
+    <aside class="sp-aside">
+      <div class="sp-card sp-aside__card">
+        <div class="sp-av sp-av--lg">{{ getInitials() }}</div>
+        <div class="sp-aside__name">{{ studentProfile?.prenom }} {{ studentProfile?.nom }}</div>
+        <div class="sp-aside__role">{{ studentProfile?.role?.name || 'Employé' }}</div>
+        <span class="sp-status sp-status--sm"
+              [class.sp-status--active]="studentProfile?.statut === 1"
+              [class.sp-status--inactive]="studentProfile?.statut !== 1">
+          {{ getStatusText() }}
+        </span>
+
+        <div class="sp-aside__chips">
+          <div class="sp-chip">
+            <span class="sp-chip__lbl">ID</span>
+            <span class="sp-chip__val">#{{ studentProfile?.id }}</span>
+          </div>
+          <div class="sp-chip" *ngIf="studentProfile?.matricule">
+            <span class="sp-chip__lbl">Matricule</span>
+            <span class="sp-chip__val">{{ studentProfile?.matricule }}</span>
+          </div>
+          <div class="sp-chip" *ngIf="studentProfile?.entreprise">
+            <span class="sp-chip__lbl">Entreprise</span>
+            <span class="sp-chip__val">{{ studentProfile?.entreprise?.nom }}</span>
+          </div>
+          <div class="sp-chip" *ngIf="studentProfile?.client">
+            <span class="sp-chip__lbl">Client</span>
+            <span class="sp-chip__val">{{ studentProfile?.client?.nom }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Colonne droite : détails ─────────── -->
+    <main class="sp-main">
+
+      <!-- VIEW MODE -->
+      <ng-container *ngIf="!isEditing && studentProfile">
+
+        <!-- Informations personnelles -->
+        <div class="sp-card">
+          <div class="sp-card__header">
+            <i class="isax isax-user-square"></i>
+            <h4>Informations personnelles</h4>
+          </div>
+          <div class="sp-grid">
+            <div class="sp-field">
+              <span class="sp-field__lbl">Nom</span>
+              <span class="sp-field__val">{{ studentProfile.nom }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Prénom</span>
+              <span class="sp-field__val">{{ studentProfile.prenom }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Email</span>
+              <span class="sp-field__val">{{ studentProfile.email }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Téléphone</span>
+              <span class="sp-field__val">{{ studentProfile.telephone || '—' }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Fonction</span>
+              <span class="sp-field__val">{{ studentProfile.fonction || '—' }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Numéro matricule</span>
+              <span class="sp-field__val">{{ studentProfile.matricule || studentProfile.numero || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Organisation -->
+        <div class="sp-card">
+          <div class="sp-card__header">
+            <i class="isax isax-buildings-2"></i>
+            <h4>Organisation</h4>
+          </div>
+          <div class="sp-grid">
+            <div class="sp-field">
+              <span class="sp-field__lbl">Rôle</span>
+              <span class="sp-field__val">
+                <span class="sp-badge sp-badge--role">{{ studentProfile.role?.name || 'Employé' }}</span>
+              </span>
+            </div>
+            <div class="sp-field" *ngIf="studentProfile.direction">
+              <span class="sp-field__lbl">Direction</span>
+              <span class="sp-field__val">{{ studentProfile.direction }}</span>
+            </div>
+            <div class="sp-field" *ngIf="studentProfile.entreprise">
+              <span class="sp-field__lbl">Entreprise</span>
+              <span class="sp-field__val">{{ studentProfile.entreprise.nom }}</span>
+            </div>
+            <div class="sp-field" *ngIf="studentProfile.client">
+              <span class="sp-field__lbl">Client / Groupe</span>
+              <span class="sp-field__val">{{ studentProfile.client.nom }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Statut</span>
+              <span class="sp-field__val">
+                <span class="sp-badge" [class.sp-badge--active]="studentProfile.statut === 1"
+                                       [class.sp-badge--inactive]="studentProfile.statut !== 1">
+                  {{ getStatusText() }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historique -->
+        <div class="sp-card">
+          <div class="sp-card__header">
+            <i class="isax isax-calendar-1"></i>
+            <h4>Historique</h4>
+          </div>
+          <div class="sp-grid">
+            <div class="sp-field">
+              <span class="sp-field__lbl">Créé le</span>
+              <span class="sp-field__val">{{ studentProfile.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Dernière modification</span>
+              <span class="sp-field__val">{{ studentProfile.updated_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- EDIT MODE -->
+      <div class="sp-card" *ngIf="isEditing">
+        <div class="sp-card__header">
+          <i class="isax isax-edit-2"></i>
+          <h4>Modifier le profil</h4>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="sp-grid">
+            <div class="sp-form-group">
+              <label for="sp-nom">Nom</label>
+              <input id="sp-nom" class="form-control" formControlName="nom" placeholder="Nom">
+            </div>
+            <div class="sp-form-group">
+              <label for="sp-prenom">Prénom</label>
+              <input id="sp-prenom" class="form-control" formControlName="prenom" placeholder="Prénom">
+            </div>
+            <div class="sp-form-group">
+              <label for="sp-email">Email</label>
+              <input id="sp-email" class="form-control" formControlName="email" type="email" placeholder="Email">
+            </div>
+            <div class="sp-form-group">
+              <label for="sp-telephone">Téléphone</label>
+              <input id="sp-telephone" class="form-control" formControlName="telephone" placeholder="Téléphone">
+            </div>
+            <div class="sp-form-group">
+              <label for="sp-fonction">Fonction</label>
+              <input id="sp-fonction" class="form-control" formControlName="fonction" placeholder="Fonction">
+            </div>
+            <div class="sp-form-group">
+              <label for="sp-numero">Numéro matricule</label>
+              <input id="sp-numero" class="form-control" formControlName="numero" placeholder="Matricule">
+            </div>
+          </div>
+
+          <div class="sp-form-actions">
+            <button class="sp-btn sp-btn--primary" type="submit" [disabled]="profileForm.invalid || loading">
+              <i class="isax isax-tick-circle"></i> Sauvegarder
+            </button>
+            <button type="button" class="sp-btn sp-btn--light" (click)="toggleEdit()">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+</div>

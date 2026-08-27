@@ -1,0 +1,531 @@
+<!-- Loading -->
+<div *ngIf="loading" class="cd-loader">
+  <div class="cd-spin"></div>
+</div>
+
+<!-- Alerts -->
+<div *ngIf="error && !loading" class="cd-alert cd-alert--err">
+  <i class="isax isax-warning-2"></i> {{ error }}
+</div>
+<div *ngIf="success" class="cd-alert cd-alert--ok">
+  <i class="isax isax-tick-circle"></i> {{ success }}
+</div>
+
+<!-- Main content -->
+<div *ngIf="formation && !loading">
+
+  <!-- ── HERO BANNER ── -->
+  <section class="cd-hero">
+    <div class="cd-hero__bg" [style.background-image]="'url(' + getImageUrl(formation.image_couverture) + ')'"></div>
+    <div class="cd-hero__overlay"></div>
+    <div class="cd-hero__body">
+      <div class="container">
+
+        <!-- Breadcrumb -->
+        <div class="cd-hero-breadcrumb">
+          <a routerLink="/courses">Formations</a>
+          <span>/</span>
+          <span>{{ formation.categorie?.nom || 'Général' }}</span>
+          <span>/</span>
+          <span>{{ formation.titre | slice:0:40 }}{{ formation.titre?.length > 40 ? '…' : '' }}</span>
+        </div>
+
+        <div class="row align-items-start">
+          <div class="col-lg-8">
+            <!-- Category -->
+            <div class="cd-hero-cat">
+              <i class="isax isax-category"></i>
+              {{ formation.categorie?.nom || 'Formation' }}
+            </div>
+
+            <!-- Title -->
+            <h1 class="cd-hero-title">{{ formation.titre }}</h1>
+            <p class="cd-hero-desc">{{ formation.short_description }}</p>
+
+            <!-- Stats row -->
+            <div class="cd-hero-meta">
+              <div class="cd-hero-stat">
+                <i class="isax isax-book-1"></i>
+                <strong>{{ formation.modules?.length || 0 }}</strong> modules
+              </div>
+              <div class="cd-hero-stat">
+                <i class="isax isax-clock"></i>
+                <strong>{{ formation.duree_totale || 0 }}h</strong> de contenu
+              </div>
+              <div class="cd-hero-stat">
+                <i class="isax isax-people"></i>
+                <strong>{{ formation.nb_inscrits || 0 }}</strong> inscrits
+              </div>
+              <div class="cd-hero-stat" *ngIf="averageRating > 0">
+                <i class="isax isax-star"></i>
+                <strong>{{ averageRating }}/5</strong>
+              </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="cd-hero-badges">
+              <span class="cd-badge cd-badge--gold">
+                <i class="isax isax-signal"></i> {{ getNiveauLabel(formation.niveau) }}
+              </span>
+              <span class="cd-badge cd-badge--green">
+                <i class="isax isax-monitor"></i> {{ getTypeFormationLabel(formation.type_formation) }}
+              </span>
+              <span class="cd-badge cd-badge--gray" *ngIf="formation.langue">
+                <i class="isax isax-global"></i> {{ getLangueLabel(formation.langue) }}
+              </span>
+              <span class="cd-badge cd-badge--certif" *ngIf="formation.est_certifiante">
+                <i class="isax isax-award"></i> Certifiante
+              </span>
+            </div>
+
+            <!-- Instructor chip -->
+            <div class="cd-hero-instructor" *ngIf="formation.formateur" style="margin-top:20px">
+              <img class="cd-hero-instructor__avatar"
+                   [src]="getImageUrl(formation.formateur?.avatar)"
+                   alt="Formateur">
+              <div>
+                <div class="cd-hero-instructor__name">{{ formation.formateur?.nom || 'Expert Formateur' }}</div>
+                <div class="cd-hero-instructor__role">{{ formation.formateur?.fonction || 'Formateur' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BODY ── -->
+  <div class="container">
+    <div class="cd-layout">
+
+      <!-- LEFT COLUMN -->
+      <div>
+
+        <!-- Description & Compétences -->
+        <div class="cd-card">
+          <div class="cd-card-head">
+            <h2 class="cd-card-title">Aperçu de la formation</h2>
+          </div>
+          <div class="cd-card-body">
+            <div class="cd-description" [innerHTML]="formation.description"></div>
+
+            <!-- Compétences acquises -->
+            <ng-container *ngIf="getCompetencesList(formation.competences_acquises).length > 0">
+              <div class="cd-section-label" style="margin-top:20px">
+                <i class="isax isax-tick-circle"></i> Compétences acquises
+              </div>
+              <ul class="cd-check-list">
+                <li *ngFor="let c of getCompetencesList(formation.competences_acquises)">{{ c }}</li>
+              </ul>
+            </ng-container>
+
+            <!-- Prérequis -->
+            <ng-container *ngIf="formation.prerequis">
+              <div class="cd-section-label" style="margin-top:20px">
+                <i class="isax isax-info-circle"></i> Prérequis
+              </div>
+              <p class="cd-description">{{ formation.prerequis }}</p>
+            </ng-container>
+
+            <!-- Outils requis -->
+            <ng-container *ngIf="getOutilsList(formation.outils_requis).length > 0">
+              <div class="cd-section-label" style="margin-top:20px">
+                <i class="isax isax-setting-2"></i> Outils requis
+              </div>
+              <ul class="cd-check-list">
+                <li *ngFor="let o of getOutilsList(formation.outils_requis)">{{ o }}</li>
+              </ul>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Contenu du cours -->
+        <div class="cd-card">
+          <div class="cd-card-head">
+            <h2 class="cd-card-title">Contenu du cours</h2>
+            <span class="cd-card-sub">{{ formation.modules?.length || 0 }} modules · {{ formation.duree_totale || 0 }}h</span>
+          </div>
+          <div class="cd-card-body" style="padding-top:12px; padding-bottom:0;">
+            <div class="cd-accordion">
+              <div *ngIf="!formation.modules?.length" class="cd-acc-item">
+                <div class="cd-acc-head">
+                  <div class="cd-acc-head__left">
+                    <div class="cd-acc-head__num">1</div>
+                    <div>
+                      <div class="cd-acc-head__title">Introduction</div>
+                      <div class="cd-acc-head__meta">Contenu en préparation</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngFor="let module of formation.modules; let i = index" class="cd-acc-item">
+                <div class="cd-acc-head" [class.open]="module._open" (click)="module._open = !module._open">
+                  <div class="cd-acc-head__left">
+                    <div class="cd-acc-head__num">{{ i + 1 }}</div>
+                    <div>
+                      <div class="cd-acc-head__title">{{ module.titre }}</div>
+                      <div class="cd-acc-head__meta">
+                        {{ module.sections?.length || 0 }} leçon{{ (module.sections?.length || 0) !== 1 ? 's' : '' }}
+                        <span *ngIf="module.duree_estimee"> · {{ module.duree_estimee }}min</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cd-acc-head__right">
+                    <i class="isax isax-arrow-down cd-acc-head__arrow"></i>
+                  </div>
+                </div>
+                <div class="cd-acc-body" *ngIf="module._open">
+                  <div *ngFor="let section of module.sections; let j = index" class="cd-section-row">
+                    <div class="cd-section-row__left">
+                      <i class="isax isax-play-circle cd-section-row__icon"></i>
+                      <span>{{ i + 1 }}.{{ j + 1 }} {{ section.titre }}</span>
+                    </div>
+                    <div class="cd-section-row__right">
+                      <button class="cd-preview-btn" (click)="previewSection(section)">Aperçu</button>
+                      <span class="cd-section-row__dur">{{ section.duree_estimee || 5 }}min</span>
+                    </div>
+                  </div>
+                  <div *ngIf="!module.sections?.length" class="cd-section-row" style="justify-content:center; color:#9CA3AF;">
+                    Contenu en cours de préparation
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="padding-bottom:4px;"></div>
+        </div>
+
+        <!-- Formateur -->
+        <div class="cd-card" *ngIf="formation.formateur">
+          <div class="cd-card-head">
+            <h2 class="cd-card-title">À propos du formateur</h2>
+          </div>
+          <div class="cd-card-body">
+            <div class="cd-instructor">
+              <img class="cd-instructor__avatar"
+                   [src]="getImageUrl(formation.formateur?.avatar)"
+                   alt="Formateur">
+              <div>
+                <div class="cd-instructor__name">{{ formation.formateur?.nom || 'Expert Formateur' }}</div>
+                <div class="cd-instructor__role">{{ formation.formateur?.fonction || 'Formateur Expert' }}</div>
+                <div class="cd-instructor-stats">
+                  <div class="cd-inst-stat">
+                    <i class="isax isax-book-1"></i>
+                    <strong>{{ formation.formateur?.nb_formations || 1 }}</strong> formations
+                  </div>
+                  <div class="cd-inst-stat">
+                    <i class="isax isax-people"></i>
+                    <strong>{{ formation.nb_inscrits || 0 }}</strong> employés
+                  </div>
+                  <div class="cd-inst-stat">
+                    <i class="isax isax-star"></i>
+                    <strong>4.5</strong>/5
+                  </div>
+                </div>
+                <p class="cd-instructor__bio">
+                  {{ formation.formateur?.bio || 'Expert dans son domaine avec plusieurs années d\'expérience en formation professionnelle.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="cd-card" *ngIf="getTagsList(formation.tags).length > 0">
+          <div class="cd-card-head">
+            <h2 class="cd-card-title">Mots-clés</h2>
+          </div>
+          <div class="cd-card-body">
+            <div class="cd-tags">
+              <span class="cd-tag" *ngFor="let tag of getTagsList(formation.tags)">{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /left -->
+
+      <!-- RIGHT COLUMN (sidebar) -->
+      <div class="cd-sidebar">
+
+        <!-- Price & Enroll Card -->
+        <div class="cd-price-card">
+
+          <!-- Thumb -->
+          <div class="cd-price-thumb">
+            <div class="ratio ratio-16x9" *ngIf="isYouTubeUrl(formation.media_url)">
+              <iframe [src]="getYouTubeEmbedUrl(formation.media_url)"
+                      title="Aperçu" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <video *ngIf="getMediaUrl(formation.media_url) && !isYouTubeUrl(formation.media_url)"
+                   controls [poster]="getImageUrl(formation.image_couverture)">
+              <source [src]="getMediaUrl(formation.media_url)" type="video/mp4">
+            </video>
+            <img *ngIf="!formation.media_url"
+                 [src]="getImageUrl(formation.image_couverture)"
+                 alt="Couverture">
+          </div>
+
+          <div class="cd-price-body">
+            <!-- Prix : uniquement pour les employés (role 2) -->
+            <div class="cd-price-tag" *ngIf="currentUser?.role_id === 2">
+              <!-- <span *ngIf="formation.prix == 0 || formation.prix == '0.00'" class="cd-price-free">GRATUIT</span> -->
+              <!-- <span *ngIf="formation.prix > 0" class="cd-price-main">{{ formation.prix }} FCFA</span>
+              <span *ngIf="formation.prix_original && formation.prix_original > formation.prix" class="cd-price-old">
+                {{ formation.prix_original }} FCFA
+              </span> -->
+              <!-- <span *ngIf="calculateDiscount(formation.prix, formation.prix_original) > 0" class="cd-price-discount">
+                -{{ calculateDiscount(formation.prix, formation.prix_original) }}%
+              </span> -->
+            </div>
+
+            <!-- CTA button — adapté selon le rôle -->
+
+            <!-- Formateur (3) : modifier sa formation -->
+            <a *ngIf="currentUser?.role_id === 3"
+               [href]="'/courses/instructor-course-edit/' + formation.id"
+               target="_blank"
+               class="cd-enroll-btn cd-enroll-btn--primary" style="text-decoration:none;">
+              <i class="isax isax-edit-2"></i> Modifier la formation
+            </a>
+
+            <!-- Superadmin (1) / AdminRH (4) / RH Groupe (5) : accès admin -->
+            <a *ngIf="currentUser?.role_id === 1 || currentUser?.role_id === 4 || currentUser?.role_id === 5"
+               [href]="'/courses/instructor-course-edit/' + formation.id"
+               target="_blank"
+               class="cd-enroll-btn cd-enroll-btn--primary" style="text-decoration:none;">
+              <i class="isax isax-setting-2"></i> Gérer la formation
+            </a>
+
+            <!-- Employé (2) : demande via l'organisation -->
+            <button
+              class="cd-enroll-btn cd-enroll-btn--green"
+              *ngIf="currentUser?.role_id === 2"
+              [routerLink]="['/student/students-explorer']"
+              [queryParams]="{formationId: formation.id}">
+              <i class="isax isax-document-text"></i> Demander la formation
+            </button>
+
+            <!-- Secondary actions -->
+            <div class="cd-action-row" style="margin-top:10px;">
+              <button class="cd-action-btn">
+                <i class="isax isax-heart"></i> Favoris
+              </button>
+              <button class="cd-action-btn" (click)="shareFormation()">
+                <i class="isax isax-send-2"></i> Partager
+              </button>
+            </div>
+
+            <div class="cd-guarantee">
+              <i class="isax isax-shield-tick"></i>
+              Garantie remboursement 30 jours
+            </div>
+          </div>
+        </div>
+
+        <!-- Ce cours comprend -->
+        <div class="cd-card">
+          <div class="cd-card-head"><h2 class="cd-card-title">Ce cours comprend</h2></div>
+          <div class="cd-card-body">
+            <ul class="cd-includes">
+              <li><i class="isax isax-play-circle"></i> {{ formation.duree_totale || 0 }}h de contenu vidéo</li>
+              <li><i class="isax isax-document-download"></i> {{ formation.modules?.length || 0 }} ressources téléchargeables</li>
+              <li><i class="isax isax-infinity"></i> Accès à vie</li>
+              <li><i class="isax isax-mobile"></i> Accès mobile et tablette</li>
+              <li *ngIf="formation.est_certifiante"><i class="isax isax-award"></i> Certificat d'achèvement</li>
+              <li><i class="isax isax-people"></i> Accès à la communauté</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Infos formation -->
+        <div class="cd-card">
+          <div class="cd-card-head"><h2 class="cd-card-title">Informations</h2></div>
+          <div class="cd-card-body">
+            <table class="cd-info-table">
+              <tr>
+                <td><i class="isax isax-people"></i> Inscrits</td>
+                <td>{{ formation.nb_inscrits || 0 }}</td>
+              </tr>
+              <tr>
+                <td><i class="isax isax-clock"></i> Durée</td>
+                <td>{{ formation.duree_totale || 0 }}h</td>
+              </tr>
+              <tr>
+                <td><i class="isax isax-book-1"></i> Modules</td>
+                <td>{{ formation.modules?.length || 0 }}</td>
+              </tr>
+              <tr>
+                <td><i class="isax isax-signal"></i> Niveau</td>
+                <td>{{ getNiveauLabel(formation.niveau) }}</td>
+              </tr>
+              <tr>
+                <td><i class="isax isax-global"></i> Langue</td>
+                <td>{{ getLangueLabel(formation.langue) }}</td>
+              </tr>
+              <tr>
+                <td><i class="isax isax-calendar-1"></i> Mis à jour</td>
+                <td>{{ formatDate(formation.updated_at) }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /sidebar -->
+    </div><!-- /cd-layout -->
+  </div><!-- /container -->
+
+</div><!-- /formation -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PREVIEW MODAL -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="cd-modal-overlay" *ngIf="previewOpen" (click)="closePreview()">
+  <div class="cd-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="cd-modal__header">
+      <div class="cd-modal__header-left">
+        <div class="cd-modal__type-badge" [attr.data-type]="previewSection_?.type || 'texte'">
+          <i class="isax" [ngClass]="{
+            'isax-video-play': previewSection_?.type === 'video' || previewSection_?.type === 'lecture',
+            'isax-document-text': previewSection_?.type === 'texte' || previewSection_?.type === 'text' || previewSection_?.type === 'reading' || !previewSection_?.type,
+            'isax-document': previewSection_?.type === 'pdf',
+            'isax-gallery': previewSection_?.type === 'image',
+            'isax-document-download': previewSection_?.type === 'fichier',
+            'isax-task-square': previewSection_?.type === 'quiz' || previewSection_?.type === 'assignment'
+          }"></i>
+          <span>{{ previewSection_?.type || 'texte' }}</span>
+        </div>
+        <h3 class="cd-modal__title">{{ previewSection_?.titre }}</h3>
+      </div>
+      <button class="cd-modal__close" (click)="closePreview()">
+        <i class="isax isax-close-circle"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="cd-modal__body">
+
+      <!-- VIDÉO YouTube -->
+      <ng-container *ngIf="(previewSection_?.type === 'video' || previewSection_?.type === 'lecture') && hasPreviewResource() && isPreviewYouTube()">
+        <div class="cd-modal__video-wrap">
+          <iframe [src]="getPreviewYouTubeEmbedUrl()"
+                  frameborder="0" allowfullscreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  [title]="previewSection_?.titre">
+          </iframe>
+        </div>
+      </ng-container>
+
+      <!-- VIDÉO fichier local -->
+      <ng-container *ngIf="(previewSection_?.type === 'video' || previewSection_?.type === 'lecture') && hasPreviewResource() && !isPreviewYouTube()">
+        <div class="cd-modal__video-wrap cd-modal__video-wrap--native">
+          <video controls autoplay class="cd-modal__video-native" [src]="getPreviewSafeUrl()">
+            Votre navigateur ne supporte pas la lecture vidéo.
+          </video>
+        </div>
+      </ng-container>
+
+      <!-- VIDÉO sans ressource -->
+      <ng-container *ngIf="(previewSection_?.type === 'video' || previewSection_?.type === 'lecture') && !hasPreviewResource()">
+        <div class="cd-modal__empty">
+          <i class="isax isax-video-play"></i>
+          <p>Vidéo non disponible pour l'aperçu.</p>
+        </div>
+      </ng-container>
+
+      <!-- IMAGE -->
+      <ng-container *ngIf="previewSection_?.type === 'image'">
+        <div *ngIf="hasPreviewResource(); else noPreviewImage" class="cd-modal__image-wrap">
+          <img [src]="getPreviewResourceUrl()" [alt]="previewSection_?.titre" class="cd-modal__image">
+        </div>
+        <ng-template #noPreviewImage>
+          <div class="cd-modal__empty">
+            <i class="isax isax-gallery"></i>
+            <p>Image non disponible.</p>
+          </div>
+        </ng-template>
+      </ng-container>
+
+      <!-- PDF -->
+      <ng-container *ngIf="previewSection_?.type === 'pdf'">
+        <div *ngIf="hasPreviewResource(); else noPreviewPdf" class="cd-modal__pdf-wrap">
+          <iframe [src]="getPreviewSafeUrl()" class="cd-modal__pdf-frame"></iframe>
+        </div>
+        <ng-template #noPreviewPdf>
+          <div class="cd-modal__empty">
+            <i class="isax isax-document"></i>
+            <p>Document PDF non disponible.</p>
+          </div>
+        </ng-template>
+      </ng-container>
+
+      <!-- FICHIER -->
+      <ng-container *ngIf="previewSection_?.type === 'fichier'">
+        <div *ngIf="hasPreviewResource()">
+          <div *ngIf="isPreviewViewableFile(); else fileDownloadOnly" class="cd-modal__pdf-wrap">
+            <iframe [src]="getPreviewFileViewerUrl()" class="cd-modal__pdf-frame"></iframe>
+          </div>
+          <ng-template #fileDownloadOnly>
+            <div class="cd-modal__file-card">
+              <div class="cd-modal__file-icon"><i class="isax isax-document-download"></i></div>
+              <div class="cd-modal__file-info">
+                <p class="cd-modal__file-name">{{ previewSection_?.titre }}</p>
+                <p class="cd-modal__file-hint">Cliquez sur télécharger pour accéder au fichier.</p>
+              </div>
+              <a [href]="getPreviewResourceUrl()" target="_blank" download class="cd-enroll-btn cd-enroll-btn--green" style="width:auto; padding:10px 20px;">
+                <i class="isax isax-document-download"></i> Télécharger
+              </a>
+            </div>
+          </ng-template>
+        </div>
+        <div *ngIf="!hasPreviewResource()" class="cd-modal__empty">
+          <i class="isax isax-document-download"></i>
+          <p>Fichier non disponible.</p>
+        </div>
+      </ng-container>
+
+      <!-- TEXTE / LECTURE -->
+      <ng-container *ngIf="previewSection_?.type === 'texte' || previewSection_?.type === 'text' || previewSection_?.type === 'reading' || !previewSection_?.type">
+        <div *ngIf="previewSection_?.contenu || previewSection_?.description; else noPreviewText" class="cd-modal__text-wrap">
+          <div class="cd-modal__text-body" [innerHTML]="previewSection_?.contenu || previewSection_?.description"></div>
+        </div>
+        <ng-template #noPreviewText>
+          <div class="cd-modal__empty">
+            <i class="isax isax-document-text"></i>
+            <p>Aucun contenu disponible pour l'aperçu.</p>
+          </div>
+        </ng-template>
+      </ng-container>
+
+      <!-- QUIZ -->
+      <ng-container *ngIf="previewSection_?.type === 'quiz' || previewSection_?.type === 'assignment'">
+        <div class="cd-modal__empty">
+          <i class="isax isax-task-square"></i>
+          <p>Les quiz sont disponibles une fois inscrit à la formation.</p>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="cd-modal__footer">
+      <div class="cd-modal__meta" *ngIf="previewSection_?.duree_estimee">
+        <i class="isax isax-clock"></i> {{ previewSection_?.duree_estimee }} min
+      </div>
+      <button class="cd-modal__close-btn" (click)="closePreview()">Fermer</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Not found -->
+<div *ngIf="!formation && !loading && !error" class="container" style="padding:80px 0; text-align:center">
+  <i class="isax isax-book-1" style="font-size:3rem; color:#9CA3AF; display:block; margin-bottom:16px;"></i>
+  <h4 style="color:#374151;">Formation introuvable</h4>
+  <p style="color:#9CA3AF; font-size:14px;">La formation que vous recherchez n'existe pas ou n'est plus disponible.</p>
+  <a routerLink="/courses" class="cd-enroll-btn cd-enroll-btn--green" style="display:inline-flex; width:auto; padding:10px 24px; text-decoration:none;">
+    <i class="isax isax-arrow-left"></i> Retour aux formations
+  </a>
+</div>

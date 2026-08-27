@@ -1,0 +1,188 @@
+$primary: #1D6EBF;
+$success: #059669;
+$danger:  #DC2626;
+$radius:  14px;
+$shadow:  0 4px 24px rgba(0,0,0,.07);
+
+// ─── Loader ───────────────────────────────────────────────────────────────────
+.ss-loader {
+  display: flex; align-items: center; gap: 12px;
+  justify-content: center; padding: 60px 0; color: #6b7280;
+}
+.ss-spinner {
+  width: 28px; height: 28px; border: 3px solid #e5e7eb;
+  border-top-color: $primary; border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ─── Error ────────────────────────────────────────────────────────────────────
+.ss-error-wrap {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 40vh; padding: 2rem;
+}
+.ss-error-card {
+  text-align: center; padding: 3rem 2rem;
+  background: #fff; border-radius: $radius; box-shadow: $shadow;
+  max-width: 480px; width: 100%;
+  i { font-size: 3rem; color: $danger; display: block; margin-bottom: 1rem; }
+  p { color: #374151; margin-bottom: 1.5rem; }
+}
+
+// ─── Alert ────────────────────────────────────────────────────────────────────
+.ss-alert {
+  display: flex; align-items: center; gap: 10px;
+  border-radius: 10px; padding: 12px 16px; font-size: 14px; margin-bottom: 16px;
+  &--danger { background: #fef2f2; color: $danger; border: 1px solid #fecaca; }
+}
+
+// ─── Success ──────────────────────────────────────────────────────────────────
+.ss-success-screen {
+  text-align: center; padding: 80px 20px;
+}
+.ss-success-icon {
+  font-size: 64px; color: $success; margin-bottom: 20px;
+  animation: pop .4s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes pop {
+  0%   { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.ss-success-title { font-size: 26px; font-weight: 700; margin: 0 0 10px; color: #111827; }
+.ss-success-msg   { font-size: 15px; color: #6b7280; margin: 0 0 28px; }
+
+// ─── Header ──────────────────────────────────────────────────────────────────
+.ss-rep-header {
+  display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px;
+}
+.ss-back-btn {
+  width: 40px; height: 40px; border-radius: 10px; border: 1px solid #e5e7eb;
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer; flex-shrink: 0; transition: background .15s;
+  &:hover { background: #f9fafb; }
+}
+.ss-rep-title-wrap {}
+.ss-rep-title { font-size: 20px; font-weight: 700; margin: 0 0 6px; color: #111827; }
+.ss-rep-sub   { font-size: 14px; color: #6b7280; margin: 0; }
+
+// ─── Progress ─────────────────────────────────────────────────────────────────
+.ss-progress-wrap {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 28px;
+}
+.ss-progress-bar {
+  flex: 1; height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden;
+}
+.ss-progress-fill {
+  height: 100%; background: linear-gradient(90deg, $primary, #60a5fa);
+  border-radius: 99px; transition: width .4s ease;
+}
+.ss-progress-label { font-size: 13px; color: #6b7280; white-space: nowrap; }
+
+// ─── Question Card ────────────────────────────────────────────────────────────
+.ss-question-card {
+  background: #fff; border-radius: $radius; box-shadow: $shadow;
+  padding: 32px 28px; margin-bottom: 24px;
+}
+.ss-q-num {
+  font-size: 12px; font-weight: 600; color: $primary;
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px;
+}
+.ss-q-text {
+  font-size: 17px; font-weight: 700; color: #111827; margin: 0 0 8px; line-height: 1.5;
+}
+.ss-q-aide {
+  font-size: 13px; color: #6b7280; display: flex; align-items: center;
+  gap: 6px; margin: 0 0 20px;
+}
+.ss-required { color: $danger; margin-left: 2px; }
+
+// ─── Inputs ───────────────────────────────────────────────────────────────────
+.ss-input {
+  width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 14px; outline: none; transition: border-color .15s;
+  &:focus { border-color: $primary; }
+  &--sm { max-width: 220px; }
+}
+.ss-textarea { resize: vertical; min-height: 100px; font-family: inherit; }
+
+// ─── Options Radio/Checkbox ───────────────────────────────────────────────────
+.ss-options { display: flex; flex-direction: column; gap: 10px; }
+.ss-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+  cursor: pointer; transition: border-color .15s, background .15s;
+  font-size: 14px; color: #374151;
+
+  &.selected { border-color: $primary; background: #eff6ff; color: $primary; font-weight: 600; }
+  &:hover:not(.selected) { border-color: #93c5fd; background: #f8faff; }
+
+  &-input { display: none; }
+
+  &-dot {
+    width: 18px; height: 18px; border-radius: 50%; border: 2px solid #d1d5db;
+    flex-shrink: 0; transition: border-color .15s, background .15s;
+    .ss-option.selected & { border-color: $primary; background: $primary; }
+  }
+  &-check {
+    width: 18px; height: 18px; border-radius: 5px; border: 2px solid #d1d5db;
+    flex-shrink: 0; transition: border-color .15s, background .15s;
+    .ss-option.selected & { border-color: $primary; background: $primary; }
+  }
+}
+
+// ─── Échelle ──────────────────────────────────────────────────────────────────
+.ss-scale {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;
+}
+.ss-scale-btn {
+  width: 48px; height: 48px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+  background: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: all .15s; color: #374151;
+  &.selected { background: $primary; border-color: $primary; color: #fff; }
+  &:hover:not(.selected) { border-color: $primary; color: $primary; }
+
+  i { font-size: 1.5rem; color: #dee2e6; transition: color .2s; }
+  &.selected i { color: #F59E0B; }
+}
+.ss-scale-labels {
+  display: flex; justify-content: space-between; font-size: 12px; color: #9ca3af;
+}
+
+// ─── Navigation ───────────────────────────────────────────────────────────────
+.ss-nav {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.ss-nav-btn {
+  display: flex; align-items: center; gap: 8px; padding: 11px 22px;
+  border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
+  border: none; transition: opacity .2s;
+
+  &--ghost {
+    background: #f3f4f6; color: #374151;
+    &:hover:not(:disabled) { background: #e5e7eb; }
+    &:disabled { opacity: .4; cursor: default; }
+  }
+  &--primary {
+    background: $primary; color: #fff; margin-left: auto;
+    &:hover { opacity: .88; }
+  }
+  &--success {
+    background: $success; color: #fff; margin-left: auto;
+    &:hover { opacity: .88; }
+    &:disabled { opacity: .5; cursor: default; }
+  }
+}
+
+.ss-mini-spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+
+// ─── Generic button ───────────────────────────────────────────────────────────
+.ss-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 10px; border: none;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s;
+
+  &--ghost { background: #f3f4f6; color: #374151; &:hover { background: #e5e7eb; } }
+}

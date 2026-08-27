@@ -1,0 +1,397 @@
+<!-- Loading -->
+<div *ngIf="loading" class="ip-loader">
+  <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div>
+</div>
+
+<!-- Alerts -->
+<div *ngIf="zoomError" class="ip-alert ip-alert--err">
+  <i class="isax isax-video-slash"></i> {{ zoomError }}
+  <button type="button" class="ip-alert__close" (click)="zoomError=''"><i class="isax isax-close-circle"></i></button>
+</div>
+<div *ngIf="zoomSuccess" class="ip-alert ip-alert--ok">
+  <i class="isax isax-video-circle"></i> {{ zoomSuccess }}
+</div>
+<div *ngIf="error" class="alert alert-danger alert-dismissible">
+  {{ error }}
+  <button type="button" class="btn-close" (click)="clearError()"></button>
+</div>
+
+<ng-container *ngIf="!loading">
+
+  <!-- Page header -->
+  <div class="ip-page-head">
+    <div>
+      <h5 class="ip-page-head__title">Mes sessions <span class="ip-count">{{ totalData }}</span></h5>
+      <p class="ip-page-head__sub">Vos sessions de formation assignées</p>
+    </div>
+    <button type="button" class="ip-btn ip-btn--outline" (click)="loadSessions()">
+      <i class="isax isax-refresh-2"></i> Actualiser
+    </button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="ip-toolbar">
+    <input type="text" class="ip-search" placeholder="Rechercher session, code, formation…"
+           [(ngModel)]="searchDataValue" (input)="searchData($any($event.target).value)">
+    <select class="ip-select" [(ngModel)]="selectedStatut" (change)="filterByStatut()">
+      <option value="">Tous les statuts</option>
+      <option value="planifiee">Planifiée</option>
+      <option value="en_cours">En cours</option>
+      <option value="terminee">Terminée</option>
+      <option value="annulee">Annulée</option>
+    </select>
+    <select class="ip-select" [(ngModel)]="selectedType" (change)="filterByType()">
+      <option value="">Tous les types</option>
+      <option value="presentiel">Présentiel</option>
+      <option value="distanciel">Distanciel</option>
+      <option value="hybride">Hybride</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="ip-card">
+    <div class="table-responsive">
+      <table class="table ip-table" matSort (matSortChange)="sortData($event)">
+        <thead>
+          <tr>
+            <th mat-sort-header="titre">Session</th>
+            <th mat-sort-header="date_debut">Dates</th>
+            <th>Type</th>
+            <th mat-sort-header="statut">Statut</th>
+            <th>Participants</th>
+            <th>Lieu</th>
+            <th>Zoom</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of tableData; trackBy: trackBySessionId"
+              (mouseenter)="loadZoomMeeting(s)">
+            <td>
+              <div class="ip-session-cell">
+                <div class="ip-session-icon"><i class="isax isax-calendar-1"></i></div>
+                <div>
+                  <div class="ip-session-title">{{ s.titre }}</div>
+                  <div class="ip-session-sub">{{ s.code_session }}</div>
+                  <div class="ip-session-formation">{{ s.formation?.titre }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="ip-date-cell">
+                <span class="ip-date-start">{{ formatDate(s.date_debut) }}</span>
+                <span class="ip-date-arrow">→</span>
+                <span class="ip-date-end">{{ formatDate(s.date_fin) }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="ip-type-badge ip-type-{{ s.type }}">{{ s.type | titlecase }}</span>
+            </td>
+            <td>
+              <span class="ip-statut-badge ip-statut-{{ s.statut }}">{{ getStatutDisplay(s.statut) }}</span>
+            </td>
+            <td>
+              <div class="ip-participants">
+                <span class="ip-pill">{{ s.nombre_inscrits || 0 }}/{{ s.capacite_max }}</span>
+                <div class="ip-mini-bar">
+                  <div class="ip-mini-fill" [style.width.%]="(s.nombre_inscrits || 0) / s.capacite_max * 100"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="text-muted">{{ s.lieu || '—' }}</span></td>
+
+            <!-- Zoom -->
+            <td class="ip-zoom-cell">
+              <!-- Présentiel : pas de Zoom -->
+              <ng-container *ngIf="s.type === 'presentiel'">
+                <span class="ip-zoom-na">—</span>
+              </ng-container>
+
+              <ng-container *ngIf="s.type !== 'presentiel'">
+
+                <!-- En chargement -->
+                <span *ngIf="zoomLoading[s.id]" class="ip-zoom-spin">
+                  <i class="isax isax-refresh-2"></i>
+                </span>
+
+                <!-- Pas encore interrogé (undefined) : afficher spinner discret -->
+                <span *ngIf="!zoomLoading[s.id] && zoomMeetings[s.id] === undefined" class="ip-zoom-na">…</span>
+
+                <!-- Confirmé : aucun meeting (null) -->
+                <ng-container *ngIf="!zoomLoading[s.id] && zoomMeetings[s.id] === null">
+                  <button *ngIf="s.statut !== 'terminee' && s.statut !== 'annulee'"
+                          type="button" class="ip-zoom-create" (click)="createZoomMeeting(s)">
+                    <i class="isax isax-video-add"></i> Créer
+                  </button>
+                  <span *ngIf="s.statut === 'terminee' || s.statut === 'annulee'" class="ip-zoom-na">—</span>
+                </ng-container>
+
+                <!-- Meeting existant -->
+                <ng-container *ngIf="!zoomLoading[s.id] && zoomMeetings[s.id]">
+                  <div class="ip-zoom-badge"
+                       [class.ip-zoom-badge--live]="isZoomAccessible(s)"
+                       [class.ip-zoom-badge--done]="isZoomExpired(s)">
+                    <i class="isax isax-video-circle"></i>
+                    <span>{{ isZoomAccessible(s) ? 'En direct' : getZoomDelai(s) }}</span>
+                  </div>
+                  <div class="ip-zoom-btns" *ngIf="!isZoomExpired(s)">
+                    <button type="button" class="ip-zoom-btn ip-zoom-btn--start"
+                            title="Démarrer (hôte)" (click)="startMeeting(s)"
+                            [class.ip-zoom-btn--live]="isZoomAccessible(s)">
+                      <i class="isax isax-video-play"></i>
+                      <span>{{ isZoomAccessible(s) ? 'Démarrer' : 'Lien hôte' }}</span>
+                    </button>
+                    <button type="button" class="ip-zoom-btn ip-zoom-btn--del"
+                            title="Supprimer meeting" (click)="deleteZoomMeeting(s)">
+                      <i class="isax isax-trash"></i>
+                    </button>
+                  </div>
+                </ng-container>
+
+              </ng-container>
+            </td>
+
+            <td>
+              <button type="button" class="ip-action-btn" title="Détails" (click)="viewDetails(s)">
+                <i class="isax isax-eye"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="tableData.length === 0">
+            <td colspan="8" class="ip-empty">
+              <i class="isax isax-calendar-1"></i>
+              <span>Aucune session trouvée</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="ip-pagination" *ngIf="totalData > pageSize">
+      <span class="pg-info">{{ totalData }} session{{ totalData > 1 ? 's' : '' }}</span>
+      <div class="pg-controls">
+        <button type="button" class="pg-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+          <i class="isax isax-arrow-left-2"></i>
+        </button>
+        <button type="button" class="pg-btn"
+                *ngFor="let p of getPageNumbers()"
+                [class.active]="p === currentPage"
+                (click)="onPageChange(p)">{{ p }}</button>
+        <button type="button" class="pg-btn"
+                [disabled]="currentPage * pageSize >= totalData"
+                (click)="onPageChange(currentPage + 1)">
+          <i class="isax isax-arrow-right-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</ng-container>
+
+<!-- ══ MODAL DÉTAILS SESSION ══ -->
+<div class="modal fade" id="sessionDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" style="max-width:680px;">
+    <div class="sd-modal modal-content" *ngIf="selectedSession">
+
+      <!-- Head -->
+      <div class="sd-head">
+        <div class="sd-head__icon">
+          <i class="isax isax-calendar-1"></i>
+        </div>
+        <div class="sd-head__text">
+          <div class="sd-head__title">{{ selectedSession.titre }}</div>
+          <div class="sd-head__sub">
+            <span class="sd-mono">{{ selectedSession.code_session }}</span>
+            <span class="sd-sep">·</span>
+            {{ selectedSession.formation?.titre }}
+          </div>
+        </div>
+        <div class="sd-head__badges">
+          <span class="ip-type-badge ip-type-{{ selectedSession.type }}">{{ selectedSession.type | titlecase }}</span>
+          <span class="ip-statut-badge ip-statut-{{ selectedSession.statut }}">{{ getStatutDisplay(selectedSession.statut) }}</span>
+        </div>
+        <button type="button" class="sd-close" data-bs-dismiss="modal">
+          <i class="isax isax-close-circle"></i>
+        </button>
+      </div>
+
+      <div class="sd-body">
+
+        <!-- ── Planning ── -->
+        <div class="sd-section-label"><i class="isax isax-clock"></i> Planning</div>
+        <div class="sd-grid-2">
+          <div class="sd-info-card">
+            <div class="sd-info-card__icon sd-ic--blue"><i class="isax isax-calendar-add"></i></div>
+            <div>
+              <div class="sd-info-card__label">Début</div>
+              <div class="sd-info-card__val">{{ formatDate(selectedSession.date_debut) }}</div>
+            </div>
+          </div>
+          <div class="sd-info-card">
+            <div class="sd-info-card__icon sd-ic--purple"><i class="isax isax-calendar-remove"></i></div>
+            <div>
+              <div class="sd-info-card__label">Fin</div>
+              <div class="sd-info-card__val">{{ formatDate(selectedSession.date_fin) }}</div>
+            </div>
+          </div>
+          <div class="sd-info-card" *ngIf="selectedSession.lieu">
+            <div class="sd-info-card__icon sd-ic--teal"><i class="isax isax-location"></i></div>
+            <div>
+              <div class="sd-info-card__label">Lieu</div>
+              <div class="sd-info-card__val">{{ selectedSession.lieu }}</div>
+            </div>
+          </div>
+          <div class="sd-info-card">
+            <div class="sd-info-card__icon sd-ic--orange"><i class="isax isax-people"></i></div>
+            <div>
+              <div class="sd-info-card__label">Participants</div>
+              <div class="sd-info-card__val">
+                {{ selectedSession.nombre_inscrits || 0 }}<span class="sd-muted">/{{ selectedSession.capacite_max }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Participants bar ── -->
+        <div class="sd-pbar-wrap">
+          <div class="sd-pbar">
+            <div class="sd-pbar__fill"
+                 [style.width.%]="(selectedSession.nombre_inscrits || 0) / selectedSession.capacite_max * 100"></div>
+          </div>
+          <span class="sd-pbar__label">
+            {{ selectedSession.nombre_places_restantes }} place{{ selectedSession.nombre_places_restantes !== 1 ? 's' : '' }} restante{{ selectedSession.nombre_places_restantes !== 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <!-- ── Coûts ── -->
+        <ng-container *ngIf="selectedSession.cout_par_participant || selectedSession.cout_total_session">
+          <div class="sd-section-label"><i class="isax isax-wallet-money"></i> Coûts</div>
+          <div class="sd-grid-2">
+            <div class="sd-recap-row" *ngIf="selectedSession.cout_par_participant">
+              <span class="sd-rl">Par participant</span>
+              <span class="sd-rv">{{ selectedSession.cout_par_participant }} XOF</span>
+            </div>
+            <div class="sd-recap-row" *ngIf="selectedSession.cout_total_session">
+              <span class="sd-rl">Total session</span>
+              <span class="sd-rv">{{ selectedSession.cout_total_session }} XOF</span>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ── Description ── -->
+        <ng-container *ngIf="selectedSession.description">
+          <div class="sd-section-label"><i class="isax isax-document-text"></i> Description</div>
+          <div class="sd-text-box">{{ selectedSession.description }}</div>
+        </ng-container>
+
+        <!-- ── Instructions ── -->
+        <ng-container *ngIf="selectedSession.instructions_acces">
+          <div class="sd-section-label"><i class="isax isax-info-circle"></i> Instructions d'accès</div>
+          <div class="sd-text-box">{{ selectedSession.instructions_acces }}</div>
+        </ng-container>
+
+        <!-- ── Documents / Matériel ── -->
+        <div class="sd-grid-2" *ngIf="selectedSession.documents_requis?.length || selectedSession.materiel_requis?.length">
+          <div *ngIf="selectedSession.documents_requis?.length">
+            <div class="sd-section-label"><i class="isax isax-document"></i> Documents requis</div>
+            <div class="sd-tag-list">
+              <span class="sd-tag" *ngFor="let d of selectedSession.documents_requis">{{ d }}</span>
+            </div>
+          </div>
+          <div *ngIf="selectedSession.materiel_requis?.length">
+            <div class="sd-section-label"><i class="isax isax-box"></i> Matériel requis</div>
+            <div class="sd-tag-list">
+              <span class="sd-tag" *ngFor="let m of selectedSession.materiel_requis">{{ m }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Zoom ── -->
+        <ng-container *ngIf="selectedSession.type !== 'presentiel'">
+          <div class="sd-section-label"><i class="isax isax-video-circle"></i> Meeting Zoom</div>
+
+          <div *ngIf="zoomLoading[selectedSession.id]" class="sd-zoom-loading">
+            <i class="isax isax-refresh-2"></i> Chargement du meeting…
+          </div>
+
+          <ng-container *ngIf="!zoomLoading[selectedSession.id]">
+            <!-- Pas de meeting -->
+            <ng-container *ngIf="zoomMeetings[selectedSession.id] === null">
+              <div class="sd-zoom-empty">
+                <i class="isax isax-video-slash"></i>
+                <span>Aucun meeting Zoom pour cette session.</span>
+                <button *ngIf="selectedSession.statut !== 'terminee' && selectedSession.statut !== 'annulee'"
+                        type="button" class="ip-zoom-create" (click)="createZoomMeeting(selectedSession)">
+                  <i class="isax isax-video-add"></i> Créer le meeting
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- Meeting existant -->
+            <ng-container *ngIf="zoomMeetings[selectedSession.id] as m">
+              <div class="sd-zoom-card">
+                <div class="sd-zoom-card__status">
+                  <span class="ip-zoom-badge"
+                        [class.ip-zoom-badge--live]="isZoomAccessible(selectedSession)"
+                        [class.ip-zoom-badge--done]="isZoomExpired(selectedSession)">
+                    <i class="isax isax-video-circle"></i>
+                    {{ isZoomAccessible(selectedSession) ? 'En direct' : getZoomDelai(selectedSession) }}
+                  </span>
+                </div>
+                <div class="sd-recap-row">
+                  <span class="sd-rl">Programmé le</span>
+                  <span class="sd-rv">{{ formatDate(m.scheduled_at) }}</span>
+                </div>
+                <div class="sd-recap-row">
+                  <span class="sd-rl">Durée</span>
+                  <span class="sd-rv">{{ m.duration }} min</span>
+                </div>
+                <div class="sd-recap-row" *ngIf="m.password">
+                  <span class="sd-rl">Mot de passe</span>
+                  <span class="sd-rv sd-mono">{{ m.password }}</span>
+                </div>
+                <div class="sd-recap-row" *ngIf="m.recording_url">
+                  <span class="sd-rl">Enregistrement</span>
+                  <a [href]="m.recording_url" target="_blank" class="ip-zoom-link">
+                    <i class="isax isax-video-play"></i> Voir l'enregistrement
+                  </a>
+                </div>
+                <div class="sd-zoom-card__actions" *ngIf="!isZoomExpired(selectedSession)">
+                  <button type="button" class="ip-zoom-btn ip-zoom-btn--start"
+                          [class.ip-zoom-btn--live]="isZoomAccessible(selectedSession)"
+                          (click)="startMeeting(selectedSession)">
+                    <i class="isax isax-video-play"></i>
+                    {{ isZoomAccessible(selectedSession) ? 'Démarrer maintenant' : 'Ouvrir lien hôte' }}
+                  </button>
+                  <button type="button" class="ip-zoom-btn ip-zoom-btn--del"
+                          (click)="deleteZoomMeeting(selectedSession)">
+                    <i class="isax isax-trash"></i> Supprimer
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+
+        <!-- ── Notes ── -->
+        <ng-container *ngIf="selectedSession.notes_organisateur">
+          <div class="sd-section-label"><i class="isax isax-note-text"></i> Notes</div>
+          <div class="sd-text-box sd-text-box--note">{{ selectedSession.notes_organisateur }}</div>
+        </ng-container>
+
+        <!-- ── Motif annulation ── -->
+        <ng-container *ngIf="selectedSession.statut === 'annulee' && selectedSession.motif_annulation">
+          <div class="sd-section-label" style="color:#dc2626;"><i class="isax isax-warning-2"></i> Motif d'annulation</div>
+          <div class="sd-text-box sd-text-box--danger">{{ selectedSession.motif_annulation }}</div>
+        </ng-container>
+
+      </div><!-- /sd-body -->
+
+      <div class="sd-foot">
+        <button type="button" class="sd-btn-ghost" data-bs-dismiss="modal">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+</div>

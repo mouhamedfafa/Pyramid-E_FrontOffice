@@ -1,0 +1,207 @@
+<div class="tk-page">
+
+  <!-- HEADER -->
+  <div class="tk-header">
+    <div>
+      <div class="tk-header__title">Tickets support</div>
+      <div class="tk-header__sub">Incidents et demandes de votre entreprise</div>
+    </div>
+    <button type="button" class="tk-new-btn" (click)="toggleCreateForm()">
+      <i class="isax isax-add-circle"></i>
+      {{ showCreateForm ? 'Annuler' : 'Nouveau ticket' }}
+    </button>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi__icon ki-total"><i class="isax isax-ticket"></i></div>
+      <div><div class="kpi__val">{{ stats.total }}</div><div class="kpi__lbl">Total</div></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__icon ki-open"><i class="isax isax-record-circle"></i></div>
+      <div><div class="kpi__val">{{ stats.ouvert }}</div><div class="kpi__lbl">En cours</div></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__icon ki-done"><i class="isax isax-tick-circle"></i></div>
+      <div><div class="kpi__val">{{ stats.resolu }}</div><div class="kpi__lbl">Résolus</div></div>
+    </div>
+  </div>
+
+  <!-- CREATE FORM -->
+  <div class="tk-form-card" *ngIf="showCreateForm">
+    <div class="tk-form-card__title">Créer un nouveau ticket</div>
+    <div class="tk-form-err" *ngIf="submitError">{{ submitError }}</div>
+
+    <div class="form-row">
+      <div class="form-group full">
+        <label class="form-label">Sujet <span class="req">*</span></label>
+        <input type="text" class="form-input" placeholder="Résumez votre problème…"
+               [(ngModel)]="newTicket.sujet">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Catégorie</label>
+        <select class="form-select" [(ngModel)]="newTicket.categorie">
+          <option value="technique">Technique</option>
+          <option value="formation">Formation</option>
+          <option value="facturation">Facturation</option>
+          <option value="compte">Compte</option>
+          <option value="acces">Accès</option>
+          <option value="bug">Bug</option>
+          <option value="amelioration">Amélioration</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priorité</label>
+        <select class="form-select" [(ngModel)]="newTicket.priorite">
+          <option value="basse">Basse</option>
+          <option value="moyenne">Moyenne</option>
+          <option value="haute">Haute</option>
+          <option value="critique">Critique</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select" [(ngModel)]="newTicket.type">
+          <option value="incident">Incident</option>
+          <option value="demande">Demande</option>
+          <option value="question">Question</option>
+          <option value="reclamation">Réclamation</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label class="form-label">Description <span class="req">*</span></label>
+        <textarea class="form-textarea" rows="4"
+                  placeholder="Décrivez le problème en détail…"
+                  [(ngModel)]="newTicket.description"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="act-btn" (click)="toggleCreateForm()">Annuler</button>
+      <button type="button" class="act-btn primary" [disabled]="submitting"
+              (click)="soumettre()">
+        {{ submitting ? 'Envoi…' : 'Soumettre le ticket' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="tk-content" [class.with-detail]="selectedTicket">
+
+    <!-- LIST -->
+    <div class="tk-list-wrap">
+      <div class="tk-toolbar">
+        <input type="text" class="tk-search" placeholder="Rechercher…"
+               [(ngModel)]="searchQuery" (ngModelChange)="onSearch()">
+        <select class="tk-select" [(ngModel)]="filterStatut" (change)="applyFilter()">
+          <option value="">Tous statuts</option>
+          <option value="ouvert">Ouvert</option>
+          <option value="en_cours">En cours</option>
+          <option value="en_attente">En attente</option>
+          <option value="resolu">Résolu</option>
+          <option value="ferme">Fermé</option>
+        </select>
+      </div>
+
+      <div class="tk-list">
+        <div *ngIf="loading" class="tk-loader">Chargement…</div>
+        <div *ngIf="!loading && tickets.length === 0" class="tk-empty">
+          <i class="isax isax-ticket"></i>
+          <span>Aucun ticket trouvé.</span>
+        </div>
+        <div *ngFor="let t of tickets"
+             class="tk-item"
+             [class.selected]="selectedTicket?.id === t.id"
+             (click)="selectTicket(t)">
+          <div class="tk-av">{{ getInitials(t.createur?.name) }}</div>
+          <div class="tk-info">
+            <div class="tk-ref">{{ t.reference }}</div>
+            <div class="tk-subj">{{ t.sujet }}</div>
+            <div class="tk-badges">
+              <span class="badge" [ngClass]="getSClass(t.statut)">{{ getSLabel(t.statut) }}</span>
+              <span class="badge" [ngClass]="getPClass(t.priorite)">{{ getPLabel(t.priorite) }}</span>
+            </div>
+            <div class="tk-meta">
+              <span>{{ t.categorie }}</span>
+              <span>· {{ t.nombre_reponses }} rép.</span>
+              <span>· {{ t.created_at | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="tk-pagination" *ngIf="totalPages > 1">
+        <span class="pg-info">{{ totalItems }} ticket{{ totalItems > 1 ? 's' : '' }}</span>
+        <div class="pg-controls">
+          <button type="button" class="pg-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            <i class="isax isax-arrow-left-2"></i>
+          </button>
+          <button type="button" class="pg-btn" *ngFor="let p of pageNumbers"
+                  [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+          <button type="button" class="pg-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            <i class="isax isax-arrow-right-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="tk-detail-wrap" *ngIf="selectedTicket">
+      <div class="tk-detail">
+        <div class="tk-detail__head">
+          <div class="detail-info">
+            <div class="detail-title">{{ selectedTicket.sujet }}</div>
+            <div class="detail-ref">{{ selectedTicket.reference }}</div>
+            <div class="detail-badges">
+              <span class="badge" [ngClass]="getSClass(selectedTicket.statut)">{{ getSLabel(selectedTicket.statut) }}</span>
+              <span class="badge" [ngClass]="getPClass(selectedTicket.priorite)">{{ getPLabel(selectedTicket.priorite) }}</span>
+            </div>
+          </div>
+          <button type="button" class="act-btn" (click)="closeDetail()">
+            <i class="isax isax-close-circle"></i>
+          </button>
+        </div>
+
+        <div class="tk-detail__body">
+          <div class="detail-meta">
+            <span><b>Agent:</b> {{ selectedTicket.agent_assigne?.name || 'Non assigné' }}</span>
+            <span><b>Catégorie:</b> {{ selectedTicket.categorie }}</span>
+            <span><b>Créé le:</b> {{ selectedTicket.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="tk-detail__desc">{{ selectedTicket.description }}</div>
+
+          <div class="tk-detail__thread-title">Conversation ({{ selectedTicket.nombre_reponses || 0 }})</div>
+          <div class="tk-detail__thread">
+            <div *ngFor="let m of (selectedTicket.messages || [])" class="msg">
+              <div class="msg__av">{{ getInitials(m.auteur?.name) }}</div>
+              <div class="msg__bubble">
+                <div class="msg__author">{{ m.auteur?.name }}</div>
+                <div class="msg__text">{{ m.contenu }}</div>
+                <div class="msg__time">{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+              </div>
+            </div>
+            <div *ngIf="!(selectedTicket.messages?.length)" class="msg-empty">Aucun message pour l'instant.</div>
+          </div>
+        </div>
+
+        <div class="tk-detail__reply">
+          <textarea class="tk-detail__reply-input" rows="2"
+                    placeholder="Répondre…"
+                    [(ngModel)]="newMessage"></textarea>
+          <button type="button" class="send-btn"
+                  [disabled]="sendingMessage || !newMessage.trim()"
+                  (click)="envoyerMessage()">
+            <i class="isax isax-send-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

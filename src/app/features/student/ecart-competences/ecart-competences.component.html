@@ -1,0 +1,223 @@
+<div class="qq-loading" *ngIf="loading">
+  <div class="qq-loading__ring">
+    <div></div><div></div><div></div><div></div>
+  </div>
+  <p>Analyse de votre écart de compétences...</p>
+</div>
+
+<div class="cp-error" *ngIf="error && !loading">
+  <i class="isax isax-warning-2"></i>
+  <p>{{ error }}</p>
+  <button class="cp-btn cp-btn--primary" (click)="load()">
+    <i class="isax isax-refresh me-2"></i>Réessayer
+  </button>
+</div>
+
+<ng-container *ngIf="!loading && !error && data">
+  <div class="cp-header mb-4">
+    <h3 class="cp-header__title">
+      <i class="isax isax-chart-2 me-2" style="color:#ea580c"></i>
+      Écart de compétences
+    </h3>
+    <p class="cp-header__sub">
+      Compétences visées dans vos formations assignées / demandées,
+      que vous n’avez pas encore acquises.
+    </p>
+  </div>
+
+  <div class="cp-stats mb-4">
+    <div class="cp-stat-main">
+      <div class="cp-stat-main__circle">
+        <svg viewBox="0 0 100 100" class="cp-circle-svg">
+          <circle class="cp-circle-track" cx="50" cy="50" r="42" stroke-width="8"></circle>
+          <circle class="cp-circle-fill cp-circle-fill--orange"
+                  cx="50" cy="50" r="42" stroke-width="8"
+                  stroke-dasharray="263.9"
+                  [attr.stroke-dashoffset]="263.9 * (1 - tauxProgression / 100)">
+          </circle>
+        </svg>
+        <div class="cp-stat-main__value">{{ tauxProgression }}%</div>
+      </div>
+
+      <div class="cp-stat-main__info">
+        <div class="cp-stat-main__label">Taux de complétion</div>
+        <div class="cp-stat-main__sub">
+          {{ data.total_acquises }} compétence(s) acquise(s)<br>
+          sur {{ data.total_acquises + data.total_ecart }} visée(s) au total
+        </div>
+      </div>
+    </div>
+
+    <div class="cp-stat-cards">
+      <div class="cp-stat-card cp-stat-card--green">
+        <i class="isax isax-tick-circle"></i>
+        <div>
+          <div class="cp-stat-card__value">{{ data.total_acquises }}</div>
+          <div class="cp-stat-card__label">Acquises</div>
+        </div>
+      </div>
+
+      <div class="cp-stat-card cp-stat-card--orange">
+        <i class="isax isax-danger"></i>
+        <div>
+          <div class="cp-stat-card__value">{{ data.total_ecart }}</div>
+          <div class="cp-stat-card__label">À acquérir</div>
+        </div>
+      </div>
+
+      <div class="cp-stat-card cp-stat-card--indigo">
+        <i class="isax isax-teacher"></i>
+        <div>
+          <div class="cp-stat-card__value">{{ competencesEcart.length }}</div>
+          <div class="cp-stat-card__label">Compétences</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cp-toolbar mb-4">
+    <div class="cp-search">
+      <i class="isax isax-search-normal-1"></i>
+      <input type="text"
+             placeholder="Rechercher une compétence ou une formation..."
+             [value]="recherche"
+             (input)="onRecherche($event)"
+             class="cp-search__input">
+    </div>
+
+    <div class="cp-search-hint" *ngIf="recherche">
+      {{ competencesFiltrees.length }} résultat(s) pour « {{ recherche }} »
+    </div>
+  </div>
+
+  <div class="cp-results-card" *ngIf="hasCompetences; else emptyState">
+    <div class="cp-results-card__top">
+      <h5 class="cp-results-card__title">Liste des compétences à acquérir</h5>
+
+      <div class="cp-results-actions">
+        <span class="cp-results-count">{{ displayedCount }} affichée(s)</span>
+
+        <div class="cp-view-toggle">
+          <button type="button"
+                  class="cp-view-toggle__btn"
+                  [class.cp-view-toggle__btn--active]="viewMode === 'grid'"
+                  (click)="setViewMode('grid')">
+            <i class="isax isax-grid-2"></i>
+          </button>
+
+          <button type="button"
+                  class="cp-view-toggle__btn"
+                  [class.cp-view-toggle__btn--active]="viewMode === 'list'"
+                  (click)="setViewMode('list')">
+            <i class="isax isax-row-vertical"></i>
+          </button>
+        </div>
+
+        <span class="cp-page-size">{{ pageSize }} par page</span>
+      </div>
+    </div>
+
+    <div class="cp-competence-list" *ngIf="viewMode === 'grid'">
+      <div class="cp-competence-card"
+           *ngFor="let competence of competencesPage; trackBy: trackByCompetence">
+        <div class="cp-competence-card__header">
+          <div class="cp-competence-card__icon">
+            <i class="isax isax-clock"></i>
+          </div>
+
+          <div class="cp-competence-card__title">{{ competence.nom }}</div>
+
+          <span class="cp-competence-card__count">
+            {{ competence.formations.length }} formation(s)
+          </span>
+        </div>
+
+        <div class="cp-formation-list" *ngIf="competence.formations.length">
+          <div class="cp-formation-chip"
+               *ngFor="let formation of competence.formations; trackBy: trackByFormation">
+            <i class="isax isax-book-1"></i>
+            <span>{{ formation.formation_titre }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cp-table-wrap" *ngIf="viewMode === 'list'">
+      <table class="cp-table">
+        <thead>
+          <tr>
+            <th>Compétence</th>
+            <th>Formations concernées</th>
+            <th>Nombre</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let competence of competencesPage; trackBy: trackByCompetence">
+            <td>
+              <div class="cp-table-skill">
+                <span class="cp-table-skill__icon">
+                  <i class="isax isax-clock"></i>
+                </span>
+                <strong>{{ competence.nom }}</strong>
+              </div>
+            </td>
+
+            <td>
+              <div class="cp-table-formations">
+                <span *ngFor="let formation of competence.formations; trackBy: trackByFormation">
+                  {{ formation.formation_titre }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <span class="cp-pill">{{ competence.formations.length }}</span>
+            </td>
+
+            <td>
+              <span class="cp-status">
+                <i class="isax isax-danger"></i>
+                À acquérir
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cp-pagination">
+      <div class="cp-pagination__label">
+        Page {{ currentPage }} sur {{ totalPages }}
+      </div>
+
+      <div class="cp-pagination__actions">
+        <button type="button"
+                class="cp-pagination__btn"
+                [disabled]="currentPage === 1"
+                (click)="prevPage()">
+          <i class="isax isax-arrow-left-2"></i>
+        </button>
+
+        <button type="button"
+                class="cp-pagination__btn"
+                [disabled]="currentPage === totalPages"
+                (click)="nextPage()">
+          <i class="isax isax-arrow-right-3"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="cp-empty">
+      <i class="isax isax-tick-circle cp-empty__icon" style="color:#16a34a"></i>
+      <h6>Aucun écart de compétences !</h6>
+      <p *ngIf="recherche">Aucun résultat pour « {{ recherche }} »</p>
+      <p *ngIf="!recherche">
+        Vous avez acquis toutes les compétences visées dans vos formations assignées.
+      </p>
+    </div>
+  </ng-template>
+</ng-container>

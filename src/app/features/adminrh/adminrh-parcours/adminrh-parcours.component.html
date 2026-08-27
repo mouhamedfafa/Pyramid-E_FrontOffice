@@ -1,0 +1,598 @@
+<div class="ac-shell">
+
+  <!-- ── Topbar ── -->
+  <div class="ac-topbar">
+    <span class="ac-tab active">
+      <i class="isax isax-route-square"></i>Parcours ({{ totalItems }})
+    </span>
+    <span class="ac-spacer"></span>
+    <button *appHasPermission="'creer parcours'" type="button" class="ac-add-btn" (click)="openParcoursModal()">
+      <i class="isax isax-add"></i>Nouveau parcours
+    </button>
+  </div>
+
+  <!-- ── KPI ── -->
+  <div class="ac-kpi-row">
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-route-square"></i>Total</div>
+      <div class="ac-kpi__val">{{ totalItems }}</div>
+      <div class="ac-kpi__delta neutral">parcours</div>
+    </div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-tick-circle"></i>Actifs</div>
+      <div class="ac-kpi__val">{{ getParcoursActifs() }}</div>
+      <div class="ac-kpi__delta up">en cours</div>
+    </div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-close-circle"></i>Inactifs</div>
+      <div class="ac-kpi__val">{{ getParcoursInactifs() }}</div>
+      <div class="ac-kpi__delta neutral">désactivés</div>
+    </div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-book-1"></i>Formations dispo</div>
+      <div class="ac-kpi__val">{{ formations.length }}</div>
+      <div class="ac-kpi__delta neutral">cataloguées</div>
+    </div>
+  </div>
+
+
+
+  <!-- ── Toolbar ── -->
+  <div class="ac-toolbar">
+    <div class="ac-search">
+      <i class="isax isax-search-normal-1 ac-search__icon"></i>
+      <input class="ac-search__input" type="search" [(ngModel)]="searchTerm" placeholder="Rechercher un parcours…">
+    </div>
+    <button type="button" class="ac-chip" [class.ac-chip--on]="selectedNiveau === ''"
+            (click)="selectedNiveau = ''">Tous niveaux</button>
+    <button type="button" class="ac-chip" *ngFor="let n of niveaux"
+            [class.ac-chip--on]="selectedNiveau === n.value"
+            (click)="selectedNiveau = n.value">{{ n.label }}</button>
+    <div class="ac-view-group" style="margin-left:8px;">
+      <button type="button" class="ac-view-toggle" [class.active]="selectedStatut === ''"
+              (click)="selectedStatut = ''">Tous</button>
+      <button type="button" class="ac-view-toggle" [class.active]="selectedStatut === 'actif'"
+              (click)="selectedStatut = 'actif'">Actifs</button>
+      <button type="button" class="ac-view-toggle" [class.active]="selectedStatut === 'inactif'"
+              (click)="selectedStatut = 'inactif'">Inactifs</button>
+    </div>
+    <button type="button" class="ac-chip" (click)="clearFilters()"
+            *ngIf="searchTerm || selectedNiveau || selectedStatut">
+      <i class="isax isax-close-circle"></i>Effacer
+    </button>
+    <span class="ac-spacer"></span>
+  </div>
+
+  <!-- ── Alerts ── -->
+  <div class="ac-alert" style="color:#27500a;background:#eaf3de;border-color:#97c459;" *ngIf="success">
+    <i class="isax isax-tick-circle"></i>{{ success }}
+    <button type="button" class="ac-alert-close" (click)="success=''"><i class="isax isax-close-circle"></i></button>
+  </div>
+  <div class="ac-alert" *ngIf="error && !saving">
+    <i class="isax isax-warning-2"></i>{{ error }}
+    <button type="button" class="ac-alert-close" (click)="error=''"><i class="isax isax-close-circle"></i></button>
+  </div>
+
+  <!-- ── Skeleton ── -->
+  <div *ngIf="loading" class="ac-skeletons">
+    <div *ngFor="let i of [1,2,3,4,5,6]" class="ac-skeleton-card"></div>
+  </div>
+
+  <!-- ── Card grid ── -->
+  <ng-container *ngIf="!loading">
+    <div class="ac-card-grid" *ngIf="filteredParcours.length > 0">
+      <div *ngFor="let p of filteredParcours; trackBy: trackByParcoursId" class="ac-fcard">
+
+        <!-- Thumb -->
+        <div class="ac-fcard__thumb" [attr.data-th]="p.actif ? 'blue' : 'amber'">
+          <img *ngIf="p.image_url" [src]="p.image_url" [alt]="p.nom" class="ac-fcard__img">
+          <i *ngIf="!p.image_url" class="isax isax-route-square"></i>
+        </div>
+
+        <!-- Body -->
+        <div class="ac-fcard__body">
+          <div class="ac-fcard__cat"
+               [attr.data-cat]="p.niveau === 'expert' ? 'purple' : p.niveau === 'avance' ? 'blue' : p.niveau === 'intermediaire' ? 'teal' : 'default'">
+            {{ getNiveauLabel(p.niveau) }}
+          </div>
+          <div class="ac-fcard__title">{{ p.nom }}</div>
+          <div class="ac-fcard__meta">
+            <span><i class="isax isax-clock"></i> {{ p.duree_estimee }}h</span>
+            <span><i class="isax isax-book-1"></i> {{ p.formations.length }} formations</span>
+            <span><i class="isax isax-people"></i> {{ p.users.length }} inscrits</span>
+          </div>
+          <div class="ac-fcard__meta" style="margin-top:3px;" *ngIf="p.prix && p.prix !== '0'">
+            <span><i class="isax isax-wallet"></i> {{ p.prix }} XOF</span>
+            <span *ngIf="getFormationsObligatoires(p.formations).length > 0">
+              <i class="isax isax-warning-2"></i> {{ getFormationsObligatoires(p.formations).length }} oblig.
+            </span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="ac-fcard__footer">
+          <span class="ac-status" [attr.data-s]="p.actif ? 'pub' : 'draft'">
+            {{ p.actif ? 'Actif' : 'Inactif' }}
+          </span>
+          <div class="ac-fcard__actions" style="margin-left:auto;">
+            <button type="button" class="ac-act ac-act--people" title="Participants" (click)="openParticipants(p)">
+              <i class="isax isax-people"></i>
+            </button>
+            <button type="button" class="ac-act" title="Voir" (click)="viewParcours(p)">
+              <i class="isax isax-eye"></i>
+            </button>
+            <button type="button" class="ac-act" title="Modifier" (click)="editParcours(p)">
+              <i class="isax isax-edit-2"></i>
+            </button>
+            <button type="button" class="ac-act ac-act--arch" title="Archiver" (click)="archiveParcours(p)">
+              <i class="isax isax-archive"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div class="ac-empty ac-empty--span" *ngIf="filteredParcours.length === 0">
+      <i class="isax isax-route-square"></i>
+      <p>{{ parcours.length === 0 ? 'Aucun parcours créé' : 'Aucun résultat pour ces filtres' }}</p>
+      <ng-container *appHasPermission="'creer parcours'">
+        <button type="button" class="ac-add-btn" style="margin-top:10px;"
+                (click)="openParcoursModal()" *ngIf="parcours.length === 0">
+          <i class="isax isax-add"></i>Créer un parcours
+        </button>
+      </ng-container>
+      <button type="button" class="ac-chip" style="margin-top:10px;"
+              (click)="clearFilters()" *ngIf="parcours.length > 0">
+        <i class="isax isax-refresh"></i>Effacer les filtres
+      </button>
+    </div>
+
+    <!-- Pagination -->
+    <div class="ac-pager" *ngIf="totalPages > 1">
+      <span class="ac-pager__info">{{ getPaginationStart() }}–{{ getPaginationEnd() }} sur {{ totalItems }} parcours</span>
+      <div class="ac-pager__btns">
+        <button type="button" class="ac-pager__btn" [disabled]="currentPage === 1"
+                (click)="onPageChange(currentPage - 1)">
+          <i class="isax isax-arrow-left-3"></i>
+        </button>
+        <button type="button" class="ac-pager__btn" *ngFor="let pg of pages"
+                [class.active]="pg === currentPage" (click)="onPageChange(pg)">{{ pg }}</button>
+        <button type="button" class="ac-pager__btn" [disabled]="currentPage === totalPages"
+                (click)="onPageChange(currentPage + 1)">
+          <i class="isax isax-arrow-right-3"></i>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+</div><!-- /ac-shell -->
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL CRÉATION / MODIFICATION
+════════════════════════════════════════════════ -->
+<div class="modal fade" id="parcoursModal" tabindex="-1">
+  <div class="modal-dialog modal-lg" style="max-width:640px;">
+    <div class="wz-modal modal-content">
+
+      <div class="wz-head">
+        <div class="wz-head__icon"><i class="isax isax-route-square"></i></div>
+        <div class="wz-head__text">
+          <div class="wz-head__title">{{ editMode ? 'Modifier le parcours' : 'Nouveau parcours' }}</div>
+          <div class="wz-head__sub">{{ editMode ? 'Mettez à jour les informations' : 'Renseignez les informations du parcours' }}</div>
+        </div>
+        <button type="button" class="wz-close" data-bs-dismiss="modal"><i class="isax isax-close-circle"></i></button>
+      </div>
+
+      <form [formGroup]="parcoursForm" (ngSubmit)="onSubmit()" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
+        <div class="wz-body">
+
+          <div class="wz-field">
+            <label class="wz-label">Nom du parcours <span class="wz-req">*</span></label>
+            <input type="text" class="wz-input" formControlName="nom" placeholder="Ex: Développement Web Full Stack">
+            <span class="wz-hint" *ngIf="parcoursForm.get('nom')?.invalid && parcoursForm.get('nom')?.touched">
+              Nom requis (min. 3 caractères)
+            </span>
+          </div>
+
+          <div class="wz-field">
+            <label class="wz-label">Description</label>
+            <textarea class="wz-input wz-textarea" formControlName="description" placeholder="Description détaillée du parcours"></textarea>
+          </div>
+
+          <div class="wz-row">
+            <div class="wz-field" style="margin-bottom:0;">
+              <label class="wz-label">Niveau</label>
+              <select class="wz-input" title="Niveau du parcours" formControlName="niveau">
+                <option *ngFor="let n of niveaux" [value]="n.value">{{ n.label }}</option>
+              </select>
+            </div>
+            <div class="wz-field" style="margin-bottom:0;">
+              <label class="wz-label">Durée estimée (heures)</label>
+              <input type="number" class="wz-input" formControlName="duree_estimee" min="0">
+            </div>
+          </div>
+
+          <div class="wz-row" style="margin-top:12px;">
+            <div class="wz-field" style="margin-bottom:0;">
+              <label class="wz-label">Coût (XOF)</label>
+              <input type="number" class="wz-input" formControlName="prix" min="0" step="0.01">
+            </div>
+            <div class="wz-field" style="margin-bottom:0;">
+              <label class="wz-label">Image URL</label>
+              <input type="url" class="wz-input" formControlName="image_url" placeholder="https://…">
+            </div>
+          </div>
+
+          <div class="wz-toggle-row" style="margin-top:12px;">
+            <div>
+              <div class="wz-toggle-title">Parcours actif</div>
+              <div class="wz-toggle-sub">Rendre ce parcours disponible aux employés</div>
+            </div>
+            <div class="wz-toggle" [class.on]="parcoursForm.get('actif')?.value"
+                 (click)="parcoursForm.get('actif')?.setValue(!parcoursForm.get('actif')?.value)"></div>
+          </div>
+
+          <!-- Objectifs -->
+          <div style="margin-top:18px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span class="wz-label">Objectifs du parcours</span>
+              <button type="button" class="ac-add-btn" style="padding:4px 10px;font-size:11px;" (click)="addObjectif()">
+                <i class="isax isax-add"></i>Ajouter
+              </button>
+            </div>
+            <div formArrayName="objectifs">
+              <div *ngFor="let obj of objectifs.controls; let i = index" [formGroupName]="i"
+                   style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:12px;color:#9ca3af;min-width:20px;text-align:right;">{{ i+1 }}.</span>
+                <input type="text" class="wz-input" formControlName="value" style="flex:1;"
+                       placeholder="Décrivez un objectif…">
+                <button type="button" class="ac-act ac-act--del" (click)="removeObjectif(i)"
+                        [disabled]="objectifsLength === 1">
+                  <i class="isax isax-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prérequis -->
+          <div style="margin-top:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span class="wz-label">Prérequis</span>
+              <button type="button" class="ac-add-btn" style="padding:4px 10px;font-size:11px;" (click)="addPrerequis()">
+                <i class="isax isax-add"></i>Ajouter
+              </button>
+            </div>
+            <div formArrayName="prerequis">
+              <div *ngFor="let pre of prerequis.controls; let i = index" [formGroupName]="i"
+                   style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:12px;color:#9ca3af;min-width:20px;text-align:right;">{{ i+1 }}.</span>
+                <input type="text" class="wz-input" formControlName="value" style="flex:1;"
+                       placeholder="Décrivez un prérequis…">
+                <button type="button" class="ac-act ac-act--del" (click)="removePrerequis(i)"
+                        [disabled]="prerequisLength === 1">
+                  <i class="isax isax-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Formations du parcours ── -->
+          <div style="margin-top:18px;">
+            <div class="wz-label" style="margin-bottom:8px;">
+              Formations du parcours <span class="wz-req">*</span>
+              <span *ngIf="selectedFormations.length > 0" style="font-weight:400;color:#185fa5;margin-left:4px;">({{ selectedFormations.length }} sélectionnée{{ selectedFormations.length > 1 ? 's' : '' }})</span>
+            </div>
+
+            <!-- Chips sélectionnées -->
+            <div class="cw-pool-chips" *ngIf="selectedFormations.length > 0">
+              <span class="cw-pool-chip" *ngFor="let f of selectedFormations">
+                {{ f.titre }}
+                <button type="button" (click)="removeSelectedFormation(f.id)">
+                  <i class="isax isax-close-circle"></i>
+                </button>
+              </span>
+            </div>
+
+            <!-- Pool -->
+            <div class="cw-pool">
+              <div class="cw-pool__search">
+                <i class="isax isax-search-normal-1"></i>
+                <input type="search" [(ngModel)]="formationsSearchTerm" placeholder="Rechercher une formation…">
+              </div>
+              <div class="cw-pool__list" style="max-height:200px;">
+                <div *ngIf="loadingFormations" class="cw-pool__empty">Chargement…</div>
+                <div *ngFor="let f of filteredFormationsPool"
+                     class="cw-pool__item" [class.checked]="isFormationSelected(f.id)"
+                     (click)="toggleFormation(f.id)">
+                  <div class="cw-pool__check" [class.on]="isFormationSelected(f.id)">
+                    <i class="isax isax-tick" *ngIf="isFormationSelected(f.id)"></i>
+                  </div>
+                  <div class="cw-pool__info">
+                    <div class="cw-pool__name">{{ f.titre }}</div>
+                    <div class="cw-pool__meta">
+                      {{ f.categorie?.nom || f.type || '—' }}{{ f.duree_totale ? ' · ' + f.duree_totale + 'h' : '' }}
+                      <span *ngIf="f.niveau"> · {{ f.niveau }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="cw-pool__empty" *ngIf="!loadingFormations && filteredFormationsPool.length === 0">
+                  Aucune formation disponible
+                </div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#9ca3af;">
+              L'ordre des formations définit la séquence du parcours.
+            </div>
+          </div>
+
+          <div class="wz-error" *ngIf="error && saving">
+            <i class="isax isax-warning-2"></i>{{ error }}
+          </div>
+
+        </div>
+
+        <div class="wz-foot">
+          <span class="wz-foot__info">{{ editMode ? 'Modification' : 'Création' }} en cours</span>
+          <button type="button" class="wz-btn-ghost" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="wz-btn-primary" [disabled]="parcoursForm.invalid || saving || selectedFormationIds.size === 0">
+            <span *ngIf="saving" class="wz-spinner"></span>
+            {{ editMode ? 'Modifier' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL DÉTAILS
+════════════════════════════════════════════════ -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" style="max-width:680px;">
+    <div class="wz-modal modal-content">
+      <ng-container *ngIf="selectedParcours">
+        <div class="wz-head">
+          <div class="wz-head__icon" style="background:#e1f5ee;color:#0f6e56;"><i class="isax isax-eye"></i></div>
+          <div class="wz-head__text">
+            <div class="wz-head__title">{{ selectedParcours.nom }}</div>
+            <div class="wz-head__sub">Détails du parcours</div>
+          </div>
+          <button type="button" class="wz-close" data-bs-dismiss="modal"><i class="isax isax-close-circle"></i></button>
+        </div>
+
+        <div class="wz-body">
+          <div class="wz-recap-card">
+            <div class="wz-recap-title">Informations</div>
+            <div class="wz-recap-row"><span class="wz-rl">Niveau</span><span class="wz-rv">{{ getNiveauLabel(selectedParcours.niveau) }}</span></div>
+            <div class="wz-recap-row"><span class="wz-rl">Durée estimée</span><span class="wz-rv">{{ selectedParcours.duree_estimee }}h</span></div>
+            <div class="wz-recap-row"><span class="wz-rl">Durée totale formations</span><span class="wz-rv">{{ getTotalDuration(selectedParcours.formations) }}h</span></div>
+            <div class="wz-recap-row"><span class="wz-rl">Coût</span><span class="wz-rv">{{ selectedParcours.prix }} XOF</span></div>
+            <div class="wz-recap-row"><span class="wz-rl">Formations incluses</span><span class="wz-rv">{{ selectedParcours.formations.length }} ({{ getFormationsObligatoires(selectedParcours.formations).length }} oblig.)</span></div>
+            <div class="wz-recap-row"><span class="wz-rl">Inscrits</span><span class="wz-rv">{{ selectedParcours.users.length }}</span></div>
+            <div class="wz-recap-row"><span class="wz-rl">Statut</span>
+              <span class="wz-rv">
+                <span class="ac-status" [attr.data-s]="selectedParcours.actif ? 'pub' : 'draft'">
+                  {{ selectedParcours.actif ? 'Actif' : 'Inactif' }}
+                </span>
+              </span>
+            </div>
+            <div class="wz-recap-row"><span class="wz-rl">Créé le</span><span class="wz-rv">{{ formatDate(selectedParcours.created_at) }}</span></div>
+          </div>
+
+          <div class="wz-field">
+            <label class="wz-label">Description</label>
+            <div class="wz-desc-box">{{ selectedParcours.description }}</div>
+          </div>
+
+          <div class="wz-field" *ngIf="selectedParcours.objectifs.length > 0">
+            <label class="wz-label">Objectifs ({{ selectedParcours.objectifs.length }})</label>
+            <div class="wz-list">
+              <div class="wz-list-item" *ngFor="let obj of selectedParcours.objectifs">
+                <i class="isax isax-tick-circle" style="color:#0f6e56;"></i>{{ obj }}
+              </div>
+            </div>
+          </div>
+
+          <div class="wz-field" *ngIf="selectedParcours.prerequis.length > 0">
+            <label class="wz-label">Prérequis ({{ selectedParcours.prerequis.length }})</label>
+            <div class="wz-list">
+              <div class="wz-list-item" *ngFor="let pre of selectedParcours.prerequis">
+                <i class="isax isax-info-circle" style="color:#185fa5;"></i>{{ pre }}
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="selectedParcours.formations.length > 0">
+            <div class="wz-section-label">Formations du parcours ({{ selectedParcours.formations.length }})</div>
+            <div class="ac-card-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+              <div *ngFor="let f of selectedParcours.formations; trackBy: trackByFormationId"
+                   class="ac-fcard" style="min-height:auto;">
+                <div class="ac-fcard__body" style="padding:10px 12px;">
+                  <div class="ac-fcard__cat" data-cat="default">
+                    {{ f.pivot?.ordre ? 'Étape ' + f.pivot?.ordre : '—' }}
+                    <span *ngIf="f.pivot?.obligatoire" style="margin-left:4px;color:#e78a0e;">★</span>
+                  </div>
+                  <div class="ac-fcard__title" style="font-size:12px;">{{ f.titre }}</div>
+                  <div class="ac-fcard__meta">
+                    <span><i class="isax isax-clock"></i> {{ f.duree_totale }}h</span>
+                    <span class="ac-status" style="font-size:9px;" [attr.data-s]="f.est_publie ? 'pub' : 'draft'">
+                      {{ f.est_publie ? 'Publié' : 'Brouillon' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wz-foot">
+          <button type="button" class="wz-btn-ghost" data-bs-dismiss="modal">Fermer</button>
+          <button type="button" class="wz-btn-primary" (click)="editParcours(selectedParcours!)" data-bs-dismiss="modal">
+            <i class="isax isax-edit-2"></i>Modifier
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     MODAL PARTICIPANTS
+════════════════════════════════════════════ -->
+<div class="pm-overlay" *ngIf="participantsModalOpen" (click)="closeParticipants()">
+  <div class="pm-modal" (click)="$event.stopPropagation()">
+
+    <!-- Head -->
+    <div class="pm-head">
+      <div class="pm-head__icon"><i class="isax isax-people"></i></div>
+      <div class="pm-head__text">
+        <div class="pm-head__title">{{ selectedParcoursForParticipants?.nom }}</div>
+        <div class="pm-head__sub">{{ participants.length }} participant(s) inscrit(s)</div>
+      </div>
+      <button type="button" class="pm-close" (click)="closeParticipants()">
+        <i class="isax isax-close-circle"></i>
+      </button>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="inscriptionSuccess" class="pm-alert pm-alert--ok">
+      <i class="isax isax-tick-circle"></i> {{ inscriptionSuccess }}
+    </div>
+    <div *ngIf="inscriptionError" class="pm-alert pm-alert--err">
+      <i class="isax isax-warning-2"></i> {{ inscriptionError }}
+    </div>
+
+    <div class="pm-body">
+
+      <!-- Colonne gauche : inscrits -->
+      <div class="pm-col">
+        <div class="pm-col__header">
+          <span class="pm-col__title"><i class="isax isax-tick-circle"></i> Inscrits</span>
+          <div class="pm-search">
+            <i class="isax isax-search-normal-1"></i>
+            <input type="search" placeholder="Rechercher..."
+                   [(ngModel)]="participantsSearch" [ngModelOptions]="{standalone:true}">
+          </div>
+        </div>
+
+        <div *ngIf="participantsLoading" class="pm-loading">
+          <span class="pm-spin"></span> Chargement...
+        </div>
+
+        <div *ngIf="!participantsLoading && !participantsFiltered.length" class="pm-empty">
+          <i class="isax isax-people"></i>
+          <p>Aucun participant</p>
+        </div>
+
+        <div class="pm-list" *ngIf="!participantsLoading && participantsFiltered.length">
+          <div *ngFor="let p of participantsFiltered; trackBy: trackByUserId" class="pm-user-row">
+            <div class="pm-user-av">{{ ((p.prenom || p.nom || p.name || p.email || '?').charAt(0)).toUpperCase() }}</div>
+            <div class="pm-user-info">
+              <div class="pm-user-name">{{ (p.prenom && p.nom) ? (p.prenom + ' ' + p.nom) : (p.name || p.nom || '—') }}</div>
+              <div class="pm-user-email">{{ p.email }}</div>
+            </div>
+            <ng-container *appHasPermission="'modifier parcours'">
+              <button type="button" class="pm-unenroll-btn"
+                      [disabled]="inscriptionPending" (click)="desinscrireUser(p)">
+                <span *ngIf="inscriptionPending" class="pm-spin pm-spin--sm"></span>
+                <i *ngIf="!inscriptionPending" class="isax isax-user-remove"></i>
+                Retirer
+              </button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <div class="pm-divider"></div>
+
+      <!-- Colonne droite : à inscrire -->
+      <div class="pm-col">
+        <div class="pm-col__header">
+          <span class="pm-col__title"><i class="isax isax-user-add"></i> Inscrire un employé</span>
+          <div class="pm-search">
+            <i class="isax isax-search-normal-1"></i>
+            <input type="search" placeholder="Rechercher..."
+                   [(ngModel)]="usersSearch" [ngModelOptions]="{standalone:true}"
+                   (ngModelChange)="applyUsersFilter()">
+          </div>
+        </div>
+
+        <div *ngIf="usersLoading" class="pm-loading">
+          <span class="pm-spin"></span> Chargement...
+        </div>
+
+        <div *ngIf="!usersLoading && !availableUsersFiltered.length" class="pm-empty">
+          <i class="isax isax-user-add"></i>
+          <p>Tous les employés sont déjà inscrits</p>
+        </div>
+
+        <div class="pm-list" *ngIf="!usersLoading && availableUsersFiltered.length">
+          <div *ngFor="let u of availableUsersFiltered; trackBy: trackByUserId" class="pm-user-row">
+            <div class="pm-user-av pm-user-av--blue">{{ ((u.prenom || u.nom || u.name || u.email || '?').charAt(0)).toUpperCase() }}</div>
+            <div class="pm-user-info">
+              <div class="pm-user-name">{{ (u.prenom && u.nom) ? (u.prenom + ' ' + u.nom) : (u.name || u.nom || '—') }}</div>
+              <div class="pm-user-email">{{ u.email }}</div>
+            </div>
+            <ng-container *appHasPermission="'modifier parcours'">
+              <button type="button" class="pm-enroll-btn"
+                      [disabled]="inscriptionPending" (click)="inscrireUser(u)">
+                <span *ngIf="inscriptionPending" class="pm-spin pm-spin--sm"></span>
+                <i *ngIf="!inscriptionPending" class="isax isax-user-add"></i>
+                Inscrire
+              </button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="pm-foot">
+      <span class="pm-foot__info">{{ participants.length }} inscrit(s) · {{ availableUsers.length }} disponible(s)</span>
+      <button type="button" class="pm-close-btn" (click)="closeParticipants()">Fermer</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL SUPPRESSION
+════════════════════════════════════════════════ -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog" style="max-width:420px;">
+    <div class="wz-modal modal-content">
+      <div class="wz-head">
+        <div class="wz-head__icon" style="background:#FAEEDA;color:#BA7517;"><i class="isax isax-archive"></i></div>
+        <div class="wz-head__text">
+          <div class="wz-head__title">Archiver le parcours</div>
+          <div class="wz-head__sub" *ngIf="selectedParcours">{{ selectedParcours.nom }}</div>
+        </div>
+        <button type="button" class="wz-close" data-bs-dismiss="modal"><i class="isax isax-close-circle"></i></button>
+      </div>
+      <div class="wz-body">
+        <div class="wz-info-banner" style="background:#fef2f2;border-color:#fca5a5;color:#7f1d1d;">
+          <i class="isax isax-warning-2" style="color:#dc2626;"></i>
+          <span>Le parcours sera archivé et masqué. Les inscriptions associées seront conservées.</span>
+        </div>
+      </div>
+      <div class="wz-foot">
+        <span class="wz-foot__info"></span>
+        <button type="button" class="wz-btn-ghost" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="wz-btn-arch" (click)="archiveParcours(selectedParcours)">
+          <i class="isax isax-archive"></i> Archiver
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+

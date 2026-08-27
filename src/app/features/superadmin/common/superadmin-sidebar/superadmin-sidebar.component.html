@@ -1,0 +1,173 @@
+<div class="sb-shell">
+
+  <!-- ── LOGO ── -->
+  <div class="sb-logo">
+    <div class="sb-logo-mark">L</div>
+    <div>
+      <div class="sb-logo-text">LMS Pro</div>
+      <div class="sb-logo-sub">Superadmin</div>
+    </div>
+  </div>
+
+  <!-- ── USER ── -->
+  <div class="sb-user">
+    <div class="sb-av">{{ getInitials() }}</div>
+    <div>
+      <div class="sb-uname">{{ getDisplayName() }}</div>
+      <div class="sb-urole">{{ getRoleLabel() }}</div>
+    </div>
+  </div>
+
+  <!-- ── NAV ── -->
+  <div class="sb-scroll">
+
+    <!-- VUE D'ENSEMBLE -->
+    <div class="sb-section">
+      <div class="sb-section-label">Vue d'ensemble</div>
+      <a [routerLink]="routes.superadmin_dashboard" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-grid-3"></i><span class="sb-item-label">Tableau de bord</span>
+      </a>
+      <!-- <a [routerLink]="routes.superadminAnnouncements" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-volume-high"></i><span class="sb-item-label">Annonces</span>
+      </a> -->
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- CLIENTS & ACCÈS -->
+    <div class="sb-section">
+      <div class="sb-section-label">Clients & accès</div>
+
+      <a *appHasPermission="'lister entreprises'"
+         [routerLink]="routes.superadminCompanyManagement" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-building"></i><span class="sb-item-label">Entreprises</span>
+      </a>
+
+      <!-- Utilisateurs & accès group -->
+      <div class="sb-group">
+        <div class="sb-group-header" [class.open]="openGroups['utilisateurs']"
+             (click)="toggleGroup('utilisateurs')">
+          <i class="isax isax-profile-2user icon"></i>
+          <span>Utilisateurs & accès</span>
+          <i class="isax isax-arrow-right-3 arr"></i>
+        </div>
+        <div class="sb-sub" *ngIf="openGroups['utilisateurs']">
+          <a *appHasPermission="'lister utilisateurs'"
+             [routerLink]="routes.superadminUserList" routerLinkActive="active" class="sb-sub-item">
+            <i class="isax isax-people"></i> Tous les utilisateurs
+          </a>
+          <a *appHasPermission="'lister roles'"
+             [routerLink]="routes.superadminRole" routerLinkActive="active" class="sb-sub-item">
+            <i class="isax isax-shield-tick"></i> Rôles
+          </a>
+          <a *appHasPermission="'lister permissions'"
+             [routerLink]="routes.superadminPermission" routerLinkActive="active" class="sb-sub-item">
+            <i class="isax isax-lock"></i> Permissions
+          </a>
+        </div>
+      </div>
+
+      <a *appHasPermission="'lister clients'"
+         [routerLink]="routes.superadminClientList" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-people"></i><span class="sb-item-label">Clients</span>
+      </a>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- PÉDAGOGIE -->
+    <div class="sb-section">
+      <div class="sb-section-label">Pédagogie</div>
+      <a [routerLink]="routes.superadminCourse" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-book-1"></i><span class="sb-item-label">Formations</span>
+      </a>
+      <a [routerLink]="routes.superadminAssignment" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-clipboard-text"></i><span class="sb-item-label">Assignments</span>
+      </a>
+      <a [routerLink]="routes.superadminQuiz" routerLinkActive="active" class="sb-item"
+         [class.active]="page==='superadmin-quiz' || page==='superadmin-quiz-questions'">
+        <i class="isax isax-award"></i><span class="sb-item-label">Quiz</span>
+      </a>
+      <a [routerLink]="routes.superadminQuizResult" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-medal-star"></i><span class="sb-item-label">Résultats Quiz</span>
+      </a>
+      <a [routerLink]="routes.superadminCertificate" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-note-21"></i><span class="sb-item-label">Certificats</span>
+      </a>
+      <a [routerLink]="routes.superadminSession" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-calendar-1"></i><span class="sb-item-label">Sessions</span>
+      </a>
+      <a [routerLink]="routes.superadminParcours" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-routing-2"></i><span class="sb-item-label">Parcours</span>
+      </a>
+      <a [routerLink]="routes.superadminCatalogue" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-category"></i><span class="sb-item-label">Catalogues</span>
+      </a>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- FINANCE -->
+    <div class="sb-section">
+      <div class="sb-section-label">Rapport</div>
+      <!-- <a [routerLink]="routes.superadminEarning" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-wallet-add"></i><span class="sb-item-label">Gains</span>
+      </a> -->
+      <!-- <a [routerLink]="routes.superadmin_payouts" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-coin-1"></i><span class="sb-item-label">Paiements</span>
+      </a> -->
+      <a [routerLink]="routes.superadminRapports" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-receipt-item"></i><span class="sb-item-label">Rapports</span>
+      </a>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- SUPPORT -->
+    <div class="sb-section">
+      <div class="sb-section-label">Support</div>
+      <!-- <a [routerLink]="routes.superadminMessage" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-messages-3"></i><span class="sb-item-label">Messages</span>
+      </a> -->
+      <a [routerLink]="routes.superadmin_tickets" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-ticket"></i><span class="sb-item-label">Tickets support</span>
+      </a>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- SONDAGES -->
+    <div class="sb-section">
+      <div class="sb-section-label">Sondages</div>
+      <a [routerLink]="routes.superadminSondage" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-note-21"></i><span class="sb-item-label">Sondages &amp; enquêtes</span>
+      </a>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- SÉCURITÉ -->
+    <div class="sb-section">
+      <div class="sb-section-label">Sécurité</div>
+      <a [routerLink]="routes.superadminAuditLogs" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-clipboard-text"></i><span class="sb-item-label">Logs d'audit</span>
+      </a>
+    </div>
+
+  </div><!-- /sb-scroll -->
+
+  <!-- ── BOTTOM ── -->
+  <div class="sb-bottom">
+    <a [routerLink]="routes.superadminProfile" routerLinkActive="active" class="sb-bottom-item">
+      <i class="isax isax-user-square"></i> Mon profil
+    </a>
+    <!-- <a [routerLink]="routes.superadminSettings" routerLinkActive="active" class="sb-bottom-item"
+       [class.active]="last==='superadmin-settings' || last==='superadmin-change-password'">
+      <i class="isax isax-setting-2"></i> Paramètres
+    </a> -->
+    <div class="sb-bottom-item logout" (click)="logout()">
+      <i class="isax isax-logout"></i> Déconnexion
+    </div>
+  </div>
+
+</div>

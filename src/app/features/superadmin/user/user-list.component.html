@@ -1,0 +1,457 @@
+<!-- ── SHELL ── -->
+<div class="ul-shell">
+
+  <!-- ── TOP BAR ── -->
+  <div class="ul-topbar">
+    <i class="isax isax-people ul-topbar__icon"></i>
+    <h1 class="ul-topbar__title">Utilisateurs & rôles</h1>
+    <span class="ul-topbar__stats">
+      {{ totalData }} utilisateur{{ totalData > 1 ? 's' : '' }}
+      · {{ rolesCount }} rôle{{ rolesCount > 1 ? 's' : '' }}
+      · {{ entreprisesCount }} entreprise{{ entreprisesCount > 1 ? 's' : '' }}
+    </span>
+    <a *ngIf="entrepriseId" routerLink="/superadmin/superadmin-companymanagement"
+       class="ul-back"><i class="isax isax-arrow-left-2 me-1"></i>Retour aux entreprises</a>
+  </div>
+
+  <!-- ── TABS ── -->
+  <div class="ul-tabbar">
+    <button class="ul-tab" [class.ul-tab--active]="activeTab === 'users'"
+            (click)="setTab('users')">Utilisateurs</button>
+    <button class="ul-tab" [class.ul-tab--active]="activeTab === 'roles'"
+            (click)="setTab('roles')">Rôles & permissions</button>
+    <button class="ul-tab" [class.ul-tab--active]="activeTab === 'matrix'"
+            (click)="setTab('matrix')">Matrice des Habilitations</button>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       TAB 1 : UTILISATEURS
+  ════════════════════════════════════════════ -->
+  <ng-container *ngIf="activeTab === 'users'">
+
+    <!-- Toolbar -->
+    <div class="ul-toolbar">
+      <div class="ul-search">
+        <i class="isax isax-search-normal-1 ul-search__icon"></i>
+        <input type="search" class="ul-search__input"
+               placeholder="Rechercher un utilisateur..."
+               [(ngModel)]="searchDataValue" [ngModelOptions]="{standalone: true}"
+               (ngModelChange)="searchData($event)">
+      </div>
+
+      <!-- Filtre Rôle -->
+      <div class="ul-filter-group">
+        <button class="ul-filter" [class.ul-filter--on]="!!selectedRoleFilter"
+                (click)="toggleRoleDropdown($event)">
+          <i class="isax isax-filter"></i> Rôle
+          <span *ngIf="selectedRoleFilter" class="ul-filter__chip">{{ selectedRoleFilter }}</span>
+        </button>
+        <div class="ul-dropdown" *ngIf="showRoleDropdown">
+          <div class="ul-dropdown__item" (click)="setRoleFilter('')">Tous les rôles</div>
+          <div class="ul-dropdown__item"
+               *ngFor="let r of allRoles"
+               [class.ul-dropdown__item--on]="selectedRoleFilter === r.name"
+               (click)="setRoleFilter(r.name)">{{ r.name }}</div>
+        </div>
+      </div>
+
+      <!-- Filtre Entreprise -->
+      <div class="ul-filter-group" *ngIf="!entrepriseId">
+        <button class="ul-filter" [class.ul-filter--on]="!!selectedEntrepriseFilter"
+                (click)="toggleEntrepriseDropdown($event)">
+          <i class="isax isax-building"></i> Entreprise
+          <span *ngIf="selectedEntrepriseFilter" class="ul-filter__chip">
+            {{ getEntrepriseName(selectedEntrepriseFilter) }}
+          </span>
+        </button>
+        <div class="ul-dropdown" *ngIf="showEntrepriseDropdown">
+          <div class="ul-dropdown__item" (click)="setEntrepriseFilter('')">Toutes les entreprises</div>
+          <div class="ul-dropdown__item"
+               *ngFor="let e of allEntreprises"
+               [class.ul-dropdown__item--on]="selectedEntrepriseFilter === e.id.toString()"
+               (click)="setEntrepriseFilter(e.id.toString())">{{ e.nom }}</div>
+        </div>
+      </div>
+      <button *ngIf="entrepriseId" class="ul-filter" [class.ul-filter--on]="true">
+        <i class="isax isax-building"></i>
+        {{ getEntrepriseName(entrepriseId.toString()) }}
+      </button>
+
+      <!-- Filtre Statut -->
+      <div class="ul-filter-group">
+        <button class="ul-filter" [class.ul-filter--on]="selectedStatutFilter !== ''"
+                (click)="toggleStatutDropdown($event)">
+          <i class="isax isax-tick-circle"></i> Statut
+          <span *ngIf="selectedStatutFilter !== ''" class="ul-filter__chip">
+            {{ selectedStatutFilter === '1' ? 'Actif' : 'Inactif' }}
+          </span>
+        </button>
+        <div class="ul-dropdown" *ngIf="showStatutDropdown">
+          <div class="ul-dropdown__item" (click)="setStatutFilter('')">Tous</div>
+          <div class="ul-dropdown__item"
+               [class.ul-dropdown__item--on]="selectedStatutFilter === '1'"
+               (click)="setStatutFilter('1')">Actif</div>
+          <div class="ul-dropdown__item"
+               [class.ul-dropdown__item--on]="selectedStatutFilter === '0'"
+               (click)="setStatutFilter('0')">Inactif</div>
+        </div>
+      </div>
+
+      <button class="ul-import-btn" (click)="openImportDialog()">
+        <i class="isax isax-import"></i> Importer
+      </button>
+      <button class="ul-tpl-btn" (click)="downloadTemplate()">
+        <i class="isax isax-export"></i> Template
+      </button>
+      <button class="ul-export-btn" (click)="exportUsers()">
+        <i class="isax isax-document-download"></i> Exporter
+      </button>
+
+      <button class="ul-add-btn" (click)="openNew()">
+        <i class="isax isax-add"></i> Nouvel utilisateur
+      </button>
+    </div>
+
+    <!-- Erreur -->
+    <div *ngIf="error" class="ul-alert">
+      <i class="isax isax-warning-2"></i> {{ error }}
+    </div>
+
+    <!-- Skeleton loading -->
+    <div *ngIf="loading" class="ul-skeletons">
+      <div *ngFor="let i of [1,2,3,4,5]" class="ul-skeleton-row"></div>
+    </div>
+
+    <!-- Tableau -->
+    <table class="ul-table" *ngIf="!loading">
+      <thead>
+        <tr>
+          <th style="width:28%">Utilisateur</th>
+          <th style="width:16%">Rôle</th>
+          <th style="width:16%">Entreprise</th>
+          <th style="width:12%">Statut</th>
+          <th style="width:14%">Dernière activité</th>
+          <th style="width:14%">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of tableData; trackBy: trackById">
+          <td>
+            <div class="ul-user">
+              <div class="ul-avatar" [attr.data-role]="getRoleKey(getRoleName(u))">
+                {{ getInitials(u) }}
+              </div>
+              <div>
+                <div class="ul-user__name">{{ getDisplayName(u) }}</div>
+                <div class="ul-user__email">{{ u.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="ul-role-badge" [attr.data-role]="getRoleKey(getRoleName(u))">
+              <i [class]="'isax ' + getRoleIcon(getRoleName(u))"></i>
+              {{ getRoleName(u) }}
+            </span>
+          </td>
+          <td>
+            <span *ngIf="u.entreprise?.nom" class="ul-cie">{{ u.entreprise!.nom }}</span>
+            <span *ngIf="!u.entreprise?.nom" class="ul-cie-none">— Plateforme</span>
+          </td>
+          <td>
+            <span class="ul-statut" [attr.data-s]="u.statut === 1 ? 'actif' : 'inactif'">
+              <i [class]="'isax ' + (u.statut === 1 ? 'isax-tick-circle' : 'isax-minus-cirlce')"></i>
+              {{ u.statut === 1 ? 'Actif' : 'Inactif' }}
+            </span>
+          </td>
+          <td class="ul-date">{{ formatDate(u.updated_at) }}</td>
+          <td>
+            <div class="ul-actions">
+              <button class="ul-act" title="Modifier" (click)="editUser(u)">
+                <i class="isax isax-edit"></i>
+              </button>
+              <button class="ul-act ul-act--warn" *ngIf="u.statut === 1"
+                      title="Archiver" (click)="archiveUser(u)">
+                <i class="isax isax-archive"></i>
+              </button>
+              <button class="ul-act ul-act--ok" *ngIf="u.statut === 0"
+                      title="Réactiver" (click)="reactivateUser(u)">
+                <i class="isax isax-refresh"></i>
+              </button>
+              <button class="ul-act ul-act--del" title="Supprimer" (click)="deleteUser(u.id)">
+                <i class="isax isax-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="!tableData.length">
+          <td colspan="6" class="ul-empty">
+            <i class="isax isax-people d-block mb-2" style="font-size:2rem;"></i>
+            Aucun utilisateur trouvé
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="ul-pager" *ngIf="!loading && totalData > pageSize">
+      <span class="ul-pager__info">
+        {{ skip + 1 }}–{{ skip + tableData.length }} sur {{ totalData }}
+      </span>
+      <div class="ul-pager__btns">
+        <button class="ul-pager__btn" [disabled]="currentPage === 1"
+                (click)="onPageChange(currentPage - 1)">
+          <i class="isax isax-arrow-left-2"></i>
+        </button>
+        <button *ngFor="let p of pageSelection; let i = index"
+                class="ul-pager__btn"
+                [class.ul-pager__btn--active]="currentPage === i + 1"
+                (click)="onPageChange(i + 1)">{{ i + 1 }}</button>
+        <button class="ul-pager__btn"
+                [disabled]="currentPage === pageSelection.length || !pageSelection.length"
+                (click)="onPageChange(currentPage + 1)">
+          <i class="isax isax-arrow-right-3"></i>
+        </button>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ════════════════════════════════════════════
+       TAB 2 : RÔLES & PERMISSIONS
+       Embedded SuperadminRoleComponent (full CRUD)
+  ════════════════════════════════════════════ -->
+  <div class="ul-role-embed" *ngIf="activeTab === 'roles'">
+    <app-superadmin-role></app-superadmin-role>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       TAB 3 : MATRICE DES HABILITATIONS
+  ════════════════════════════════════════════ -->
+  <div class="ul-matrix-wrap" *ngIf="activeTab === 'matrix'">
+
+    <div class="ul-matrix__header">
+      <h2 class="ul-matrix__title">
+        <i class="isax isax-shield-security me-2"></i>Matrice des Habilitations
+      </h2>
+      <p class="ul-matrix__subtitle text-muted small">
+        Chaque rôle hérite des accès de tous les rôles qui lui sont inférieurs dans la hiérarchie.
+      </p>
+    </div>
+
+    <!-- Skeleton loading -->
+    <div *ngIf="matrixLoading" class="ul-skeletons">
+      <div *ngFor="let i of [1,2,3,4,5]" class="ul-skeleton-row"></div>
+    </div>
+
+    <ng-container *ngIf="!matrixLoading && matrixRoles.length">
+
+      <!-- Légende hiérarchique -->
+      <div class="ul-matrix__hierarchy mb-3">
+        <div class="ul-hier-chain">
+          <ng-container *ngFor="let role of matrixRoles; let last = last">
+            <span class="ul-hier-badge" [ngClass]="getHierBadgeClass(role)">{{ role.name }}</span>
+            <i *ngIf="!last" class="isax isax-arrow-right-3 ul-hier-arrow"></i>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+      <table class="ul-matrix">
+        <thead>
+          <tr>
+            <th style="min-width:220px">Permission</th>
+            <th *ngFor="let role of matrixRoles" [title]="role.name">
+              <span class="ul-mh-role" [ngClass]="getRoleColorClass(role)">{{ getRoleAbbr(role) }}</span>
+            </th>
+          </tr>
+          <tr class="ul-matrix__role-names">
+            <td class="ul-matrix__group-label">Rôles (ordre hiérarchique ↓)</td>
+            <td *ngFor="let role of matrixRoles" class="small text-nowrap">{{ role.name }}</td>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let cat of matrixCategories">
+            <tr><td class="ul-matrix__group" [attr.colspan]="matrixRoles.length + 1">{{ cat.name }}</td></tr>
+            <tr *ngFor="let perm of cat.permissions">
+              <td>{{ perm.name }}</td>
+              <td *ngFor="let role of matrixRoles">
+                <span *ngIf="roleHasPermission(role, perm.name)" class="ul-c-yes">✓</span>
+                <span *ngIf="!roleHasPermission(role, perm.name)" class="ul-c-no">—</span>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+      </div>
+
+      <!-- Pagination matrice -->
+      <div class="ul-pager mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <label class="ul-pager__label mb-0">Afficher</label>
+          <select class="form-select form-select-sm ul-pager__select"
+                  [ngModel]="matrixPageSize"
+                  (ngModelChange)="matrixChangePageSize($event)">
+            <option *ngFor="let opt of matrixPageSizeOptions" [ngValue]="opt">{{ opt }}</option>
+          </select>
+          <span class="ul-pager__info">
+            {{ (matrixCurrentPage - 1) * matrixPageSize + 1 }}–{{ matrixCurrentPage * matrixPageSize > matrixTotalPermissions ? matrixTotalPermissions : matrixCurrentPage * matrixPageSize }}
+            sur {{ matrixTotalPermissions }} permissions
+          </span>
+        </div>
+        <div class="ul-pager__btns" *ngIf="matrixTotalPages > 1">
+          <button class="ul-pager__btn" [disabled]="matrixCurrentPage === 1"
+                  (click)="matrixGoToPage(matrixCurrentPage - 1)">
+            <i class="isax isax-arrow-left-2"></i>
+          </button>
+          <button *ngFor="let p of matrixPageNumbers"
+                  class="ul-pager__btn"
+                  [class.ul-pager__btn--active]="matrixCurrentPage === p"
+                  (click)="matrixGoToPage(p)">{{ p }}</button>
+          <button class="ul-pager__btn" [disabled]="matrixCurrentPage === matrixTotalPages"
+                  (click)="matrixGoToPage(matrixCurrentPage + 1)">
+            <i class="isax isax-arrow-right-3"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="ul-matrix__legend mt-3">
+        <span><span class="ul-c-yes">✓</span> Accès complet</span>
+        <span><span class="ul-c-no">—</span> Aucun accès</span>
+      </div>
+
+      <div class="ul-matrix__note mt-2">
+        <i class="isax isax-info-circle me-1"></i>
+        <small class="text-muted">
+          <ng-container *ngFor="let role of matrixRoles; let last = last">
+            <strong>{{ getRoleAbbr(role) }}</strong> = {{ role.name }}{{ last ? '' : ' · ' }}
+          </ng-container>
+        </small>
+      </div>
+
+    </ng-container>
+
+    <!-- Pas de données -->
+    <div *ngIf="!matrixLoading && !matrixRoles.length" class="ul-empty p-4 text-center">
+      <i class="isax isax-shield-security d-block mb-2" style="font-size:2rem;"></i>
+      Aucun rôle trouvé pour afficher la matrice
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ── MODAL IMPORT ── -->
+<div class="modal"
+     [class.show]="showImportDialog"
+     [style.display]="showImportDialog ? 'block' : 'none'"
+     tabindex="-1"
+     *ngIf="showImportDialog"
+     role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="isax isax-import me-2"></i>Importer des utilisateurs</h5>
+        <button type="button" class="btn-close" (click)="closeImportDialog()"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- ── Zone de dépôt (masquée après résultat) ── -->
+        <ng-container *ngIf="!importResult">
+          <div class="mb-3">
+            <label for="fileInput" class="form-label">Fichier Excel / CSV</label>
+            <input id="fileInput" type="file" class="form-control"
+                   (change)="onFileSelected($event)" accept=".xlsx,.xls,.csv" [disabled]="isImporting">
+            <div class="form-text">Formats acceptés : .xlsx, .xls, .csv</div>
+          </div>
+          <div *ngIf="selectedFile" class="alert alert-info py-2">
+            <strong>{{ selectedFile.name }}</strong>
+            <small class="text-muted ms-1">({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)</small>
+          </div>
+          <div *ngIf="isImporting" class="mb-3">
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped progress-bar-animated"
+                   role="progressbar" aria-label="Progression de l'import"
+                   [style.width.%]="importProgress"
+                   [attr.aria-valuenow]="importProgress" aria-valuemin="0" aria-valuemax="100">
+                {{ importProgress }}%
+              </div>
+            </div>
+          </div>
+          <div class="alert alert-warning mb-0">
+            <h6 class="alert-heading small fw-bold"><i class="isax isax-info-circle me-1"></i>Instructions</h6>
+            <ul class="mb-0 mt-1 small">
+              <li>Téléchargez d'abord le template pour voir la structure requise</li>
+              <li>Colonnes obligatoires : <strong>nom, prenom, email</strong></li>
+              <li>Colonnes optionnelles : <strong>matricule, direction, role, entreprise</strong></li>
+              <li>Matricule et numéro de téléphone doivent être uniques</li>
+            </ul>
+          </div>
+        </ng-container>
+
+        <!-- ── Rapport d'import ── -->
+        <ng-container *ngIf="importResult">
+
+          <!-- Erreurs de structure -->
+          <div class="alert alert-danger" *ngIf="importResult.headerErrors.length">
+            <h6 class="alert-heading fw-bold"><i class="isax isax-close-circle me-1"></i>Structure du fichier invalide</h6>
+            <ul class="mb-0 mt-1 small">
+              <li *ngFor="let e of importResult.headerErrors">{{ e }}</li>
+            </ul>
+          </div>
+
+          <ng-container *ngIf="!importResult.headerErrors.length">
+            <!-- Résumé succès -->
+            <div class="alert alert-success py-2" *ngIf="importResult.totalCreated > 0">
+              <i class="isax isax-tick-circle me-1"></i>
+              <strong>{{ importResult.totalCreated }}</strong> utilisateur(s) créé(s) sur {{ importResult.totalProcessed }} traité(s)
+            </div>
+            <div class="alert alert-info py-2" *ngIf="importResult.totalCreated === 0 && importResult.totalErrors === 0">
+              <i class="isax isax-info-circle me-1"></i> Aucune ligne à traiter dans le fichier.
+            </div>
+
+            <!-- Détail erreurs par ligne -->
+            <div *ngIf="importResult.rowErrors.length" class="mt-2">
+              <div class="alert alert-danger mb-2 py-2 fw-bold small">
+                <i class="isax isax-warning-2 me-1"></i>
+                {{ importResult.rowErrors.length }} ligne(s) en erreur
+              </div>
+              <div class="ul-import-error-list">
+                <div class="ul-import-error-item" *ngFor="let e of importResult.rowErrors">
+                  <span class="badge bg-danger me-2">Ligne {{ e.line }}</span>
+                  <ul class="mb-0 small">
+                    <li *ngFor="let msg of e.errors">{{ msg }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+        </ng-container>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeImportDialog()">
+          {{ importResult ? 'Fermer' : 'Annuler' }}
+        </button>
+        <button type="button" *ngIf="!importResult" class="btn btn-primary" (click)="importUsers()" [disabled]="!selectedFile || isImporting">
+          <span *ngIf="isImporting" class="spinner-border spinner-border-sm me-1"></span>
+          {{ isImporting ? 'Import en cours...' : 'Importer' }}
+        </button>
+        <button type="button" *ngIf="importResult && !importResult.headerErrors.length" class="btn btn-outline-secondary"
+                (click)="importResult = null; selectedFile = null">
+          <i class="isax isax-refresh me-1"></i> Nouvel import
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showImportDialog" *ngIf="showImportDialog"></div>
+
+<!-- ── USER ADD/EDIT ── -->
+<app-user-add
+  [visible]="userDialog"
+  [isEditMode]="isEditMode"
+  [userData]="selectedUser"
+  (onClose)="hideDialog()"
+  (onSave)="refreshData()">
+</app-user-add>

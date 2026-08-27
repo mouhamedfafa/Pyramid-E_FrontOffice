@@ -1,0 +1,662 @@
+<!-- ══════════════════════════════════════════════════ -->
+<!-- LOADING                                           -->
+<!-- ══════════════════════════════════════════════════ -->
+<div *ngIf="loading" class="db-loading">
+  <div class="qq-loading__ring">
+    <div></div><div></div><div></div><div></div>
+  </div>
+  <p>Chargement de votre tableau de bord...</p>
+</div>
+
+<ng-container *ngIf="!loading && stats">
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="db-page-header mb-4">
+    <div>
+      <h3 class="db-page-header__title">Mon tableau de bord</h3>
+      <p class="db-page-header__sub">
+        {{ labelPeriodeSelectionnee }} — Suivez vos formations, votre progression et vos objectifs
+      </p>
+    </div>
+  </div>
+
+  <!-- ── FILTRES ── -->
+  <div class="db-filters mb-4">
+    <div class="db-filters__toggle">
+      <button [class.active]="periodeMode === 'mois'" (click)="periodeMode='mois'; onPeriodeChange()">
+        <i class="isax isax-calendar me-1"></i>Mensuel
+      </button>
+      <button [class.active]="periodeMode === 'trimestre'" (click)="periodeMode='trimestre'; onPeriodeChange()">
+        <i class="isax isax-calendar-tick me-1"></i>Trimestriel
+      </button>
+      <button [class.active]="periodeMode === 'annee'" (click)="periodeMode='annee'; onPeriodeChange()">
+        <i class="isax isax-calendar-2 me-1"></i>Annuel
+      </button>
+    </div>
+    <div class="db-filters__selects" *ngIf="periodeMode === 'mois'">
+      <select [(ngModel)]="selectedAnnee" (change)="onAnneeChange()" class="db-select">
+        <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+      </select>
+      <select [(ngModel)]="selectedMois" (change)="onMoisChange()" class="db-select">
+        <option *ngFor="let m of moisLabels; let i = index" [value]="i + 1">{{ m }}</option>
+      </select>
+    </div>
+    <div class="db-filters__selects" *ngIf="periodeMode === 'trimestre'">
+      <select [(ngModel)]="selectedAnnee" (change)="onAnneeChange()" class="db-select">
+        <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+      </select>
+      <select [(ngModel)]="selectedTrimestre" (change)="onTrimestreChange()" class="db-select">
+        <option [value]="1">T1 — Jan · Fév · Mar</option>
+        <option [value]="2">T2 — Avr · Mai · Juin</option>
+        <option [value]="3">T3 — Juil · Aoû · Sep</option>
+        <option [value]="4">T4 — Oct · Nov · Déc</option>
+      </select>
+    </div>
+    <div class="db-filters__selects" *ngIf="periodeMode === 'annee'">
+      <select [(ngModel)]="selectedAnnee" (change)="onAnneeChange()" class="db-select">
+        <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ── ONGLETS ── -->
+  <div class="db-tabs mb-4">
+    <button class="db-tabs__tab" [class.active]="activeTab === 'aujourdhui'" (click)="setTab('aujourdhui')">
+      <i class="isax isax-sun me-1"></i>Aujourd'hui
+      <span class="db-tabs__alert" *ngIf="hasUrgences">{{ echeancesUrgentes.length }}</span>
+    </button>
+    <button class="db-tabs__tab" [class.active]="activeTab === 'progression'" (click)="setTab('progression')">
+      <i class="isax isax-chart-2 me-1"></i>Mes Performances
+    </button>
+    <button class="db-tabs__tab" [class.active]="activeTab === 'objectifs'" (click)="setTab('objectifs')">
+      <i class="isax isax-flag me-1"></i>Mes objectifs
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- ONGLET 1 — AUJOURD'HUI                        -->
+  <!-- ══════════════════════════════════════════════ -->
+  <ng-container *ngIf="activeTab === 'aujourdhui'">
+
+    <div class="db-alert-banner mb-4" *ngIf="hasUrgences">
+      <div class="db-alert-banner__icon"><i class="isax isax-warning-2"></i></div>
+      <div class="db-alert-banner__body">
+        <strong>{{ echeancesUrgentes.length }} échéance(s) urgente(s)</strong>
+        <span>Certaines formations arrivent à terme dans moins de 7 jours</span>
+      </div>
+      <span class="db-alert-banner__count">⚠ Action requise</span>
+    </div>
+
+    <div class="db-today-grid">
+
+      <!-- Activités du jour -->
+      <div class="db-panel">
+        <div class="db-panel__header">
+          <div class="db-panel__title"><i class="isax isax-activity me-2"></i>Activités du jour</div>
+          <span class="db-panel__count" *ngIf="activitesJour.length > 0">{{ activitesJour.length }}</span>
+        </div>
+        <div class="db-panel__body">
+          <div class="db-empty-mini" *ngIf="activitesJour.length === 0">
+            <i class="isax isax-coffee"></i>
+            <span>Aucune activité enregistrée aujourd'hui</span>
+          </div>
+          <div *ngFor="let act of activitesJour" class="db-activity-item">
+            <div class="db-activity-item__icon" [ngClass]="getActiviteIconClass(act.statut)">
+              <i class="isax" [ngClass]="getActiviteIcon(act.statut)"></i>
+            </div>
+            <div class="db-activity-item__body">
+              <div class="db-activity-item__titre">{{ act.titre }}</div>
+              <div class="db-activity-item__meta">
+                <span class="db-activity-item__type">{{ getActiviteTypeLabel(act.type) }}</span>
+                <span class="db-activity-item__sep">·</span>
+                <span class="db-activity-item__heure">{{ act.heure }}</span>
+              </div>
+            </div>
+            <span class="db-activity-item__badge" [ngClass]="getActiviteBadgeClass(act.statut)">
+              {{ getActiviteStatutLabel(act.statut) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Échéances à venir -->
+      <div class="db-panel">
+        <div class="db-panel__header">
+          <div class="db-panel__title"><i class="isax isax-timer me-2"></i>Échéances à venir</div>
+          <span class="db-panel__count" *ngIf="stats.echeances.length > 0">{{ stats.echeances.length }}</span>
+        </div>
+        <div class="db-panel__body">
+          <ng-container *ngFor="let e of echeancesUrgentes">
+            <div class="ech-item ech-item--urgent" [ngClass]="getUrgenceClass(e)">
+              <div class="ech-countdown">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle class="ech-countdown__track" cx="26" cy="26" r="22" stroke-width="4"/>
+                  <circle class="ech-countdown__fill" cx="26" cy="26" r="22" stroke-width="4"
+                          [attr.stroke]="getUrgenceStroke(e)" stroke-dasharray="138.2"
+                          [attr.stroke-dashoffset]="getCountdownOffset(e.joursRestants)"/>
+                </svg>
+                <div class="ech-countdown__label">
+                  <span>{{ e.joursRestants <= 0 ? '!' : e.joursRestants }}</span>
+                  <span class="ech-countdown__unit">{{ e.joursRestants === 1 ? 'jour' : 'jours' }}</span>
+                </div>
+              </div>
+              <div class="ech-body">
+                <div class="ech-title">{{ e.titre }}</div>
+                <div class="ech-meta">
+                  <span class="ech-badge" [style.background]="getTypeColor(e.type)">{{ getTypeLabel(e.type) }}</span>
+                  <span class="ech-meta__prog" *ngIf="hasProgression(e.type)"> · {{ e.progression }}%</span>
+                </div>
+                <div class="ech-prog-wrap" *ngIf="hasProgression(e.type)">
+                  <div class="ech-prog-bar"><div class="ech-prog-fill" [style.width.%]="e.progression" [style.background]="getUrgenceStroke(e)"></div></div>
+                  <span class="ech-prog-pct">{{ e.progression }}%</span>
+                </div>
+              </div>
+              <div class="ech-urgence">
+                <span class="ech-urgence__label" [ngClass]="getUrgenceLabelClass(e)">{{ getUrgenceLabel(e.joursRestants) }}</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngFor="let e of echeancesNormales">
+            <div class="ech-item" [ngClass]="getUrgenceClass(e)">
+              <div class="ech-countdown">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle class="ech-countdown__track" cx="26" cy="26" r="22" stroke-width="4"/>
+                  <circle class="ech-countdown__fill" cx="26" cy="26" r="22" stroke-width="4"
+                          [attr.stroke]="getUrgenceStroke(e)" stroke-dasharray="138.2"
+                          [attr.stroke-dashoffset]="getCountdownOffset(e.joursRestants)"/>
+                </svg>
+                <div class="ech-countdown__label">
+                  <span>{{ e.joursRestants }}</span>
+                  <span class="ech-countdown__unit">{{ e.joursRestants === 1 ? 'jour' : 'jours' }}</span>
+                </div>
+              </div>
+              <div class="ech-body">
+                <div class="ech-title">{{ e.titre }}</div>
+                <div class="ech-meta">
+                  <span class="ech-badge" [style.background]="getTypeColor(e.type)">{{ getTypeLabel(e.type) }}</span>
+                  <span class="ech-meta__prog" *ngIf="hasProgression(e.type)"> · {{ e.progression }}%</span>
+                </div>
+                <div class="ech-prog-wrap" *ngIf="hasProgression(e.type)">
+                  <div class="ech-prog-bar"><div class="ech-prog-fill" [style.width.%]="e.progression" [style.background]="getProgressionColor(e.progression)"></div></div>
+                  <span class="ech-prog-pct">{{ e.progression }}%</span>
+                </div>
+              </div>
+              <div class="ech-urgence">
+                <span class="ech-urgence__label" [ngClass]="getUrgenceLabelClass(e)">{{ getUrgenceLabel(e.joursRestants) }}</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="db-empty-mini" *ngIf="stats.echeances.length === 0">
+            <i class="isax isax-tick-circle"></i>
+            <span>Aucune échéance proche</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions planifiées -->
+      <div class="db-panel db-panel--full">
+        <div class="db-panel__header">
+          <div class="db-panel__title"><i class="isax isax-calendar-tick me-2"></i>Sessions planifiées</div>
+        </div>
+        <div class="db-panel__body db-panel__body--row">
+          <div *ngFor="let s of stats.sessions_planifiees" class="db-session-item">
+            <div class="db-session-item__date">
+              <span class="db-session-item__day">{{ s.date_debut | date:'dd' }}</span>
+              <span class="db-session-item__month">{{ s.date_debut | date:'MMM' }}</span>
+            </div>
+            <div class="db-session-item__body">
+              <div class="db-session-item__titre">{{ s.titre }}</div>
+              <div class="db-session-item__meta">
+                <i class="isax isax-location me-1"></i>{{ s.lieu || 'En ligne' }}
+                &nbsp;·&nbsp;<i class="isax isax-clock me-1"></i>
+                {{ s.date_debut | date:'HH:mm' }} – {{ s.date_fin | date:'HH:mm' }}
+              </div>
+            </div>
+            <span class="db-session-item__badge">{{ s.type }}</span>
+          </div>
+          <div class="db-empty-mini" *ngIf="stats.sessions_planifiees.length === 0">
+            <i class="isax isax-calendar"></i><span>Aucune session planifiée</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- ONGLET 2 — MES PERFORMANCES                   -->
+  <!-- ══════════════════════════════════════════════ -->
+  <ng-container *ngIf="activeTab === 'progression'">
+
+    <!-- ── LIGNE 1 : Badges + Classement ── -->
+    <div class="db-perf-top-grid mb-4">
+
+      <!-- BADGES -->
+      <div class="db-objectif-section">
+        <div class="db-objectif-header">
+          <div class="db-objectif-header__icon db-objectif-header__icon--orange">
+            <i class="isax isax-award"></i>
+          </div>
+          <div>
+            <h6 class="db-objectif-header__title">Badges obtenus</h6>
+            <p class="db-objectif-header__sub">{{ badgesObtenus.length }} badge(s) débloqué(s) sur {{ badges.length }}</p>
+          </div>
+          <span class="db-badge-count-pill ms-auto">{{ badgesObtenus.length }}/{{ badges.length }}</span>
+        </div>
+        <div class="db-badges-grid" *ngIf="badgesObtenus.length > 0">
+          <div class="db-badge-item db-badge-item--obtenu" *ngFor="let b of badgesObtenus.slice(0, 2)">
+            <div class="db-badge-item__icon" [style.background]="b.couleur + '20'" [style.color]="b.couleur">
+              <i class="isax {{ b.icone }}"></i>
+            </div>
+            <div class="db-badge-item__info">
+              <div class="db-badge-item__nom">{{ b.nom }}</div>
+              <div class="db-badge-item__desc">{{ b.description }}</div>
+              <div class="db-badge-item__date" *ngIf="b.date">
+                <i class="isax isax-calendar me-1"></i>{{ b.date | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+            <i class="isax isax-tick-circle db-badge-item__check" [style.color]="b.couleur"></i>
+          </div>
+        </div>
+        <div class="db-badges-locked" *ngIf="badgesVerrouilles.length > 0">
+          <div class="db-badges-locked__label">À débloquer</div>
+          <div class="db-badges-grid db-badges-grid--locked">
+            <div class="db-badge-item db-badge-item--locked">
+              <div class="db-badge-item__icon db-badge-item__icon--locked"><i class="isax isax-lock"></i></div>
+              <div class="db-badge-item__info">
+                <div class="db-badge-item__nom db-badge-item__nom--locked">{{ badgesVerrouilles[0].nom }}</div>
+                <div class="db-badge-item__desc">{{ badgesVerrouilles[0].description }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLASSEMENT -->
+      <div class="db-objectif-section">
+        <div class="db-objectif-header">
+          <div class="db-objectif-header__icon db-objectif-header__icon--orange">
+            <i class="isax isax-ranking"></i>
+          </div>
+          <div>
+            <h6 class="db-objectif-header__title">Mon classement</h6>
+            <p class="db-objectif-header__sub">Votre position par rapport à vos collègues</p>
+          </div>
+          <span class="db-badge-count-pill db-badge-count-pill--indigo ms-auto">#{{ monClassement ?? '–' }}</span>
+        </div>
+        <div class="db-rank-display">
+          <div class="db-rank-display__medal">{{ getRangMedal(monClassement ?? 0) }}</div>
+          <div class="db-rank-display__body">
+            <div class="db-rank-display__value">#{{ monClassement ?? '–' }}</div>
+            <div class="db-rank-display__label">sur {{ classement.length }} participants</div>
+          </div>
+          <div class="db-rank-display__score">
+            <span class="db-rank-display__pts">{{ myScore }}</span>
+            <span class="db-rank-display__pts-label">pts</span>
+          </div>
+        </div>
+        <div class="db-objectif-progress mt-3" *ngIf="monClassement">
+          <div class="db-objectif-progress__values">
+            <span class="db-objectif-progress__done">Votre score</span>
+            <span class="db-objectif-progress__target">{{ myScore }} / 100</span>
+          </div>
+          <div class="db-objectif-progress__bar">
+            <div class="db-objectif-progress__fill" [style.width.%]="myScore" style="background:#069b8f"></div>
+            <span class="db-objectif-progress__pct">{{ myScore }}%</span>
+          </div>
+        </div>
+        <p class="db-objectif-progress__note mt-2" style="font-style:italic">Le détail du classement est confidentiel</p>
+      </div>
+
+    </div>
+
+    <!-- ── LIGNE 2 : Taux de complétion global + Taux d'abandon ── -->
+    <div class="db-section-label mb-3">
+      <span class="db-section-label__bar"></span>
+      <span class="db-section-label__text">Progression globale — {{ labelPeriodeSelectionnee }}</span>
+    </div>
+
+    <div class="db-perf-top-grid mb-4">
+      <div class="db-chart-card db-chart-card--highlight">
+        <div class="db-chart-card__label">
+          <span class="db-chart-card__badge db-chart-card__badge--teal">KPI principal</span>
+          Taux de complétion global
+          <span class="db-chart-card__current">{{ tauxCompletionGlobal }}%</span>
+        </div>
+        <div id="chart-completion" style="min-height:200px;"></div>
+      </div>
+      <div class="db-chart-card">
+        <div class="db-chart-card__label">
+          Taux d'abandon
+          <span class="db-chart-card__hint">Non terminés + expirés / total assignés</span>
+        </div>
+        <div id="chart-taux-abandon" style="min-height:200px;"></div>
+      </div>
+    </div>
+
+    <!-- ── QUIZ ── -->
+    <ng-container *ngIf="stats.kpi.evaluations.disponible">
+      <div class="db-section-label mb-3">
+        <span class="db-section-label__bar"></span>
+        <span class="db-section-label__text">Quiz</span>
+      </div>
+      <div class="db-objectif-section mb-4">
+        <div class="db-objectif-header">
+          <div class="db-objectif-header__icon db-objectif-header__icon--blue"><i class="isax isax-chart-2"></i></div>
+          <div>
+            <h6 class="db-objectif-header__title">Quiz</h6>
+            <p class="db-objectif-header__sub">Résultats de vos quiz de fin de formation</p>
+          </div>
+        </div>
+        <div class="db-pdi-grid mb-3">
+          <div class="db-pdi-kpi">
+            <div class="db-pdi-kpi__value">{{ stats.kpi.evaluations.nb_passees }}</div>
+            <div class="db-pdi-kpi__label">Quiz passés</div>
+          </div>
+          <div class="db-pdi-kpi">
+            <div class="db-pdi-kpi__value" style="color:#10b981">{{ stats.kpi.evaluations.nb_reussies }}</div>
+            <div class="db-pdi-kpi__label">Quiz réussis</div>
+          </div>
+          <div class="db-pdi-kpi">
+            <div class="db-pdi-kpi__value" [style.color]="getProgressionColor(stats.kpi.evaluations.taux_reussite)">
+              {{ stats.kpi.evaluations.taux_reussite }}%
+            </div>
+            <div class="db-pdi-kpi__label">Taux de réussite</div>
+          </div>
+        </div>
+        <div class="db-chart-grid db-chart-grid--2">
+          <div class="db-chart-card">
+            <div class="db-chart-card__label">Taux de réussite aux quiz</div>
+            <div id="chart-donut-quiz-perf" class="db-pie3d-wrap" style="min-height:240px;"></div>
+          </div>
+          <div class="db-chart-card">
+            <div class="db-chart-card__label">Score moyen aux quiz — répartition mensuelle</div>
+            <div id="chart-score-moyen-bar" style="min-height:240px;"></div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── RADIALS KPI ── -->
+    <div class="db-radial-grid mb-4">
+      <div class="db-radial-card">
+        <div class="db-radial-card__chart" id="radial-formations"></div>
+        <div class="db-radial-card__body">
+          <div class="db-radial-card__label">Formations</div>
+          <div class="db-radial-card__value">{{ stats.kpi.formations.terminees }}<span class="db-radial-card__total">/{{ stats.kpi.formations.total }}</span></div>
+          <div class="db-radial-card__sub">{{ stats.kpi.formations.en_cours }} en cours</div>
+        </div>
+      </div>
+      <div class="db-radial-card">
+        <div class="db-radial-card__chart" id="radial-sessions"></div>
+        <div class="db-radial-card__body">
+          <div class="db-radial-card__label">Sessions</div>
+          <div class="db-radial-card__value">{{ stats.kpi.sessions.terminees }}<span class="db-radial-card__total">/{{ stats.kpi.sessions.total }}</span></div>
+          <div class="db-radial-card__sub">
+            <span *ngIf="stats.kpi.sessions.total > 0">{{ stats.kpi.sessions.taux }}% terminées</span>
+            <span *ngIf="stats.kpi.sessions.total === 0" style="font-style:italic">Aucune assignée</span>
+          </div>
+        </div>
+      </div>
+      <div class="db-radial-card">
+        <div class="db-radial-card__chart" id="radial-parcours"></div>
+        <div class="db-radial-card__body">
+          <div class="db-radial-card__label">Parcours</div>
+          <div class="db-radial-card__value">{{ stats.kpi.parcours.termines }}<span class="db-radial-card__total">/{{ stats.kpi.parcours.total }}</span></div>
+          <div class="db-radial-card__sub">
+            <span *ngIf="stats.kpi.parcours.total > 0">{{ stats.kpi.parcours.progression }}% de progression</span>
+            <span *ngIf="stats.kpi.parcours.total === 0" style="font-style:italic">Aucun assigné</span>
+          </div>
+        </div>
+      </div>
+      <div class="db-radial-card">
+        <div class="db-radial-card__chart" id="radial-catalogues"></div>
+        <div class="db-radial-card__body">
+          <div class="db-radial-card__label">Catalogues</div>
+          <div class="db-radial-card__value">{{ stats.kpi.catalogues.termines }}<span class="db-radial-card__total">/{{ stats.kpi.catalogues.total }}</span></div>
+          <div class="db-radial-card__sub">
+            <span *ngIf="stats.kpi.catalogues.total > 0">{{ stats.kpi.catalogues.taux }}% complétés</span>
+            <span *ngIf="stats.kpi.catalogues.total === 0" style="font-style:italic">Aucun assigné</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AUTRES KPI ── -->
+    <div class="db-section-label mb-3">
+      <span class="db-section-label__bar"></span>
+      <span class="db-section-label__text">Autres KPI</span>
+    </div>
+
+    <div class="db-autres-kpi-col mb-4">
+
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- TRACKER ÉCART DE COMPÉTENCES — KPI STATIQUE HONNÊTE          -->
+      <!-- Pas de courbe car il n'y a pas d'historique mensuel stocké.  -->
+      <!-- Affiche l'état actuel : acquises / recommandées / écart.      -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <div class="db-objectif-section">
+        <div class="db-objectif-header">
+          <div class="db-objectif-header__icon db-objectif-header__icon--purple">
+            <i class="isax isax-medal-star"></i>
+          </div>
+          <div>
+            <h6 class="db-objectif-header__title">Écart de compétences</h6>
+            <p class="db-objectif-header__sub">Compétences acquises vs compétences recommandées</p>
+          </div>
+          <!-- Pilule taux de couverture -->
+          <span
+            class="db-badge-count-pill ms-auto"
+            [class.db-badge-count-pill--green]="stats.kpi.ecart_competences.taux_couverture >= 75"
+            [class.db-badge-count-pill--orange]="stats.kpi.ecart_competences.taux_couverture >= 40 && stats.kpi.ecart_competences.taux_couverture < 75"
+            [class.db-badge-count-pill--red]="stats.kpi.ecart_competences.taux_couverture < 40"
+            [style.background]="getProgressionColor(stats.kpi.ecart_competences.taux_couverture) + '20'"
+            [style.color]="getProgressionColor(stats.kpi.ecart_competences.taux_couverture)"
+          >
+            {{ stats.kpi.ecart_competences.taux_couverture }}%
+          </span>
+        </div>
+
+        <!-- Cas : données disponibles -->
+        <ng-container *ngIf="stats.kpi.ecart_competences.total_visees > 0">
+
+          <!-- 4 chiffres clés -->
+          <div class="db-pdi-grid mb-3">
+            <div class="db-pdi-kpi">
+              <div class="db-pdi-kpi__value" style="color:#069b8f">
+                {{ stats.kpi.ecart_competences.total_acquises }}
+              </div>
+              <div class="db-pdi-kpi__label">Acquises</div>
+            </div>
+            <div class="db-pdi-kpi">
+              <div class="db-pdi-kpi__value" style="color:#3b82f6">
+                {{ stats.kpi.ecart_competences.total_visees }}
+              </div>
+              <div class="db-pdi-kpi__label">Recommandées</div>
+            </div>
+            <div class="db-pdi-kpi">
+              <div class="db-pdi-kpi__value"
+                   [style.color]="stats.kpi.ecart_competences.total_ecart > 0 ? '#ef4444' : '#10b981'">
+                {{ stats.kpi.ecart_competences.total_ecart }}
+              </div>
+              <div class="db-pdi-kpi__label">Écart restant</div>
+            </div>
+            <div class="db-pdi-kpi">
+              <div class="db-pdi-kpi__value"
+                   [style.color]="getProgressionColor(stats.kpi.ecart_competences.taux_couverture)">
+                {{ stats.kpi.ecart_competences.taux_couverture }}%
+              </div>
+              <div class="db-pdi-kpi__label">Couverture</div>
+            </div>
+          </div>
+
+          <!-- Barre de progression principale -->
+          <div class="db-objectif-progress mb-3">
+            <div class="db-objectif-progress__values">
+              <span class="db-objectif-progress__done">
+                {{ stats.kpi.ecart_competences.total_acquises }} compétences acquises
+              </span>
+              <span class="db-objectif-progress__target">
+                Objectif : {{ stats.kpi.ecart_competences.total_visees }}
+              </span>
+            </div>
+            <div class="db-objectif-progress__bar">
+              <div
+                class="db-objectif-progress__fill"
+                [style.width.%]="stats.kpi.ecart_competences.taux_couverture"
+                [style.background]="getProgressionColor(stats.kpi.ecart_competences.taux_couverture)">
+              </div>
+              <span class="db-objectif-progress__pct">
+                {{ stats.kpi.ecart_competences.taux_couverture }}%
+              </span>
+            </div>
+          </div>
+
+          <!-- Message contextuel selon le taux -->
+          <p class="db-objectif-progress__note db-objectif-progress__note--success"
+             *ngIf="stats.kpi.ecart_competences.total_ecart === 0">
+            ✅ Toutes les compétences recommandées ont été acquises !
+          </p>
+          <p class="db-objectif-progress__note"
+             *ngIf="stats.kpi.ecart_competences.total_ecart > 0 && stats.kpi.ecart_competences.taux_couverture >= 75">
+            🟡 Bonne progression — encore
+            <strong>{{ stats.kpi.ecart_competences.total_ecart }} compétence(s)</strong> à acquérir.
+          </p>
+          <p class="db-objectif-progress__note"
+             *ngIf="stats.kpi.ecart_competences.total_ecart > 0 && stats.kpi.ecart_competences.taux_couverture < 75">
+            📌 <strong>{{ stats.kpi.ecart_competences.total_ecart }} compétence(s)</strong> restantes à acquérir
+            pour combler l'écart.
+          </p>
+
+          <!-- Lien vers la page détaillée -->
+          <div class="db-coming-inline db-coming-inline--link mt-2">
+            <i class="isax isax-arrow-right-3 me-2"></i>
+            <a routerLink="/student/ecart-competences">Voir les compétences →</a>
+          </div>
+
+        </ng-container>
+
+        <!-- Cas : aucune compétence recommandée -->
+        <div *ngIf="stats.kpi.ecart_competences.total_visees === 0" class="db-coming-inline">
+          <i class="isax isax-medal-star me-2"></i>Aucune compétence recommandée détectée pour ce collaborateur
+        </div>
+      </div>
+
+      <!-- ── Statut global des demandes ── -->
+      <div class="db-objectif-section">
+        <div class="db-objectif-header">
+          <div class="db-objectif-header__icon db-objectif-header__icon--blue">
+            <i class="isax isax-document-text"></i>
+          </div>
+          <div>
+            <h6 class="db-objectif-header__title">Statut global des demandes</h6>
+            <p class="db-objectif-header__sub">Toutes catégories — {{ demandesTotal }} demande(s) au total</p>
+          </div>
+        </div>
+        <div *ngIf="demandesTotal > 0" class="db-donut-legend-layout">
+          <div id="chart-donut-demandes" class="db-donut-legend-layout__chart" style="min-height:240px;"></div>
+        </div>
+        <div *ngIf="demandesTotal === 0" class="db-coming-inline">
+          <i class="isax isax-document me-2"></i>Aucune demande enregistrée pour le moment
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- ONGLET 3 — MES OBJECTIFS                      -->
+  <!-- ══════════════════════════════════════════════ -->
+<!--
+  <ng-container *ngIf="activeTab === 'objectifs'">
+
+    <!-- Heures de formation
+    <div class="db-objectif-section mb-4">
+      <div class="db-objectif-header">
+        <div class="db-objectif-header__icon db-objectif-header__icon--orange">
+          <i class="isax isax-clock"></i>
+        </div>
+        <div>
+          <h6 class="db-objectif-header__title">Heures de formation — {{ labelPeriodeSelectionnee }}</h6>
+          <p class="db-objectif-header__sub">Formations à échéance dans la période · Heures dues vs terminées</p>
+        </div>
+      </div>
+      <div class="db-donut-legend-layout">
+        <div class="db-donut-legend-layout__legend">
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#3b82f6"></span>
+            <span class="db-legend-label">Heures dues</span>
+            <span class="db-legend-val">{{ stats.kpi.heures.heures_dues_periode }}h</span>
+          </div>
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#10b981"></span>
+            <span class="db-legend-label">Terminées</span>
+            <span class="db-legend-val">{{ stats.kpi.heures.heures_terminees_periode }}h</span>
+          </div>
+          <div class="db-legend-item">
+            <span class="db-legend-dot"
+              [style.background]="stats.kpi.heures.heures_restantes_periode > 0 ? '#ef4444' : '#10b981'"></span>
+            <span class="db-legend-label">Restantes</span>
+            <span class="db-legend-val"
+              [style.color]="stats.kpi.heures.heures_restantes_periode > 0 ? '#ef4444' : '#10b981'">
+              {{ stats.kpi.heures.heures_restantes_periode }}h
+            </span>
+          </div>
+        </div>
+        <div id="chart-donut-heures" class="db-donut-legend-layout__chart" style="min-height:220px;"></div>
+      </div>
+      <p class="db-objectif-progress__note mt-2" *ngIf="stats.kpi.heures.heures_restantes_periode > 0">
+        Il vous reste <strong>{{ stats.kpi.heures.heures_restantes_periode }}h</strong> à terminer avant la fin de la période
+      </p>
+      <p class="db-objectif-progress__note db-objectif-progress__note--success mt-2"
+         *ngIf="stats.kpi.heures.heures_restantes_periode === 0 && stats.kpi.heures.heures_dues_periode > 0">
+        ✅ Toutes les heures dues dans la période sont complétées !
+      </p>
+    </div>
+     -->
+
+    <!-- Formations obligatoires 
+    <div class="db-objectif-section mb-4" *ngIf="stats.kpi.formations.obligatoires_total > 0">
+      <div class="db-objectif-header">
+        <div class="db-objectif-header__icon db-objectif-header__icon--red"><i class="isax isax-shield-tick"></i></div>
+        <div>
+          <h6 class="db-objectif-header__title">Formations obligatoires</h6>
+          <p class="db-objectif-header__sub">Formations réglementaires ou imposées par l'entreprise</p>
+        </div>
+      </div>
+      <div class="db-objectif-progress">
+        <div class="db-objectif-progress__values">
+          <span class="db-objectif-progress__done">{{ stats.kpi.formations.obligatoires_terminees }} terminées</span>
+          <span class="db-objectif-progress__target">sur {{ stats.kpi.formations.obligatoires_total }} obligatoires</span>
+        </div>
+        <div class="db-objectif-progress__bar">
+          <div class="db-objectif-progress__fill"
+               [style.width.%]="stats.kpi.formations.taux_obligatoires"
+               [style.background]="getProgressionColor(stats.kpi.formations.taux_obligatoires)"></div>
+          <span class="db-objectif-progress__pct">{{ stats.kpi.formations.taux_obligatoires }}%</span>
+        </div>
+      </div>
+    </div>
+    -->
+
+    <!-- PDI 
+    <div class="db-objectif-section mb-4">
+      <div class="db-objectif-header">
+        <div class="db-objectif-header__icon db-objectif-header__icon--teal"><i class="isax isax-task-square"></i></div>
+        <div>
+          <h6 class="db-objectif-header__title">Plan de Développement Individuel (PDI)</h6>
+          <p class="db-objectif-header__sub">Objectifs fixés avec votre manager</p>
+        </div>
+      </div>
+      <div class="db-coming-inline">
+        <i class="isax isax-flash-1 me-2"></i>Fonctionnalité à venir — Le PDI sera intégré dans une prochaine version
+      </div>
+    </div>
+
+  </ng-container>
+
+</ng-container>
+ -->

@@ -1,0 +1,183 @@
+<div class="tk-page">
+
+  <!-- HEADER -->
+  <div class="tk-header">
+    <div>
+      <div class="tk-header__title">Gestion des tickets</div>
+      <div class="tk-header__sub">Tous les tickets — toutes entreprises</div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi__icon ki-total"><i class="isax isax-ticket"></i></div>
+      <div><div class="kpi__val">{{ stats.total }}</div><div class="kpi__lbl">Total</div></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__icon ki-open"><i class="isax isax-record-circle"></i></div>
+      <div><div class="kpi__val">{{ stats.ouvert }}</div><div class="kpi__lbl">Ouverts</div></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__icon ki-ongoing"><i class="isax isax-activity"></i></div>
+      <div><div class="kpi__val">{{ stats.en_cours }}</div><div class="kpi__lbl">En cours</div></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__icon ki-done"><i class="isax isax-tick-circle"></i></div>
+      <div><div class="kpi__val">{{ stats.resolu }}</div><div class="kpi__lbl">Résolus</div></div>
+    </div>
+  </div>
+
+  <!-- SPLIT PANEL -->
+  <div class="tk-split">
+
+    <!-- LIST PANEL -->
+    <div class="tk-split__list">
+      <!-- toolbar -->
+      <div class="tk-toolbar">
+        <input class="tk-search" placeholder="Rechercher…"
+               [(ngModel)]="searchQuery" (ngModelChange)="onSearch()">
+        <select class="tk-select" [(ngModel)]="filterStatut" (change)="applyFilter()">
+          <option value="">Tous statuts</option>
+          <option value="ouvert">Ouvert</option>
+          <option value="en_cours">En cours</option>
+          <option value="en_attente">En attente</option>
+          <option value="resolu">Résolu</option>
+          <option value="ferme">Fermé</option>
+        </select>
+        <select class="tk-select" [(ngModel)]="filterPriorite" (change)="applyFilter()">
+          <option value="">Toutes priorités</option>
+          <option value="basse">Basse</option>
+          <option value="moyenne">Moyenne</option>
+          <option value="haute">Haute</option>
+          <option value="critique">Critique</option>
+        </select>
+      </div>
+
+      <!-- list -->
+      <div class="tk-list">
+        <div *ngIf="loading" class="tk-loader">Chargement…</div>
+        <div *ngIf="!loading && tickets.length === 0" class="tk-empty">Aucun ticket trouvé.</div>
+        <div *ngFor="let t of tickets"
+             class="tk-item"
+             [class.selected]="selectedTicket?.id === t.id"
+             (click)="selectTicket(t)">
+          <div class="tk-av">{{ getInitials(t.createur?.name) }}</div>
+          <div class="tk-info">
+            <div class="tk-ref">{{ t.reference }} · {{ t.entreprise?.nom }}</div>
+            <div class="tk-subj">{{ t.sujet }}</div>
+            <div class="tk-badges">
+              <span class="badge" [ngClass]="getSClass(t.statut)">{{ getSLabel(t.statut) }}</span>
+              <span class="badge" [ngClass]="getPClass(t.priorite)">{{ getPLabel(t.priorite) }}</span>
+              <span *ngIf="t.est_escalade" class="escalade-badge">Escaladé</span>
+            </div>
+            <div class="tk-meta">
+              <span>{{ t.categorie }}</span>
+              <span *ngIf="t.agent_assigne">· {{ t.agent_assigne.name }}</span>
+              <span>· {{ t.nombre_reponses }} rép.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="tk-pagination" *ngIf="totalPages > 1">
+        <span class="pg-info">{{ totalItems }} ticket{{ totalItems > 1 ? 's' : '' }}</span>
+        <div class="pg-controls">
+          <button type="button" class="pg-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            <i class="isax isax-arrow-left-2"></i>
+          </button>
+          <button type="button" class="pg-btn" *ngFor="let p of pageNumbers"
+                  [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+          <button type="button" class="pg-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            <i class="isax isax-arrow-right-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <div class="tk-split__detail">
+      <ng-container *ngIf="!selectedTicket">
+        <div class="tk-no-select">
+          <i class="isax isax-message-question"></i>
+          <span>Sélectionnez un ticket pour voir le détail</span>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="selectedTicket">
+        <div class="tk-detail">
+          <!-- head -->
+          <div class="tk-detail__head">
+            <div class="detail-info">
+              <div class="detail-title">{{ selectedTicket.sujet }}</div>
+              <div class="detail-ref">{{ selectedTicket.reference }} · {{ selectedTicket.entreprise?.nom }}</div>
+              <div class="detail-badges">
+                <span class="badge" [ngClass]="getSClass(selectedTicket.statut)">{{ getSLabel(selectedTicket.statut) }}</span>
+                <span class="badge" [ngClass]="getPClass(selectedTicket.priorite)">{{ getPLabel(selectedTicket.priorite) }}</span>
+                <span *ngIf="selectedTicket.est_escalade" class="escalade-badge">Escaladé</span>
+              </div>
+            </div>
+            <button type="button" class="act-btn" (click)="closeDetail()">
+              <i class="isax isax-close-circle"></i>
+            </button>
+          </div>
+
+          <!-- actions -->
+          <div class="tk-detail__actions">
+            <button type="button" class="act-btn primary" (click)="changerStatut('en_cours')">
+              <i class="isax isax-activity"></i> Prendre en charge
+            </button>
+            <button type="button" class="act-btn success" (click)="changerStatut('resolu')">
+              <i class="isax isax-tick-circle"></i> Résoudre
+            </button>
+            <button type="button" class="act-btn danger" (click)="changerStatut('ferme')">
+              <i class="isax isax-close-circle"></i> Fermer
+            </button>
+          </div>
+
+          <!-- body -->
+          <div class="tk-detail__body" *ngIf="!loadingDetail">
+            <!-- meta -->
+            <div class="detail-meta">
+              <span><b>Créé par:</b> {{ selectedTicket.createur?.name || '—' }}</span>
+              <span><b>Agent:</b> {{ selectedTicket.agent_assigne?.name || 'Non assigné' }}</span>
+              <span><b>Catégorie:</b> {{ selectedTicket.categorie }}</span>
+              <span><b>Créé le:</b> {{ selectedTicket.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+
+            <!-- description -->
+            <div class="tk-detail__desc">{{ selectedTicket.description }}</div>
+
+            <!-- thread -->
+            <div class="tk-detail__thread-title">Conversation ({{ selectedTicket.nombre_reponses || 0 }} réponses)</div>
+            <div class="tk-detail__thread">
+              <div *ngFor="let m of (selectedTicket.messages || [])" class="msg">
+                <div class="msg__av">{{ getInitials(m.auteur?.name) }}</div>
+                <div class="msg__bubble">
+                  <div class="msg__author">{{ m.auteur?.name }}</div>
+                  <div class="msg__text">{{ m.contenu }}</div>
+                  <div class="msg__time">{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+              </div>
+              <div *ngIf="!(selectedTicket.messages?.length)" class="msg-empty">Aucun message pour l'instant.</div>
+            </div>
+          </div>
+          <div class="tk-loader" *ngIf="loadingDetail">Chargement…</div>
+
+          <!-- reply -->
+          <div class="tk-detail__reply">
+            <textarea class="tk-detail__reply-input" rows="2"
+                      placeholder="Répondre au ticket…"
+                      [(ngModel)]="newMessage"></textarea>
+            <button type="button" class="send-btn" [disabled]="sendingMessage || !newMessage.trim()"
+                    (click)="envoyerMessage()">
+              <i class="isax isax-send-2"></i>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+  </div><!-- /tk-split -->
+</div>

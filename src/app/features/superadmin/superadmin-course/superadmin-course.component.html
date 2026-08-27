@@ -1,0 +1,197 @@
+<div class="ac-shell">
+
+  <!-- ── Topbar ── -->
+  <div class="ac-topbar">
+    <button type="button" class="ac-tab active">
+      <i class="isax isax-task"></i>Liste
+    </button>
+    <a [routerLink]="routes.superadminCourseGrid" class="ac-tab">
+      <i class="isax isax-element-3"></i>Grille
+    </a>
+    <span class="ac-spacer"></span>
+    <div style="display:flex;align-items:center;padding:0 10px;">
+      <span class="ac-topbar-info">{{ totalData }} formation{{ totalData !== 1 ? 's' : '' }}</span>
+    </div>
+  </div>
+
+  <!-- ── KPI ── -->
+  <div class="ac-kpi-row">
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-tick-circle"></i>Publiées</div>
+      <div class="ac-kpi__val">{{ stats.active }}</div>
+      <div class="ac-kpi__delta up">actives</div>
+    </div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-clock"></i>En attente</div>
+      <div class="ac-kpi__val">{{ stats.pending }}</div>
+      <div class="ac-kpi__delta neutral">à valider</div>
+    </div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-document"></i>Brouillons</div>
+      <div class="ac-kpi__val">{{ stats.draft }}</div>
+    </div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-gift"></i>Gratuites</div>
+      <div class="ac-kpi__val">{{ stats.free }}</div>
+    </div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-dollar-circle"></i>Payantes</div>
+      <div class="ac-kpi__val">{{ stats.paid }}</div>
+    </div>
+  </div>
+
+  <!-- ── Toolbar ── -->
+  <div class="ac-toolbar">
+    <div class="ac-search">
+      <i class="isax isax-search-normal ac-search__icon"></i>
+      <input class="ac-search__input" type="text"
+             [(ngModel)]="searchDataValue"
+             (ngModelChange)="searchData($event)"
+             placeholder="Titre, formateur, catégorie…">
+    </div>
+    <!-- Statut filter chips -->
+    <button type="button" class="ac-chip" [class.ac-chip--on]="selectedStatus===''"
+            (click)="filterByStatus('')">Tous</button>
+    <button type="button" class="ac-chip" [class.ac-chip--on]="selectedStatus==='published'"
+            (click)="filterByStatus('published')">
+      <i class="isax isax-tick-circle"></i>Publiées
+    </button>
+    <button type="button" class="ac-chip" [class.ac-chip--on]="selectedStatus==='pending'"
+            (click)="filterByStatus('pending')">
+      <i class="isax isax-clock"></i>En attente
+    </button>
+    <button type="button" class="ac-chip" [class.ac-chip--on]="selectedStatus==='draft'"
+            (click)="filterByStatus('draft')">
+      <i class="isax isax-document"></i>Brouillons
+    </button>
+    <span class="ac-spacer"></span>
+    <select class="ac-select" title="Taille de page" [(ngModel)]="pageSize" (change)="PageSize()">
+      <option value="5">5 / page</option>
+      <option value="10">10 / page</option>
+      <option value="25">25 / page</option>
+      <option value="50">50 / page</option>
+    </select>
+  </div>
+
+  <!-- ── Alert ── -->
+  <div class="ac-alert" *ngIf="error">
+    <i class="isax isax-warning-2"></i>{{ error }}
+    <button type="button" class="ac-alert-close" (click)="error=''"><i class="isax isax-close-circle"></i></button>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div class="ac-empty" *ngIf="loading">
+    <i class="isax isax-book-1"></i>Chargement des formations…
+  </div>
+
+  <!-- ── Table ── -->
+  <ng-container *ngIf="!loading">
+    <table class="ac-table" *ngIf="formations.length > 0">
+      <thead>
+        <tr>
+          <th style="width:136px;">Formation</th>
+          <th>Titre</th>
+          <th style="width:110px;">Catégorie</th>
+          <th style="width:150px;">Formateur</th>
+          <th style="width:130px;">Entreprise</th>
+          <th style="width:80px;text-align:center;">Participants</th>
+          <th style="width:90px;text-align:center;">Coût</th>
+          <th style="width:72px;text-align:center;">Durée</th>
+          <th style="width:88px;text-align:center;">Statut</th>
+          <th style="width:80px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of formations; trackBy: trackByFormation">
+          <!-- Image -->
+          <td style="padding:8px 14px;">
+            <div class="ac-thumb">
+              <img [src]="getDefaultImage(f)" [alt]="f.titre"
+                   onerror="this.src='assets/img/course/course-01.jpg'">
+              <span class="ac-thumb-badge">{{ f.nombre_modules || 0 }}</span>
+            </div>
+          </td>
+          <!-- Titre -->
+          <td>
+            <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-table-name ac-link">{{ f.titre }}</a>
+            <div class="ac-table-sub">
+              <span *ngIf="f.niveau_display || f.niveau">{{ f.niveau_display || f.niveau }}</span>
+              <span *ngIf="f.langue"> · {{ f.langue }}</span>
+            </div>
+          </td>
+          <!-- Catégorie -->
+          <td>
+            <span class="ac-cat-pill"
+                  [style.background]="(f.categorie?.couleur || '#6c757d') + '22'"
+                  [style.color]="f.categorie?.couleur || '#6c757d'">
+              {{ f.categorie?.nom || '—' }}
+            </span>
+          </td>
+          <!-- Formateur -->
+          <td>
+            <div class="ac-instructor">
+              <div class="ac-instructor-av">{{ (f.formateur?.prenom?.[0] ?? 'F') + (f.formateur?.nom?.[0] ?? '') }}</div>
+              <div>
+                <div class="ac-table-name" style="font-size:12px;">{{ f.formateur_nom || 'Non assigné' }}</div>
+                <div class="ac-table-sub" *ngIf="f.formateur?.fonction">{{ f.formateur?.fonction }}</div>
+              </div>
+            </div>
+          </td>
+          <!-- Entreprise -->
+          <td style="font-size:12px;">{{ f.entreprise?.nom || getCompanyName(f.entreprise_id) }}</td>
+          <!-- Participants -->
+          <td style="text-align:center;font-size:13px;">{{ f.nb_max_participants || 0 }}</td>
+          <!-- Prix -->
+          <td style="text-align:center;">
+            <span class="ac-status" [attr.data-s]="isFormationGratuite(f) ? 'pub' : 'pending'">
+              {{ formatPrix(f.prix) }}
+            </span>
+          </td>
+          <!-- Durée -->
+          <td style="text-align:center;font-size:13px;">{{ f.duree_totale || 0 }}h</td>
+          <!-- Statut -->
+          <td style="text-align:center;">
+            <span class="ac-status" [attr.data-s]="f.est_publie && f.inscription_ouverte ? 'pub' : !f.est_publie ? 'draft' : 'done'">
+              {{ getStatusText(f) }}
+            </span>
+          </td>
+          <!-- Actions -->
+          <td>
+            <div class="ac-actions">
+              <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-act" title="Voir">
+                <i class="isax isax-eye"></i>
+              </a>
+              <a [href]="'/courses/instructor-course-edit/' + f.id" target="_blank" class="ac-act" title="Modifier">
+                <i class="isax isax-edit-2"></i>
+              </a>
+              <button type="button" class="ac-act ac-act--del" (click)="deleteFormation(f)" title="Supprimer">
+                <i class="isax isax-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty -->
+    <div class="ac-empty" *ngIf="formations.length === 0">
+      <i class="isax isax-book-1"></i>
+      {{ searchDataValue || selectedStatus ? 'Aucun résultat pour ces filtres' : 'Aucune formation trouvée' }}
+      <button type="button" class="ac-chip" style="margin-top:10px;"
+              *ngIf="searchDataValue || selectedStatus"
+              (click)="searchDataValue=''; filterByStatus('')">
+        <i class="isax isax-refresh"></i>Réinitialiser
+      </button>
+    </div>
+
+    <!-- Pagination -->
+    <app-custom-pagination
+      *ngIf="formations.length > 0 && totalData > pageSize"
+      [totalItems]="totalData"
+      [pageSize]="pageSize"
+      [currentPage]="currentPage"
+      (pageChange)="onPageChange($event)">
+    </app-custom-pagination>
+  </ng-container>
+
+</div>

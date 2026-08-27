@@ -1,0 +1,205 @@
+<div class="sp-page">
+
+  <!-- HERO -->
+  <div class="sp-hero">
+    <div class="sp-hero__bg"></div>
+    <div class="sp-hero__body">
+      <div class="sp-hero__identity">
+        <div class="sp-av">{{ getInitials() }}</div>
+        <div class="sp-hero__info">
+          <h2 class="sp-hero__name">{{ profile?.prenom }} {{ profile?.nom }}</h2>
+          <p class="sp-hero__fonction">{{ profile?.fonction || '—' }}</p>
+          <div class="sp-hero__meta">
+            <span *ngIf="profile?.email"><i class="isax isax-sms"></i>{{ profile?.email }}</span>
+            <span *ngIf="profile?.telephone"><i class="isax isax-call"></i>{{ profile?.telephone }}</span>
+            <span *ngIf="profile?.entreprise"><i class="isax isax-building-3"></i>{{ profile?.entreprise?.nom }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="sp-hero__actions">
+        <span class="sp-status" [class.sp-status--active]="profile?.statut === 1"
+                                [class.sp-status--inactive]="profile?.statut !== 1">
+          {{ getStatusText() }}
+        </span>
+        <button *ngIf="!isEditing" type="button" class="sp-btn sp-btn--edit" (click)="toggleEdit()">
+          <i class="isax isax-edit-2"></i> Modifier
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENU -->
+  <div class="sp-layout">
+
+    <!-- Aside -->
+    <aside class="sp-aside">
+      <div class="sp-card sp-aside__card">
+        <div class="sp-av sp-av--lg">{{ getInitials() }}</div>
+        <div class="sp-aside__name">{{ profile?.prenom }} {{ profile?.nom }}</div>
+        <div class="sp-aside__role">{{ profile?.role?.name || 'Super Admin' }}</div>
+        <span class="sp-status sp-status--sm"
+              [class.sp-status--active]="profile?.statut === 1"
+              [class.sp-status--inactive]="profile?.statut !== 1">
+          {{ getStatusText() }}
+        </span>
+        <div class="sp-aside__chips">
+          <div class="sp-chip">
+            <span class="sp-chip__lbl">ID</span>
+            <span class="sp-chip__val">#{{ profile?.id }}</span>
+          </div>
+          <div class="sp-chip" *ngIf="profile?.matricule">
+            <span class="sp-chip__lbl">Matricule</span>
+            <span class="sp-chip__val">{{ profile?.matricule }}</span>
+          </div>
+          <div class="sp-chip" *ngIf="profile?.entreprise">
+            <span class="sp-chip__lbl">Entreprise</span>
+            <span class="sp-chip__val">{{ profile?.entreprise?.nom }}</span>
+          </div>
+          <div class="sp-chip" *ngIf="profile?.client">
+            <span class="sp-chip__lbl">Client</span>
+            <span class="sp-chip__val">{{ profile?.client?.nom }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="sp-main">
+      <ng-container *ngIf="!isEditing && profile">
+
+        <!-- Informations personnelles -->
+        <div class="sp-card">
+          <div class="sp-card__header">
+            <i class="isax isax-user-square"></i>
+            <h4>Informations personnelles</h4>
+          </div>
+          <div class="sp-grid">
+            <div class="sp-field">
+              <span class="sp-field__lbl">Nom</span>
+              <span class="sp-field__val">{{ profile.nom }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Prénom</span>
+              <span class="sp-field__val">{{ profile.prenom }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Email</span>
+              <span class="sp-field__val">{{ profile.email }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Téléphone</span>
+              <span class="sp-field__val">{{ profile.telephone || '—' }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Fonction</span>
+              <span class="sp-field__val">{{ profile.fonction || '—' }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Numéro matricule</span>
+              <span class="sp-field__val">{{ profile.matricule || profile.numero || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Organisation -->
+        <div class="sp-card">
+          <div class="sp-card__header">
+            <i class="isax isax-buildings-2"></i>
+            <h4>Organisation</h4>
+          </div>
+          <div class="sp-grid">
+            <div class="sp-field">
+              <span class="sp-field__lbl">Rôle</span>
+              <span class="sp-field__val">
+                <span class="sp-badge sp-badge--role">{{ profile.role?.name || 'Super Admin' }}</span>
+              </span>
+            </div>
+            <div class="sp-field" *ngIf="profile.direction">
+              <span class="sp-field__lbl">Direction</span>
+              <span class="sp-field__val">{{ profile.direction }}</span>
+            </div>
+            <div class="sp-field" *ngIf="profile.entreprise">
+              <span class="sp-field__lbl">Entreprise</span>
+              <span class="sp-field__val">{{ profile.entreprise.nom }}</span>
+            </div>
+            <div class="sp-field" *ngIf="profile.client">
+              <span class="sp-field__lbl">Client / Groupe</span>
+              <span class="sp-field__val">{{ profile.client.nom }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Statut</span>
+              <span class="sp-field__val">
+                <span class="sp-badge" [class.sp-badge--active]="profile.statut === 1"
+                                       [class.sp-badge--inactive]="profile.statut !== 1">
+                  {{ getStatusText() }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historique -->
+        <div class="sp-card">
+          <div class="sp-card__header">
+            <i class="isax isax-calendar-1"></i>
+            <h4>Historique</h4>
+          </div>
+          <div class="sp-grid">
+            <div class="sp-field">
+              <span class="sp-field__lbl">Créé le</span>
+              <span class="sp-field__val">{{ profile.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__lbl">Dernière modification</span>
+              <span class="sp-field__val">{{ profile.updated_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- EDIT MODE -->
+      <div class="sp-card" *ngIf="isEditing">
+        <div class="sp-card__header">
+          <i class="isax isax-edit-2"></i>
+          <h4>Modifier le profil</h4>
+        </div>
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="sp-grid">
+            <div class="sp-form-group">
+              <label>Nom</label>
+              <input class="form-control" formControlName="nom" placeholder="Nom">
+            </div>
+            <div class="sp-form-group">
+              <label>Prénom</label>
+              <input class="form-control" formControlName="prenom" placeholder="Prénom">
+            </div>
+            <div class="sp-form-group">
+              <label>Email</label>
+              <input class="form-control" formControlName="email" type="email" placeholder="Email">
+            </div>
+            <div class="sp-form-group">
+              <label>Téléphone</label>
+              <input class="form-control" formControlName="telephone" placeholder="Téléphone">
+            </div>
+            <div class="sp-form-group">
+              <label>Fonction</label>
+              <input class="form-control" formControlName="fonction" placeholder="Fonction">
+            </div>
+            <div class="sp-form-group">
+              <label>Numéro matricule</label>
+              <input class="form-control" formControlName="numero" placeholder="Matricule">
+            </div>
+          </div>
+          <div class="sp-form-actions">
+            <button class="sp-btn sp-btn--primary" type="submit" [disabled]="profileForm.invalid || loading">
+              <i class="isax isax-tick-circle"></i> Sauvegarder
+            </button>
+            <button type="button" class="sp-btn sp-btn--light" (click)="toggleEdit()">Annuler</button>
+          </div>
+        </form>
+      </div>
+
+    </main>
+  </div>
+</div>

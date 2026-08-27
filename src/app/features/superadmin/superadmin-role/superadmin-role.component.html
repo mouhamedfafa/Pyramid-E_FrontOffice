@@ -1,0 +1,431 @@
+<!-- ── SHELL ── -->
+<div class="ul-shell">
+
+  <!-- ── TOP BAR ── -->
+  <div class="ul-topbar">
+    <i class="isax isax-user-tag ul-topbar__icon"></i>
+    <h1 class="ul-topbar__title">Gestion des Rôles</h1>
+    <span class="ul-topbar__stats">
+      {{ totalItems }} rôle{{ totalItems > 1 ? 's' : '' }}
+    </span>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="ul-alert ul-alert--success">
+    <i class="isax isax-tick-circle"></i> {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="ul-alert">
+    <i class="isax isax-warning-2"></i> {{ errorMessage }}
+  </div>
+
+  <!-- ── TOOLBAR ── -->
+  <div class="ul-toolbar">
+    <div class="ul-search">
+      <i class="isax isax-search-normal-1 ul-search__icon"></i>
+      <input type="search" class="ul-search__input"
+             placeholder="Rechercher un rôle..."
+             [(ngModel)]="searchText"
+             (ngModelChange)="searchRoles()">
+    </div>
+    <button type="button" class="ul-add-btn" (click)="openModal()">
+      <i class="isax isax-add"></i> Nouveau rôle
+    </button>
+  </div>
+
+  <!-- ── SKELETON ── -->
+  <div *ngIf="loading" class="ul-skeletons">
+    <div *ngFor="let i of [1,2,3,4,5]" class="ul-skeleton-row"></div>
+  </div>
+
+  <!-- ── TABLEAU ── -->
+  <table class="ul-table" *ngIf="!loading">
+    <thead>
+      <tr>
+        <th style="width:30%">Rôle</th>
+        <th style="width:13%">Type</th>
+        <th style="width:9%">Niveau</th>
+        <th style="width:12%">Permissions</th>
+        <th style="width:10%">Utilisateurs</th>
+        <th style="width:13%">Créé le</th>
+        <th style="width:13%">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let role of paginatedRoles; trackBy: trackByRoleId">
+        <td>
+          <div class="ul-user">
+            <div class="ul-avatar" [attr.data-role]="getRoleTypeKey(role)">
+              {{ role.name.charAt(0).toUpperCase() }}
+            </div>
+            <div>
+              <div class="ul-user__name">
+                {{ role.name }}
+                <span *ngIf="role.is_system" class="ul-system-badge">système</span>
+              </div>
+              <div class="ul-user__email">ID: {{ role.id }}{{ role.description ? ' · ' + (role.description | slice:0:40) : '' }}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="ul-role-badge" [attr.data-role]="getRoleTypeKey(role)">
+            <i [class]="'isax ' + getRoleTypeIcon(role)"></i>
+            {{ getRoleTypeLabel(role) }}
+          </span>
+        </td>
+        <td>
+          <span class="ul-level-badge" *ngIf="role.role_level != null">N{{ role.role_level }}</span>
+          <span class="ul-date" *ngIf="role.role_level == null">—</span>
+        </td>
+        <td>
+          <button type="button" class="ul-perm-btn"
+                  (click)="viewRolePermissions(role)"
+                  [title]="'Voir les ' + getPermissionsCount(role) + ' permissions'">
+            <i class="isax isax-key"></i>
+            {{ getPermissionsCount(role) }}
+          </button>
+        </td>
+        <td>
+          <span class="ul-count-badge">{{ role.users_count || 0 }}</span>
+        </td>
+        <td class="ul-date">{{ role.created_at | date:'dd/MM/yyyy' }}</td>
+        <td>
+          <div class="ul-actions">
+            <button type="button" class="ul-act" title="Voir permissions"
+                    (click)="viewRolePermissions(role)">
+              <i class="isax isax-eye"></i>
+            </button>
+            <button type="button" class="ul-act" title="Modifier"
+                    (click)="openModal(role)">
+              <i class="isax isax-edit"></i>
+            </button>
+            <button type="button" class="ul-act ul-act--del" title="Supprimer"
+                    (click)="deleteRole(role)">
+              <i class="isax isax-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="!paginatedRoles.length">
+        <td colspan="7" class="ul-empty">
+          <i class="isax isax-user-tag d-block mb-2" style="font-size:2rem;"></i>
+          {{ searchText ? 'Aucun rôle ne correspond à votre recherche' : 'Aucun rôle trouvé' }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── PAGINATION ── -->
+  <div class="ul-pager" *ngIf="!loading && totalPages > 1">
+    <span class="ul-pager__info">
+      {{ getStartIndex() }}–{{ getEndIndex() }} sur {{ totalItems }}
+    </span>
+    <div class="ul-pager__btns">
+      <button type="button" class="ul-pager__btn" [disabled]="currentPage === 1"
+              (click)="onPageChange(currentPage - 1)">
+        <i class="isax isax-arrow-left-2"></i>
+      </button>
+      <button type="button" *ngFor="let page of getPaginationArray()"
+              class="ul-pager__btn"
+              [class.ul-pager__btn--active]="currentPage === page"
+              (click)="onPageChange(page)">{{ page }}</button>
+      <button type="button" class="ul-pager__btn" [disabled]="currentPage === totalPages"
+              (click)="onPageChange(currentPage + 1)">
+        <i class="isax isax-arrow-right-3"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Modal Ajout/Modification de Rôle ── -->
+<div class="modal fade"
+     [class.show]="showModal"
+     [style.display]="showModal ? 'block' : 'none'"
+     tabindex="-1" role="dialog" aria-labelledby="roleModalLabel">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center gap-2">
+          <i class="isax isax-user-tag text-primary"></i>
+          <h5 class="modal-title fw-semibold mb-0" id="roleModalLabel">
+            {{ isEditing ? 'Modifier le rôle' : 'Nouveau rôle' }}
+          </h5>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Fermer"></button>
+      </div>
+
+      <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="modal-body pt-3">
+
+          <!-- ── Alertes formulaire ── -->
+          <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2" role="alert">
+            <i class="isax isax-warning-2 fs-5"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+          <div *ngIf="successMessage" class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2" role="alert">
+            <i class="isax isax-tick-circle fs-5"></i>
+            <span>{{ successMessage }}</span>
+          </div>
+
+          <!-- ── Rôles système ── -->
+          <div *ngIf="!isEditing" class="rounded border border-success-subtle bg-success-subtle p-3 mb-4">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <span class="fw-semibold text-success-emphasis me-1 small">
+                Rôles système présents dans toutes les entreprises :
+              </span>
+              <ng-container *ngFor="let sr of SYSTEM_ROLES">
+                <button type="button"
+                        class="btn btn-outline-success btn-sm rounded-pill px-3 py-1"
+                        (click)="openModal(getSystemRoleFromLoaded(sr.name))"
+                        [title]="'Modifier ' + sr.name">
+                  <i [class]="'isax ' + sr.icon + ' me-1'"></i>{{ sr.name }}
+                </button>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- ── Ligne 1 : Nom + Niveau ── -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label for="saRoleName" class="form-label fw-medium">
+                Nom du rôle <span class="text-danger">*</span>
+              </label>
+              <input type="text" id="saRoleName" class="form-control"
+                     formControlName="name"
+                     [class.is-invalid]="f['name'].invalid && f['name'].touched"
+                     placeholder="Ex: Administrateur, Manager Régional...">
+              <div class="invalid-feedback" *ngIf="f['name'].invalid && f['name'].touched">
+                <small *ngIf="f['name'].hasError('required')">Le nom est requis</small>
+                <small *ngIf="f['name'].hasError('minlength')">Minimum 3 caractères</small>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-medium">
+                Niveau hiérarchique <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <button type="button" class="btn btn-outline-secondary"
+                        (click)="f['role_level'].setValue((f['role_level'].value || minRoleLevel) - 1)"
+                        [disabled]="(f['role_level'].value || minRoleLevel) <= minRoleLevel">−</button>
+                <input type="number" class="form-control text-center"
+                       formControlName="role_level"
+                       [min]="minRoleLevel" max="10"
+                       style="max-width:80px;">
+                <button type="button" class="btn btn-outline-secondary"
+                        (click)="f['role_level'].setValue((f['role_level'].value || minRoleLevel) + 1)"
+                        [disabled]="(f['role_level'].value || 1) >= 10">+</button>
+              </div>
+              <small class="text-muted d-block mt-1">
+                {{ f['role_level'].value === 1 ? 'Direction — accès complet' :
+                   f['role_level'].value === 2 ? 'Gestion — accès large' :
+                   f['role_level'].value === 3 ? 'Opérationnel — accès limité' : 'Accès restreint' }}
+              </small>
+            </div>
+          </div>
+
+
+          <!-- ── Type (cards) ── -->
+          <div class="mb-4">
+            <label class="form-label fw-medium">
+              Type de rôle <span class="text-danger">*</span>
+            </label>
+            <div class="row g-2">
+              <div class="col-6 col-md" *ngFor="let t of ROLE_TYPES">
+                <div class="card border-2 h-100"
+                     [class.border-danger]="f['type'].value === t.value && t.color === 'danger'"
+                     [class.border-primary]="f['type'].value === t.value && t.color === 'primary'"
+                     [class.border-info]="f['type'].value === t.value && t.color === 'info'"
+                     [class.border-success]="f['type'].value === t.value && t.color === 'success'"
+                     [class.border-warning]="f['type'].value === t.value && t.color === 'warning'"
+                     [class.bg-danger-subtle]="f['type'].value === t.value && t.color === 'danger'"
+                     [class.bg-primary-subtle]="f['type'].value === t.value && t.color === 'primary'"
+                     [class.bg-info-subtle]="f['type'].value === t.value && t.color === 'info'"
+                     [class.bg-success-subtle]="f['type'].value === t.value && t.color === 'success'"
+                     [class.bg-warning-subtle]="f['type'].value === t.value && t.color === 'warning'"
+                     [class.border-light]="f['type'].value !== t.value"
+                     (click)="f['type'].setValue(t.value)"
+                     style="cursor:pointer;">
+                  <div class="card-body p-2 p-md-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <span class="fw-semibold small">{{ t.label }}</span>
+                      <i [class]="'isax ' + t.icon + ' small'"></i>
+                    </div>
+                    <small class="text-muted">{{ t.description }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="f['type'].invalid && f['type'].touched" class="text-danger small mt-1">
+              Le type est requis
+            </div>
+          </div>
+
+          <!-- ── Permissions ── -->
+          <div formArrayName="permissions">
+            <!-- Entête -->
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-medium">Permissions assignées</span>
+                <span class="badge bg-primary rounded-pill">
+                  {{ getSelectedPermissionsCount() }} / {{ allPermissions.length }}
+                </span>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                        [disabled]="areAllPermissionsSelected()"
+                        (click)="selectAllPermissions()">
+                  <i class="isax isax-tick-square me-1"></i>Tout sélectionner
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                        [disabled]="areNoPermissionsSelected()"
+                        (click)="deselectAllPermissions()">
+                  <i class="isax isax-close-square me-1"></i>Tout désélectionner
+                </button>
+              </div>
+            </div>
+
+            <!-- Barre de recherche permissions -->
+            <div class="perm-search mb-3">
+              <i class="isax isax-search-normal-1 perm-search__icon"></i>
+              <input type="search" class="perm-search__input"
+                     id="sa-perm-search"
+                     placeholder="Rechercher une permission..."
+                     aria-label="Rechercher une permission"
+                     [(ngModel)]="permissionSearchText"
+                     [ngModelOptions]="{standalone: true}">
+            </div>
+
+            <!-- Tabs catégories -->
+            <div class="d-flex gap-1 flex-wrap mb-3">
+              <button *ngFor="let cat of PERMISSION_CATEGORIES"
+                      type="button"
+                      class="btn btn-sm rounded-pill"
+                      [class.btn-dark]="activePermissionCategory === cat.key"
+                      [class.btn-outline-secondary]="activePermissionCategory !== cat.key"
+                      (click)="setPermissionCategory(cat.key)">
+                {{ cat.label }}
+              </button>
+            </div>
+
+            <!-- Grille des permissions -->
+            <div *ngIf="allPermissions.length === 0" class="text-center py-4 text-muted">
+              <i class="isax isax-info-circle d-block mb-2 modal-icon-lg"></i>
+              Aucune permission disponible
+            </div>
+
+            <div *ngIf="filteredPermissionsForModal.length === 0 && allPermissions.length > 0"
+                 class="text-center py-3 text-muted small">
+              Aucune permission ne correspond à votre recherche
+            </div>
+
+            <div class="permissions-grid">
+              <ng-container *ngFor="let permission of filteredPermissionsForModal">
+                <div class="permission-item"
+                     [class.selected]="permissionsFormArray.at(getPermissionIndex(permission)).value"
+                     (click)="permissionsFormArray.at(getPermissionIndex(permission)).setValue(!permissionsFormArray.at(getPermissionIndex(permission)).value)">
+                  <input type="checkbox" class="form-check-input mt-0 flex-shrink-0"
+                         [formControlName]="getPermissionIndex(permission)"
+                         [id]="'sa-perm-' + permission.id"
+                         [attr.aria-label]="permission.name"
+                         [title]="permission.name"
+                         (click)="$event.stopPropagation()">
+                  <label [for]="'sa-perm-' + permission.id" class="mb-0 small">
+                    {{ permission.name }}
+                  </label>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
+        </div><!-- /modal-body -->
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light rounded-pill px-4"
+                  (click)="closeModal()" [disabled]="loading">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-dark rounded-pill px-4"
+                  [disabled]="roleForm.invalid || loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!loading" class="isax me-1"
+               [class.isax-edit]="isEditing"
+               [class.isax-add]="!isEditing"></i>
+            {{ isEditing ? 'Mettre à jour' : '+ Créer le rôle' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Visualisation des Permissions ── -->
+<div class="modal fade"
+     [class.show]="showPermissionsModal"
+     [style.display]="showPermissionsModal ? 'block' : 'none'"
+     tabindex="-1" role="dialog" aria-labelledby="permissionsModalLabel">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center gap-2">
+          <i class="isax isax-key text-primary"></i>
+          <h5 class="modal-title fw-semibold mb-0" id="permissionsModalLabel">
+            Permissions — <strong>{{ selectedRole?.name }}</strong>
+          </h5>
+        </div>
+        <button type="button" class="btn-close"
+                (click)="closePermissionsModal()" aria-label="Fermer"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Vide -->
+        <div *ngIf="!selectedRole || getPermissionsCount(selectedRole) === 0"
+             class="text-center py-5">
+          <i class="isax isax-lock d-block mb-3 text-muted" style="font-size:2.5rem;"></i>
+          <h6 class="text-muted">Aucune permission assignée</h6>
+          <p class="text-muted small mb-3">Ce rôle n'a aucune permission pour le moment.</p>
+          <button class="btn btn-sm btn-dark rounded-pill px-4"
+                  (click)="editRoleFromPermissionsView()">
+            <i class="isax isax-edit me-1"></i>Modifier le rôle
+          </button>
+        </div>
+
+        <!-- Liste -->
+        <div *ngIf="selectedRole && getPermissionsCount(selectedRole) > 0">
+          <div class="permissions-grid mb-3">
+            <div *ngFor="let permission of selectedRole.permissions; trackBy: trackByPermissionId"
+                 class="permission-item border rounded px-3 py-2 d-flex align-items-center gap-2 selected">
+              <i class="isax isax-tick-circle text-success flex-shrink-0"></i>
+              <span class="small">{{ permission.name }}</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded" style="background:#f0ebff;">
+            <div class="d-flex align-items-center gap-2">
+              <i class="isax isax-key text-primary"></i>
+              <span class="fw-semibold text-primary">{{ getPermissionsCount(selectedRole) }}</span>
+              <span class="text-muted small">permission(s) assignée(s)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light rounded-pill px-4"
+                (click)="closePermissionsModal()">Fermer</button>
+        <button type="button" class="btn btn-dark rounded-pill px-4"
+                (click)="editRoleFromPermissionsView()">
+          <i class="isax isax-edit me-1"></i>Modifier le rôle
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Backdrop -->
+<div class="modal-backdrop fade"
+     [class.show]="showModal || showPermissionsModal"
+     *ngIf="showModal || showPermissionsModal">
+</div>

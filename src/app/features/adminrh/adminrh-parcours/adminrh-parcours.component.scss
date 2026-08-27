@@ -1,0 +1,142 @@
+@import '../adminrh-course/adminrh-course.component';
+
+// ── Pool override (blue theme) ────────────────
+.cw-pool__item.checked,
+.cw-pool__item:hover { background: #e6f1fb; }
+.cw-pool__check.on   { background: #185fa5; border-color: #185fa5; color: #fff; }
+
+// ── Selected chips ────────────────────────────
+.cw-pool-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.cw-pool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #e6f1fb;
+  color: #185fa5;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #185fa5;
+    padding: 0;
+    line-height: 1;
+    font-size: 13px;
+    display: flex;
+  }
+}
+
+.cw-pool-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+// ── Extra select control ──────────────────────
+.ac-select {
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .15s;
+
+  &:focus { border-color: #185fa5; }
+}
+
+// ── Inline list (view modal) ──────────────────
+.wz-desc-box {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #374151;
+  background: #f9fafb;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 8px;
+  line-height: 1.6;
+}
+
+.wz-list { display: flex; flex-direction: column; gap: 5px; }
+
+.wz-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+
+  i { font-size: 14px; flex-shrink: 0; }
+}
+
+.wz-section-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 16px 0 8px;
+}
+
+// ── Alert close ───────────────────────────────
+.ac-alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.ac-alert-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: .6;
+  font-size: 14px;
+  &:hover { opacity: 1; }
+}
+
+// ── Spinner inline ────────────────────────────
+.wz-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Danger button ─────────────────────────────
+.wz-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #dc2626;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity .15s;
+
+  &:hover { opacity: .9; }
+}
