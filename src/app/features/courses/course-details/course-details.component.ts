@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 import { LightgalleryModule } from 'lightgallery/angular';
 import { FormsModule } from '@angular/forms';
 import { FormationService } from '../../../shared/service/formation/formation.service';
+import { CommonService } from '../../../shared/service/common/common.service';
 import { AuthService } from '../../../shared/service/authentification/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 import { Location } from '@angular/common';
@@ -73,8 +74,8 @@ export class CourseDetailsComponent implements OnInit, OnDestroy {
     private formationService: FormationService,
     private authService: AuthService,
     private location: Location,
-        private sanitizer: DomSanitizer 
-
+    private sanitizer: DomSanitizer,
+    private commonService: CommonService,
   ) {}
 
   ngOnInit(): void {
@@ -130,6 +131,7 @@ export class CourseDetailsComponent implements OnInit, OnDestroy {
     ).subscribe({
      next: (response) => {
           this.formation = response.formation || response.data || response;
+          this.commonService.page.next(this.formation.titre || '');
           this.processFormationData();
           this.loadRelatedCourses();
           this.loading = false;
@@ -616,7 +618,11 @@ parseToNumber(value: any): number {
   // ================================
 
   goBack(): void {
-    this.location.back();
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      window.close();
+    }
   }
 
   scrollToSection(sectionId: string): void {

@@ -3,16 +3,50 @@
 // Tout est scopé sous app-student ou .emp-header pour éviter les fuites
 // ═══════════════════════════════════════════════════════
 
-$orange:      #D4AF37;
-$orange-mid:  #c9a02e;
 $text-dark:   #1a1a2e;
 $text-mid:    #374151;
 $text-muted:  #6b7280;
 $border:      #e5e7eb;
 $radius:      14px;
 
+// ── Theme definitions via CSS custom properties ──────────
 app-student .content {
   padding: 1.5rem 0 !important;
+
+  // Teal (default)
+  --stu-accent:       #069b8f;
+  --stu-accent-dark:  #047a6f;
+  --stu-accent-light: #e6f7f5;
+  --stu-accent-border: #b2e8e3;
+  --stu-accent-text:  #047a6f;
+  --stu-gold:         #D4AF37;
+  --stu-btn-bg:       #1a3c34;
+  --stu-btn-hover:    #15322c;
+  --stu-btn-icon:     #069b8f;
+
+  &.stu-theme-navy {
+    --stu-accent:       #D4A843;
+    --stu-accent-dark:  #c0952e;
+    --stu-accent-light: #fdf6e8;
+    --stu-accent-border: #f0ddb0;
+    --stu-accent-text:  #92710a;
+    --stu-gold:         #D4A843;
+    --stu-btn-bg:       #161637;
+    --stu-btn-hover:    #0f0f28;
+    --stu-btn-icon:     #D4A843;
+  }
+
+  &.stu-theme-indigo {
+    --stu-accent:       #818cf8;
+    --stu-accent-dark:  #6366f1;
+    --stu-accent-light: #eef2ff;
+    --stu-accent-border: #c7d2fe;
+    --stu-accent-text:  #4f46e5;
+    --stu-gold:         #818cf8;
+    --stu-btn-bg:       #1e1b4b;
+    --stu-btn-hover:    #171438;
+    --stu-btn-icon:     #818cf8;
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -69,7 +103,7 @@ app-student .content {
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #069b8f, #047a6f);
+    background: linear-gradient(135deg, var(--stu-accent), var(--stu-accent-dark));
     color: #fff;
     display: flex;
     align-items: center;
@@ -107,11 +141,11 @@ app-student .content {
     align-items: center;
     gap: 4px;
 
-    i { font-size: 13px; color: #069b8f; }
+    i { font-size: 13px; color: var(--stu-accent); }
   }
 
   .emp-company-link {
-    color: #069b8f !important;
+    color: var(--stu-accent) !important;
     font-weight: 600;
     text-decoration: none !important;
     &:hover { text-decoration: underline !important; }
@@ -126,7 +160,7 @@ app-student .content {
   }
 
   .emp-greeting-count {
-    color: #069b8f;
+    color: var(--stu-accent);
     font-weight: 600;
   }
 
@@ -143,7 +177,7 @@ app-student .content {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #1a3c34;
+    background: var(--stu-btn-bg);
     color: #fff;
     padding: 12px 18px;
     border-radius: 12px;
@@ -153,7 +187,7 @@ app-student .content {
     min-width: 240px;
 
     &:hover {
-      background: #15322c;
+      background: var(--stu-btn-hover);
     }
 
     .emp-explorer-btn__icon {
@@ -163,7 +197,7 @@ app-student .content {
       width: 36px;
       height: 36px;
       border-radius: 8px;
-      background: #069b8f;
+      background: var(--stu-btn-icon);
       flex-shrink: 0;
 
       i { font-size: 18px; color: #fff; }
@@ -219,7 +253,7 @@ app-student .content {
   .emp-completion {
     font-size: 12px;
     font-weight: 600;
-    color: $orange;  // gold pour la complétion
+    color: var(--stu-gold);
   }
 
   .emp-formations-list {
@@ -256,8 +290,8 @@ app-student .content {
     border-radius: 99px;
     transition: width .4s ease;
 
-    &.bar--green  { background: #069b8f; }
-    &.bar--orange { background: $orange; }
+    &.bar--green  { background: var(--stu-accent); }
+    &.bar--orange { background: var(--stu-gold); }
     &.bar--gray   { background: #94a3b8; }
   }
 
@@ -266,8 +300,8 @@ app-student .content {
     font-weight: 700;
     text-align: right;
 
-    &.pct--bar--green  { color: #069b8f; }
-    &.pct--bar--orange { color: $orange; }
+    &.pct--bar--green  { color: var(--stu-accent); }
+    &.pct--bar--orange { color: var(--stu-gold); }
     &.pct--bar--gray   { color: #94a3b8; }
   }
 
@@ -295,10 +329,10 @@ app-student .content {
     strong { font-weight: 700; }
 
     &.emp-badge--cert {
-      background: #e6f7f5;
-      border-color: #b2e8e3;
-      color: #047a6f;
-      i { color: #069b8f; }
+      background: var(--stu-accent-light);
+      border-color: var(--stu-accent-border);
+      color: var(--stu-accent-text);
+      i { color: var(--stu-accent); }
     }
 
     &.emp-badge--warn {
@@ -309,11 +343,11 @@ app-student .content {
     }
 
     &.emp-badge--session {
-      background: #e6f7f5;
-      border-color: #b2e8e3;
-      color: #047a6f;
+      background: var(--stu-accent-light);
+      border-color: var(--stu-accent-border);
+      color: var(--stu-accent-text);
       margin-left: auto;
-      i { color: #069b8f; }
+      i { color: var(--stu-accent); }
     }
   }
 

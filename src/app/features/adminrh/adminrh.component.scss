@@ -1,10 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ADMIN RH HEADER — style clair avec accent vert (image de référence)
+// ADMIN RH HEADER — themed accent colors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-$green:       #1a7a4a;
-$green-light: #e8f5ee;
-$green-mid:   #2da05e;
 $warn-bg:     #fff8ee;
 $warn-border: #f5c77e;
 $warn-text:   #b45309;
@@ -12,8 +9,32 @@ $text-dark:   #1a1a2e;
 $text-muted:  #6b7280;
 $radius:      14px;
 
+// ── Theme definitions ────────────────────────────────
 .content {
   padding: 21px 0 !important;
+
+  // Navy (default)
+  --arh-accent:       #D4A843;
+  --arh-accent-dark:  #c0952e;
+  --arh-accent-light: #fdf6e8;
+  --arh-accent-border: #f0ddb0;
+  --arh-accent-text:  #92710a;
+
+  &.arh-theme-teal {
+    --arh-accent:       #0F6E56;
+    --arh-accent-dark:  #0a5a46;
+    --arh-accent-light: #e8f5ee;
+    --arh-accent-border: #b0dcc5;
+    --arh-accent-text:  #0F6E56;
+  }
+
+  &.arh-theme-plum {
+    --arh-accent:       #7C3AED;
+    --arh-accent-dark:  #6525d4;
+    --arh-accent-light: #f0ebff;
+    --arh-accent-border: #c4b5fd;
+    --arh-accent-text:  #5b21b6;
+  }
 }
 
 .arh-header {
@@ -54,14 +75,14 @@ $radius:      14px;
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: $green-light;
-  color: $green;
+  background: var(--arh-accent-light);
+  color: var(--arh-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   font-weight: 700;
-  border: 2px solid $green-mid;
+  border: 2px solid var(--arh-accent);
   flex-shrink: 0;
 }
 
@@ -80,7 +101,7 @@ $radius:      14px;
   align-items: center;
   gap: 5px;
 
-  i { font-size: 13px; color: $green-mid; }
+  i { font-size: 13px; color: var(--arh-accent); }
 }
 
 .arh-role-badge {
@@ -88,9 +109,9 @@ $radius:      14px;
   font-size: 11px;
   padding: 2px 12px;
   border-radius: 20px;
-  background: $green-light;
-  color: $green;
-  border: 1px solid darken($green-light, 8%);
+  background: var(--arh-accent-light);
+  color: var(--arh-accent-text);
+  border: 1px solid var(--arh-accent-border);
   font-weight: 500;
 }
 
@@ -120,15 +141,15 @@ $radius:      14px;
     color: $text-dark;
     border: 1px solid #d1d5db;
 
-    &:hover { border-color: $green-mid; color: $green; }
+    &:hover { border-color: var(--arh-accent); color: var(--arh-accent); }
   }
 
   &.arh-btn-primary {
-    background: $green;
+    background: var(--arh-accent);
     color: #fff;
-    border: 1px solid $green;
+    border: 1px solid var(--arh-accent);
 
-    &:hover { background: darken($green, 6%); }
+    &:hover { background: var(--arh-accent-dark); border-color: var(--arh-accent-dark); }
   }
 }
 
@@ -228,7 +249,7 @@ $radius:      14px;
   font-size: 12px;
   transition: border-color .15s;
 
-  &:hover { border-color: $green-mid; color: $green; }
+  &:hover { border-color: var(--arh-accent); color: var(--arh-accent); }
 }
 
 // ── Responsive ────────────────────────────────────────

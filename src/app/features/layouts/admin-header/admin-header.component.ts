@@ -1,13 +1,18 @@
-import { Component, ElementRef, HostListener, Renderer2, ViewChild,OnInit, Input } from '@angular/core';
+import { Component, ElementRef, HostListener, Renderer2, ViewChild, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonService } from '../../../shared/service/common/common.service';
 import { DataService } from '../../../shared/service/data/data.service';
 import { SidebarService } from '../../../shared/service/sidebar/sidebar.service';
 import { routes } from '../../../shared/service/routes/routes';
 import { SidebarItem } from '../../../shared/models/model';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, NavigationEnd, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../shared/service/authentification/auth.service';
 import { HasPermissionDirective } from '../../../directive/has-permission-directive.directive';
+import { AdminrhThemeService } from '../../adminrh/common/adminrh-theme.service';
+import { InstructorThemeService } from '../../instructor/common/instructor-theme.service';
+import { StudentThemeService } from '../../student/common/student-theme.service';
 
 @Component({
     selector: 'app-admin-header',
@@ -16,7 +21,7 @@ import { HasPermissionDirective } from '../../../directive/has-permission-direct
     imports: [CommonModule, RouterLink, HasPermissionDirective],
     standalone: true
 })
-export class AdminHeaderComponent implements OnInit {
+export class AdminHeaderComponent implements OnInit, OnDestroy {
     // @Input() base: string = ''; // Définir le type
 
    public routes = routes;
@@ -42,6 +47,9 @@ export class AdminHeaderComponent implements OnInit {
    sidebar: SidebarItem[];
      isLoggedIn = false;
   currentUser: any = null;
+  headerThemeClass = '';
+  private themeSub?: Subscription;
+  private navSub?: Subscription;
 
    constructor(
      private common: CommonService,
@@ -49,6 +57,10 @@ export class AdminHeaderComponent implements OnInit {
      public sidebarService: SidebarService,
      private renderer: Renderer2,
      private authService: AuthService,
+     private router: Router,
+     private adminrhTheme: AdminrhThemeService,
+     private instructorTheme: InstructorThemeService,
+     private studentTheme: StudentThemeService,
    ) {
      this.common.base.subscribe((res: string) => {
        this.base = res;
@@ -107,8 +119,29 @@ export class AdminHeaderComponent implements OnInit {
   ngOnInit(): void {
     const themeColor = localStorage.getItem('themeColor') || 'light-mode';
     this.sidebarService.changeThemeColor(themeColor);
-        this.checkLoginStatus();
+    this.checkLoginStatus();
+    this.updateHeaderTheme(this.router.url);
+    this.navSub = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: any) => this.updateHeaderTheme(e.urlAfterRedirects || e.url));
+  }
 
+  ngOnDestroy(): void {
+    this.themeSub?.unsubscribe();
+    this.navSub?.unsubscribe();
+  }
+
+  private updateHeaderTheme(url: string): void {
+    this.themeSub?.unsubscribe();
+    if (url.includes('/adminrh') || url.includes('/superadmin')) {
+      this.themeSub = this.adminrhTheme.theme$.subscribe(t => this.headerThemeClass = 'hdr-adminrh-' + t);
+    } else if (url.includes('/instructor') || url.includes('/courses/instructor')) {
+      this.themeSub = this.instructorTheme.theme$.subscribe(t => this.headerThemeClass = 'hdr-instructor-' + t);
+    } else if (url.includes('/student')) {
+      this.themeSub = this.studentTheme.theme$.subscribe(t => this.headerThemeClass = 'hdr-student-' + t);
+    } else {
+      this.headerThemeClass = '';
+    }
   }
 checkLoginStatus(): void {
    this.isLoggedIn = this.authService.isLoggedIn();

@@ -1,47 +1,94 @@
 // ── TOKENS ──────────────────────────────────────────────────────────────────
-$bg:       #3D2B1F;          // Cuir chaud — brun acajou profond
-$active:   #C17B3A;          // Caramel — accent chaud
-$active-bg: rgba(193,123,58,.18);
-$border:   rgba(255,255,255,.07);
-$text:     rgba(255,255,255,.52);
-$text-hi:  rgba(255,255,255,.9);
-$text-dim: rgba(255,255,255,.28);
 $radius:   8px;
 
 :host { display: block; padding: 0 !important; }
 
+// ── Theme definitions via CSS custom properties ──────────
 .sb-shell {
-  background: $bg;
+  // Caramel (default)
+  --sb-bg:           #3D2B1F;
+  --sb-active:       #C17B3A;
+  --sb-active-bg:    rgba(193,123,58,.18);
+  --sb-border:       rgba(255,255,255,.07);
+  --sb-text:         rgba(255,255,255,.52);
+  --sb-text-hi:      rgba(255,255,255,.9);
+  --sb-text-dim:     rgba(255,255,255,.28);
+  --sb-stat-val:     rgba(255,220,160,.9);
+  --sb-progress:     #7F77DD;
+  --sb-period:       #AFA9EC;
+  --sb-sub-active:   #AFA9EC;
+  --sb-badge-bg:     rgba(193,123,58,.3);
+  --sb-badge-text:   rgba(255,220,160,.95);
+  --sb-logo-shadow:  rgba(193,123,58,.4);
+
+  &.theme-ember {
+    --sb-bg:           #7C2D12;
+    --sb-active:       #EA580C;
+    --sb-active-bg:    rgba(234,88,12,.18);
+    --sb-border:       rgba(255,255,255,.08);
+    --sb-text:         rgba(255,255,255,.55);
+    --sb-text-hi:      rgba(255,255,255,.92);
+    --sb-text-dim:     rgba(255,255,255,.30);
+    --sb-stat-val:     rgba(255,200,140,.9);
+    --sb-progress:     #fb923c;
+    --sb-period:       #fdba74;
+    --sb-sub-active:   #fdba74;
+    --sb-badge-bg:     rgba(234,88,12,.3);
+    --sb-badge-text:   rgba(255,200,140,.95);
+    --sb-logo-shadow:  rgba(234,88,12,.4);
+  }
+
+  &.theme-slate {
+    --sb-bg:           #1e293b;
+    --sb-active:       #3b82f6;
+    --sb-active-bg:    rgba(59,130,246,.16);
+    --sb-border:       rgba(255,255,255,.07);
+    --sb-text:         rgba(255,255,255,.50);
+    --sb-text-hi:      rgba(255,255,255,.9);
+    --sb-text-dim:     rgba(255,255,255,.28);
+    --sb-stat-val:     rgba(147,197,253,.9);
+    --sb-progress:     #60a5fa;
+    --sb-period:       #93c5fd;
+    --sb-sub-active:   #93c5fd;
+    --sb-badge-bg:     rgba(59,130,246,.25);
+    --sb-badge-text:   rgba(147,197,253,.95);
+    --sb-logo-shadow:  rgba(59,130,246,.4);
+  }
+}
+
+.sb-shell {
+  background: var(--sb-bg);
   display: flex; flex-direction: column;
   min-height: calc(100vh - 80px);
   overflow: hidden;
   border-radius: 12px;
   margin-bottom: 24px;
+  transition: background 0.3s ease;
 }
 
 // ── LOGO ─────────────────────────────────────────────────────────────────────
 .sb-logo {
   display: flex; align-items: center; gap: 10px;
   padding: 16px 16px 12px;
-  border-bottom: 0.5px solid $border;
+  border-bottom: 0.5px solid var(--sb-border);
   flex-shrink: 0;
 
   &-mark {
     width: 32px; height: 32px; border-radius: $radius;
-    background: $active;
+    background: var(--sb-active);
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; font-weight: 500; color: #fff; flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(193,123,58,.4);
+    box-shadow: 0 2px 8px var(--sb-logo-shadow);
   }
   &-text { font-size: 14px; font-weight: 500; color: #fff; }
-  &-sub  { font-size: 10px; color: $text-dim; margin-top: 1px; }
+  &-sub  { font-size: 10px; color: var(--sb-text-dim); margin-top: 1px; }
 }
 
 // ── PROFILE CARD ─────────────────────────────────────────────────────────────
 .sb-profile {
   margin: 10px 10px 6px;
   background: rgba(255,255,255,.05);
-  border: 0.5px solid $border;
+  border: 0.5px solid var(--sb-border);
   border-radius: $radius;
   padding: 10px 12px;
   flex-shrink: 0;
@@ -51,7 +98,7 @@ $radius:   8px;
 
 .prof-av {
   width: 34px; height: 34px; border-radius: 50%;
-  background: $active; color: #fff;
+  background: var(--sb-active); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 600; flex-shrink: 0;
   border: 1.5px solid rgba(255,255,255,.25);
@@ -63,13 +110,13 @@ $radius:   8px;
 .prof-stats {
   display: flex; align-items: center; gap: 8px;
   margin-top: 8px; padding-top: 7px;
-  border-top: 0.5px solid $border;
+  border-top: 0.5px solid var(--sb-border);
 }
 
 .pstat {
   display: flex; flex-direction: column; align-items: center; flex: 1;
-  &-v { font-size: 13px; font-weight: 600; color: rgba(255,220,160,.9); }
-  &-l { font-size: 9px; color: $text-dim; text-transform: uppercase; letter-spacing: .04em; margin-top: 1px; }
+  &-v { font-size: 13px; font-weight: 600; color: var(--sb-stat-val); }
+  &-l { font-size: 9px; color: var(--sb-text-dim); text-transform: uppercase; letter-spacing: .04em; margin-top: 1px; }
 }
 .pstat-sep { width: 0.5px; height: 24px; background: rgba(255,255,255,.1); }
 
@@ -83,26 +130,26 @@ $radius:   8px;
 
 // ── SECTION LABEL ─────────────────────────────────────────────────────────────
 .sb-section-label {
-  font-size: 10px; font-weight: 500; color: $text-dim;
+  font-size: 10px; font-weight: 500; color: var(--sb-text-dim);
   text-transform: uppercase; letter-spacing: .07em;
   padding: 10px 18px 4px;
 }
 
 // ── DIVIDER ───────────────────────────────────────────────────────────────────
-.sb-divider { height: 0.5px; background: $border; margin: 6px 14px; }
+.sb-divider { height: 0.5px; background: var(--sb-border); margin: 6px 14px; }
 
 // ── ITEM ──────────────────────────────────────────────────────────────────────
 .sb-item {
   display: flex; align-items: center; gap: 9px;
   padding: 7px 12px; margin: 1px 8px;
-  border-radius: $radius; cursor: pointer; color: $text;
+  border-radius: $radius; cursor: pointer; color: var(--sb-text);
   font-size: 13px; text-decoration: none;
   transition: background .12s, color .12s;
 
   i.icon { font-size: 17px; flex-shrink: 0; }
 
-  &:hover { background: rgba(255,255,255,.07); color: $text-hi; }
-  &.active { background: $active; color: #fff; i.icon { color: #fff; } font-weight: 500; }
+  &:hover { background: rgba(255,255,255,.07); color: var(--sb-text-hi); }
+  &.active { background: var(--sb-active); color: #fff; i.icon { color: #fff; } font-weight: 500; }
 }
 
 .sb-item-label { flex: 1; }
@@ -113,11 +160,11 @@ $radius:   8px;
   font-weight: 500; flex: none; width: fit-content; line-height: 1.4;
 
   &--red    { background: #791F1F; color: #F7C1C1; }
-  &--amber  { background: rgba(193,123,58,.35); color: #FAC775; }
+  &--amber  { background: var(--sb-badge-bg); color: var(--sb-badge-text); }
   &--gray   { background: rgba(255,255,255,.1); color: rgba(255,255,255,.55); }
   &--green  { background: #27500A; color: #C0DD97; }
-  &--purple { background: rgba(193,123,58,.25); color: rgba(255,220,160,.9); }
-  &--caramel { background: rgba(193,123,58,.3); color: rgba(255,220,160,.95); }
+  &--purple { background: var(--sb-badge-bg); color: var(--sb-badge-text); }
+  &--caramel { background: var(--sb-badge-bg); color: var(--sb-badge-text); }
   &--notif   { background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; min-width: 18px; text-align: center; animation: pulse-notif 2s infinite; }
 }
 
@@ -127,11 +174,11 @@ $radius:   8px;
 .sb-group-header {
   display: flex; align-items: center; gap: 9px;
   padding: 7px 12px; border-radius: $radius;
-  cursor: pointer; color: $text; font-size: 13px;
+  cursor: pointer; color: var(--sb-text); font-size: 13px;
   transition: color .12s;
 
-  &:hover { color: $text-hi; }
-  &.open  { color: $text-hi; }
+  &:hover { color: var(--sb-text-hi); }
+  &.open  { color: var(--sb-text-hi); }
 
   i.icon { font-size: 17px; flex-shrink: 0; }
   span:not(.sb-badge) { flex: 1; }
@@ -156,14 +203,14 @@ $radius:   8px;
   span:not(.sb-badge) { flex: 1; }
 
   &:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.05); }
-  &.active { color: #AFA9EC; }
+  &.active { color: var(--sb-sub-active); }
 }
 
 // ── PROGRESS CARD ─────────────────────────────────────────────────────────────
 .sb-progress-card {
   margin: 8px 10px;
   background: rgba(255,255,255,.04);
-  border: 0.5px solid $border;
+  border: 0.5px solid var(--sb-border);
   border-radius: $radius;
   padding: 10px 12px;
 }
@@ -172,8 +219,8 @@ $radius:   8px;
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 9px;
 }
-.pc-title { font-size: 10px; color: $text-dim; text-transform: uppercase; letter-spacing: .05em; }
-.pc-period { font-size: 11px; color: #AFA9EC; font-weight: 500; }
+.pc-title { font-size: 10px; color: var(--sb-text-dim); text-transform: uppercase; letter-spacing: .05em; }
+.pc-period { font-size: 11px; color: var(--sb-period); font-weight: 500; }
 
 .pc-row {
   display: flex; align-items: center; gap: 8px;
@@ -185,12 +232,48 @@ $radius:   8px;
   flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pc-bar-wrap { width: 64px; height: 4px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
-.pc-fill { height: 100%; border-radius: 4px; background: #7F77DD; }
+.pc-fill { height: 100%; border-radius: 4px; background: var(--sb-progress); }
 .pc-pct { font-size: 10px; color: rgba(255,255,255,.4); min-width: 26px; text-align: right; }
+
+// ── THEME SWITCHER ────────────────────────────────────────────────────────────
+.sb-theme {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin: 4px 8px;
+  border-top: 0.5px solid var(--sb-border);
+
+  &__label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--sb-text-dim);
+    margin-right: auto;
+  }
+
+  &__dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.2);
+    cursor: pointer;
+    transition: border-color .2s, transform .2s;
+    padding: 0;
+
+    &:hover { transform: scale(1.15); }
+    &.active { border-color: #fff; transform: scale(1.15); }
+
+    &--caramel { background: #3D2B1F; }
+    &--ember   { background: #7C2D12; }
+    &--slate   { background: #1e293b; }
+  }
+}
 
 // ── BOTTOM ────────────────────────────────────────────────────────────────────
 .sb-bottom {
-  border-top: 0.5px solid $border;
+  border-top: 0.5px solid var(--sb-border);
   padding: 8px 10px 12px; flex-shrink: 0;
 }
 

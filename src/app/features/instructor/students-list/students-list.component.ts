@@ -100,10 +100,11 @@ export class StudentsListComponent implements OnInit {
 
                 // ✅ Ajouter cette formation à la liste
                 const apprenant = apprenantsMap.get(apprenantId)!;
+                const rawProg = p.pivot?.progression ?? p.progression ?? 0;
                 apprenant.formations.push({
                   id: formation.id,
                   titre: formation.titre,
-                  progression: p.pivot?.progression ?? p.progression ?? 0,
+                  progression: isNaN(Number(rawProg)) ? 0 : Math.round(Number(rawProg)),
                   statut: p.pivot?.statut_formation ?? p.statut_formation ?? '—',
                 });
               });

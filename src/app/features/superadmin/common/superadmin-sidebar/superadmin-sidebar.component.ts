@@ -24,6 +24,7 @@ export class SuperadminSidebarComponent implements OnInit {
     utilisateurs: true,
     pedagogie:    false,
     finance:      false,
+    aide:         false,
   };
 
   toggleGroup(key: string): void {

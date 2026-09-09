@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, OnChanges } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { User } from '../../../shared/models/user.models';
 import { Client, Company } from '../../../shared/models/client-company.models';
@@ -76,8 +76,27 @@ export class UserAddComponent implements OnInit, OnChanges {
     }
   }
 
+  static passwordStrengthValidator(control: AbstractControl): ValidationErrors | null {
+    const val = control.value;
+    if (!val) return null;
+    const errors: ValidationErrors = {};
+    if (val.length < 8)            errors['minLength'] = true;
+    if (!/[A-Z]/.test(val))        errors['noUppercase'] = true;
+    if (!/[a-z]/.test(val))        errors['noLowercase'] = true;
+    if (!/[0-9]/.test(val))        errors['noDigit'] = true;
+    if (!/[^A-Za-z0-9]/.test(val)) errors['noSpecial'] = true;
+    return Object.keys(errors).length ? errors : null;
+  }
+
+  get pw(): string { return this.userForm?.get('password')?.value || ''; }
+  get pwHasMinLength(): boolean { return this.pw.length >= 8; }
+  get pwHasUppercase(): boolean { return /[A-Z]/.test(this.pw); }
+  get pwHasLowercase(): boolean { return /[a-z]/.test(this.pw); }
+  get pwHasDigit(): boolean { return /[0-9]/.test(this.pw); }
+  get pwHasSpecial(): boolean { return /[^A-Za-z0-9]/.test(this.pw); }
+
   initForm() {
-    const pwValidators = !this.isEditMode ? [Validators.required, Validators.minLength(8)] : [];
+    const pwValidators = !this.isEditMode ? [Validators.required, UserAddComponent.passwordStrengthValidator] : [];
     this.userForm = this.fb.group({
       nom:                  ['', [Validators.required, Validators.minLength(2)]],
       prenom:               ['', [Validators.required, Validators.minLength(2)]],
@@ -104,7 +123,7 @@ export class UserAddComponent implements OnInit, OnChanges {
 
   togglePasswordFields(): void {
     this.showPasswordFields = !this.showPasswordFields;
-    const pwValidators = this.showPasswordFields ? [Validators.required, Validators.minLength(8)] : [];
+    const pwValidators = this.showPasswordFields ? [Validators.required, UserAddComponent.passwordStrengthValidator] : [];
     this.userForm.get('password')?.setValidators(pwValidators);
     this.userForm.get('password_confirmation')?.setValidators(pwValidators);
     this.userForm.get('password')?.updateValueAndValidity();

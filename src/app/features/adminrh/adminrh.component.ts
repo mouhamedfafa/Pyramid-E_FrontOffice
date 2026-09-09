@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd, RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { routes } from '../../shared/service/routes/routes';
 import { AdminrhSidebarComponent } from './common/adminrh-sidebar/adminrh-sidebar.component';
@@ -11,6 +11,7 @@ import { AuthService } from '../../shared/service/authentification/auth.service'
 import { DemandeFormationService } from '../../shared/service/demande/demande-formation.service';
 import { SessionFormationService } from '../../shared/service/session/session-formation.service';
 import { UserService } from '../../shared/service/user/user.service';
+import { AdminrhThemeService, AdminrhTheme } from './common/adminrh-theme.service';
 
 @Component({
     selector: 'app-adminrh',
@@ -19,10 +20,12 @@ import { UserService } from '../../shared/service/user/user.service';
     imports: [CommonModule, RouterOutlet, RouterModule, ReactiveFormsModule, FormsModule, AdminrhSidebarComponent],
     providers: [DecimalPipe]
 })
-export class AdminrhComponent implements OnInit {
+export class AdminrhComponent implements OnInit, OnDestroy {
   public routes = routes;
   public last: string = '';
   superAdminProfile: User | null = null;
+  currentTheme: AdminrhTheme = 'navy';
+  private themeSub?: Subscription;
 
   headerStats = {
     employes: 0,
@@ -39,6 +42,7 @@ export class AdminrhComponent implements OnInit {
     private demandeService: DemandeFormationService,
     private sessionService: SessionFormationService,
     private userService: UserService,
+    private themeService: AdminrhThemeService,
   ) {
     this.router.events.subscribe((data) => {
       if (data instanceof NavigationEnd) {
@@ -48,9 +52,14 @@ export class AdminrhComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.themeSub = this.themeService.theme$.subscribe(t => this.currentTheme = t);
     this.loadSuperAdminProfile();
     this.loadHeaderStats();
     this.authService.refreshMe().subscribe({ error: () => {} });
+  }
+
+  ngOnDestroy(): void {
+    this.themeSub?.unsubscribe();
   }
 
   private loadHeaderStats(): void {

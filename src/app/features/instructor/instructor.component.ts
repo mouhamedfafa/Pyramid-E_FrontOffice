@@ -4,10 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FeatherIconModule } from '../../shared/module/feather.module';
 import { SharedModule } from 'primeng/api';
 import { InstructorSidebarComponent } from './common/instructor-sidebar/instructor-sidebar.component';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { User } from '../../shared/models/user.models';
 import { SessionFormationService } from '../../shared/service/session/session-formation.service';
 import { FormationService } from '../../shared/service/formation/formation.service';
+import { InstructorThemeService, InstructorTheme } from './common/instructor-theme.service';
 
 @Component({
     selector: 'app-instructor',
@@ -21,10 +23,12 @@ import { FormationService } from '../../shared/service/formation/formation.servi
       InstructorSidebarComponent
     ],
 })
-export class InstructorComponent implements OnInit {
+export class InstructorComponent implements OnInit, OnDestroy {
   public routes = routes;
   public last: string = '';
   instructorProfile: User | null = null;
+  currentTheme: InstructorTheme = 'caramel';
+  private themeSub?: Subscription;
 
   headerStats = { formations: 0, apprenants: 0, enDifficulte: 0, sessionsAVenir: 0 };
   nextSession: { titre: string; date: string; delai: string } | null = null;
@@ -33,6 +37,7 @@ export class InstructorComponent implements OnInit {
     private router: Router,
     private sessionService: SessionFormationService,
     private formationService: FormationService,
+    private themeService: InstructorThemeService,
   ) {
     this.router.events.subscribe((data: RouterEvent) => {
       if (data instanceof NavigationEnd) {
@@ -42,9 +47,14 @@ export class InstructorComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.themeSub = this.themeService.theme$.subscribe(t => this.currentTheme = t);
     this.loadInstructorProfile();
     this.loadFormationStats();
     this.loadSessionStats();
+  }
+
+  ngOnDestroy(): void {
+    this.themeSub?.unsubscribe();
   }
 
   loadInstructorProfile(): void {

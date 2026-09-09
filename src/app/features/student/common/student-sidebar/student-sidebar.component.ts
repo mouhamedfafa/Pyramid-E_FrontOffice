@@ -6,6 +6,7 @@ import { CommonService } from '../../../../shared/service/common/common.service'
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../shared/service/authentification/auth.service';
+import { StudentThemeService, StudentTheme } from '../student-theme.service';
 
 @Component({
   selector: 'app-student-sidebar',
@@ -19,6 +20,7 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
   public base: any; public page: any; public last: any;
 
   isCollapsed = false;
+  sidebarTheme: StudentTheme = 'teal';
 
   openGroups: Record<string, boolean> = {
     formations:  false,
@@ -34,7 +36,12 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
 
   private navSub?: Subscription;
 
-  constructor(private common: CommonService, private router: Router, private authService: AuthService) {
+  constructor(
+    private common: CommonService,
+    private router: Router,
+    private authService: AuthService,
+    private themeService: StudentThemeService,
+  ) {
     this.common.base.subscribe((b: string) => (this.base = b));
     this.common.page.subscribe((p: string) => (this.page = p));
     this.common.last.subscribe((l: string) => (this.last = l));
@@ -47,7 +54,13 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
       });
   }
 
+  setTheme(theme: StudentTheme): void {
+    this.sidebarTheme = theme;
+    this.themeService.setTheme(theme);
+  }
+
   ngOnInit(): void {
+    this.sidebarTheme = this.themeService.theme$.value;
     this.currentUrl = this.router.url;
     this.autoOpenGroups();
   }
@@ -97,7 +110,6 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
     if (!user) return false;
     const roleType = user.role_type ?? (user as any)['role_type'] ?? '';
     const roleId   = user.role_id ?? 0;
-    // Tout profil non-employé peut être en mode apprenant
     if (roleId === 2 || roleType === 'employe') return false;
     return true;
   }

@@ -37,6 +37,8 @@ export interface User {
       };
     };
   };
+  failed_login_attempts?: number;
+  locked_until?: string | null;
   created_at?: string | Date;
   updated_at?: string | Date;
   client?: {

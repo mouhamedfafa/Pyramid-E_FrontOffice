@@ -113,7 +113,8 @@ export class FeaturesComponent  {
     }
     if (
       this.routeStatus == 'adminrh' ||
-      this.routeStatus == 'student'
+      this.routeStatus == 'student' ||
+      this.routeStatus == 'instructor'
     ) {
       this.common.isuserHeader.next(false);
       this.common.isAdminHeader.next(true);

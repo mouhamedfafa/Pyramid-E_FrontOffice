@@ -59,7 +59,7 @@
                 (click)="showStatutDropdown = !showStatutDropdown">
           <i class="isax isax-tick-circle"></i> Statut
           <span *ngIf="selectedStatutFilter !== ''" class="ul-filter__chip">
-            {{ selectedStatutFilter === '1' ? 'Actif' : 'Inactif' }}
+            {{ selectedStatutFilter === '1' ? 'Actif' : (selectedStatutFilter === 'locked' ? 'Verrouillé' : 'Inactif') }}
           </span>
         </button>
         <div class="ul-dropdown" *ngIf="showStatutDropdown">
@@ -70,6 +70,9 @@
           <div class="ul-dropdown__item"
                [class.ul-dropdown__item--on]="selectedStatutFilter === '0'"
                (click)="setStatutFilter('0')">Inactif</div>
+          <div class="ul-dropdown__item"
+               [class.ul-dropdown__item--on]="selectedStatutFilter === 'locked'"
+               (click)="setStatutFilter('locked')">Verrouillé</div>
         </div>
       </div>
 
@@ -153,9 +156,9 @@
             </span>
           </td>
           <td>
-            <span class="ul-statut" [attr.data-s]="u.statut === 1 ? 'actif' : 'inactif'">
-              <i [class]="'isax ' + (u.statut === 1 ? 'isax-tick-circle' : 'isax-minus-cirlce')"></i>
-              {{ u.statut === 1 ? 'Actif' : 'Inactif' }}
+            <span class="ul-statut" [attr.data-s]="isLocked(u) ? 'verrouille' : (u.statut === 1 ? 'actif' : 'inactif')">
+              <i [class]="'isax ' + (isLocked(u) ? 'isax-lock' : (u.statut === 1 ? 'isax-tick-circle' : 'isax-minus-cirlce'))"></i>
+              {{ isLocked(u) ? 'Verrouillé' : (u.statut === 1 ? 'Actif' : 'Inactif') }}
             </span>
           </td>
           <td class="ul-date">{{ formatDate(u.updated_at) }}</td>
@@ -175,6 +178,10 @@
               <button type="button" class="ul-act ul-act--invite" *ngIf="u.statut === 0"
                       title="Envoyer l'invitation" (click)="sendInvitation(u)">
                 <i class="isax isax-sms"></i>
+              </button>
+              <button type="button" class="ul-act ul-act--ok" *ngIf="isLocked(u)"
+                      title="Débloquer le compte" (click)="unlockUser(u)">
+                <i class="isax isax-unlock"></i>
               </button>
             </div>
           </td>

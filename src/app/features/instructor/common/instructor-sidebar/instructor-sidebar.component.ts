@@ -7,6 +7,7 @@ import { FormationService } from '../../../../shared/service/formation/formation
 import { SessionFormationService } from '../../../../shared/service/session/session-formation.service';
 import { SondageService } from '../../../../shared/service/sondage/sondage.service';
 import { routes } from '../../../../shared/service/routes/routes';
+import { InstructorThemeService, InstructorTheme } from '../instructor-theme.service';
 
 interface ProgressBar { name: string; pct: number; }
 
@@ -30,10 +31,13 @@ export class InstructorSidebarComponent implements OnInit {
   sondagesRecusCount   = 0;
   progressBars: ProgressBar[] = [];
 
+  sidebarTheme: InstructorTheme = 'caramel';
+
   openGroups: Record<string, boolean> = {
     formations: true,
     modules:    false,
     quiz:       false,
+    aide:       false,
   };
 
   constructor(
@@ -42,13 +46,20 @@ export class InstructorSidebarComponent implements OnInit {
     private formationService: FormationService,
     private sessionService: SessionFormationService,
     private sondageService: SondageService,
+    private themeService: InstructorThemeService,
   ) {
     this.common.base.subscribe((v: string) => this.base = v);
     this.common.page.subscribe((v: string) => this.page = v);
     this.common.last.subscribe((v: string) => this.last = v);
   }
 
+  setTheme(theme: InstructorTheme): void {
+    this.sidebarTheme = theme;
+    this.themeService.setTheme(theme);
+  }
+
   ngOnInit(): void {
+    this.sidebarTheme = this.themeService.theme$.value;
     this.currentUser = this.authService.getUser();
     this.loadStats();
     this.loadSessionsAVenir();

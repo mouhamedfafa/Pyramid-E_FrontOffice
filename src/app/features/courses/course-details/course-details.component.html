@@ -14,6 +14,12 @@
 <!-- Main content -->
 <div *ngIf="formation && !loading">
 
+  <div class="container">
+    <button type="button" class="btn-back-formations" (click)="goBack()">
+      <i class="isax isax-arrow-left-2"></i> Retour à la liste
+    </button>
+  </div>
+
   <!-- ── HERO BANNER ── -->
   <section class="cd-hero">
     <div class="cd-hero__bg" [style.background-image]="'url(' + getImageUrl(formation.image_couverture) + ')'"></div>

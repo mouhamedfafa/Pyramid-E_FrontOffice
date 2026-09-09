@@ -96,9 +96,29 @@
                         <div class="col-md-6 mb-3" *ngIf="showPasswordFields">
                             <label class="form-label">Mot de passe <span *ngIf="!isEditMode" class="text-danger">*</span></label>
                             <input type="password" class="form-control" formControlName="password"
-                                   placeholder="{{ isEditMode ? 'Nouveau mot de passe' : '' }}">
-                            <div *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched" class="text-danger mt-1">
-                                <small>Mot de passe requis (min. 8 caractères)</small>
+                                   [placeholder]="isEditMode ? 'Nouveau mot de passe' : ''">
+                            <div class="pw-policy mt-2" *ngIf="pw.length > 0 || (userForm.get('password')?.touched)">
+                                <small class="d-block mb-1 text-muted fw-semibold">Politique de mot de passe :</small>
+                                <small class="d-block" [class.text-success]="pwHasMinLength" [class.text-danger]="!pwHasMinLength">
+                                    <i class="isax" [class.isax-tick-circle]="pwHasMinLength" [class.isax-close-circle]="!pwHasMinLength"></i>
+                                    Au moins 8 caractères
+                                </small>
+                                <small class="d-block" [class.text-success]="pwHasUppercase" [class.text-danger]="!pwHasUppercase">
+                                    <i class="isax" [class.isax-tick-circle]="pwHasUppercase" [class.isax-close-circle]="!pwHasUppercase"></i>
+                                    Au moins une majuscule
+                                </small>
+                                <small class="d-block" [class.text-success]="pwHasLowercase" [class.text-danger]="!pwHasLowercase">
+                                    <i class="isax" [class.isax-tick-circle]="pwHasLowercase" [class.isax-close-circle]="!pwHasLowercase"></i>
+                                    Au moins une minuscule
+                                </small>
+                                <small class="d-block" [class.text-success]="pwHasDigit" [class.text-danger]="!pwHasDigit">
+                                    <i class="isax" [class.isax-tick-circle]="pwHasDigit" [class.isax-close-circle]="!pwHasDigit"></i>
+                                    Au moins un chiffre
+                                </small>
+                                <small class="d-block" [class.text-success]="pwHasSpecial" [class.text-danger]="!pwHasSpecial">
+                                    <i class="isax" [class.isax-tick-circle]="pwHasSpecial" [class.isax-close-circle]="!pwHasSpecial"></i>
+                                    Au moins un caractère spécial (!@#$...)
+                                </small>
                             </div>
                         </div>
 
@@ -106,7 +126,7 @@
                             <label class="form-label">Confirmer le mot de passe <span *ngIf="!isEditMode" class="text-danger">*</span></label>
                             <input type="password" class="form-control" formControlName="password_confirmation"
                                    [class.is-invalid]="userForm.hasError('passwordMismatch') && userForm.get('password_confirmation')?.touched"
-                                   placeholder="{{ isEditMode ? 'Confirmer le nouveau mot de passe' : '' }}">
+                                   [placeholder]="isEditMode ? 'Confirmer le nouveau mot de passe' : ''">
                             <div *ngIf="userForm.get('password_confirmation')?.invalid && userForm.get('password_confirmation')?.touched" class="text-danger mt-1">
                                 <small>Confirmation du mot de passe requise</small>
                             </div>

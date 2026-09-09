@@ -1,10 +1,10 @@
-<div class="sb-shell">
+<div class="sb-shell" [ngClass]="'theme-' + sidebarTheme">
 
   <!-- LOGO -->
   <div class="sb-logo">
     <div class="sb-logo-mark"><i class="isax isax-teacher"></i></div>
     <div>
-      <div class="sb-logo-text">LMS Pro</div>
+      <div class="sb-logo-text">PYRAMIDE LMS </div>
       <div class="sb-logo-sub">Espace Formateur</div>
     </div>
   </div>
@@ -53,7 +53,7 @@
     <div class="sb-divider"></div>
 
     <!-- CONTENU PÉDAGOGIQUE -->
-    <div class="sb-section-label">Contenu pédagogique</div>
+    <div class="sb-section-label">Contenu des formations</div>
 
     <!-- Mes formations (accordion) -->
     <div class="sb-group">
@@ -119,7 +119,7 @@
 
     <a [routerLink]="routes.studentsList" routerLinkActive="active" class="sb-item">
       <i class="isax isax-profile-2user icon"></i>
-      <span class="sb-item-label">Liste des employés</span>
+      <span class="sb-item-label">Employés assignés</span>
       <span *ngIf="apprenantCount > 0" class="sb-badge sb-badge--gray">{{ apprenantCount }}</span>
     </a>
     <a [routerLink]="routes.instructorCertificate" routerLinkActive="active" class="sb-item">
@@ -168,18 +168,41 @@
     <!-- COMMUNICATION -->
     <div class="sb-section-label">Communication</div>
 
-    <!-- <a [routerLink]="routes.instructorMessage" routerLinkActive="active" class="sb-item">
-      <i class="isax isax-messages-3 icon"></i>
-      <span class="sb-item-label">Messages</span>
-    </a>
-    <a [routerLink]="routes.instructorAnnouncements" routerLinkActive="active" class="sb-item">
-      <i class="isax isax-volume-high icon"></i>
-      <span class="sb-item-label">Annonces</span>
-    </a> -->
     <a [routerLink]="routes.instructor_tickets" routerLinkActive="active" class="sb-item">
       <i class="isax isax-ticket icon"></i>
       <span class="sb-item-label">Tickets support</span>
     </a>
+
+    <div class="sb-divider"></div>
+
+    <!-- CENTRE D'AIDE -->
+    <div class="sb-section-label">Centre d'aide</div>
+    <div class="sb-group">
+      <div class="sb-group-header" [class.open]="openGroups['aide']"
+           (click)="toggleGroup('aide')">
+        <i class="isax isax-info-circle icon"></i>
+        <span>Centre d'aide</span>
+        <i class="isax isax-arrow-right-3 arr"></i>
+      </div>
+      <div class="sb-sub" *ngIf="openGroups['aide']">
+        <a [routerLink]="routes.instructorGuideUtilisation" routerLinkActive="active" class="sb-sub-item">
+          <i class="isax isax-document-text"></i>
+          <span>Guide d'utilisation</span>
+        </a>
+        <a [routerLink]="routes.instructorTutorielsVideo" routerLinkActive="active" class="sb-sub-item">
+          <i class="isax isax-video-circle"></i>
+          <span>Tutoriels vidéo</span>
+        </a>
+        <a [routerLink]="routes.instructor_tickets" routerLinkActive="active" class="sb-sub-item">
+          <i class="isax isax-ticket"></i>
+          <span>Soumettre un ticket</span>
+        </a>
+        <a [routerLink]="routes.instructorAnnouncements" routerLinkActive="active" class="sb-sub-item">
+          <i class="isax isax-volume-high"></i>
+          <span>Annonces et mises à jour</span>
+        </a>
+      </div>
+    </div>
 
     <!-- Barre de complétion -->
     <div class="sb-progress-card" *ngIf="progressBars.length > 0">
@@ -195,6 +218,20 @@
     </div>
 
   </div><!-- /sb-scroll -->
+
+  <!-- Theme Switcher -->
+  <div class="sb-theme">
+    <span class="sb-theme__label">Th&egrave;me</span>
+    <button type="button" class="sb-theme__dot sb-theme__dot--caramel"
+            [class.active]="sidebarTheme === 'caramel'"
+            (click)="setTheme('caramel')" title="Caramel"></button>
+    <button type="button" class="sb-theme__dot sb-theme__dot--ember"
+            [class.active]="sidebarTheme === 'ember'"
+            (click)="setTheme('ember')" title="Ember"></button>
+    <button type="button" class="sb-theme__dot sb-theme__dot--slate"
+            [class.active]="sidebarTheme === 'slate'"
+            (click)="setTheme('slate')" title="Slate"></button>
+  </div>
 
   <!-- BOTTOM -->
   <div class="sb-bottom">

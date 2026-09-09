@@ -22,6 +22,8 @@ export class LoginComponent {
   password: boolean = false;
   isLoading = false;
   errorMessage = '';
+  isLocked = false;
+  lockedMinutes = 0;
 
   // Magic link
   loginMode: 'password' | 'magic' = 'password';
@@ -99,8 +101,23 @@ onSubmit(): void {
     },
     error: (err: any) => {
       this.isLoading = false;
-      this.errorMessage = err?.message || 'Erreur de connexion. Veuillez vérifier vos identifiants.';
-      console.error('Erreur login:', err);
+      const httpError = err?.error;
+      const body = httpError?.error;
+
+      if (body?.locked || httpError?.status === 423) {
+        this.isLocked = true;
+        this.lockedMinutes = body?.remaining_minutes || 15;
+        this.errorMessage = body?.message || `Compte bloqué pendant ${this.lockedMinutes} minutes.`;
+      } else {
+        this.isLocked = false;
+        const validationErrors = body?.errors;
+        if (validationErrors) {
+          const msgs = Object.values(validationErrors).flat();
+          this.errorMessage = (msgs[0] as string) || 'Identifiants incorrects.';
+        } else {
+          this.errorMessage = body?.message || err?.message || 'Erreur de connexion. Veuillez vérifier vos identifiants.';
+        }
+      }
     }
   });
 }

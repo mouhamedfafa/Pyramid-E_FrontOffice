@@ -128,6 +128,7 @@ export interface Formation {
   certificat_obtenu?: boolean;
   date_inscription?: string;
 
+  created_by?: number;
   created_at?: string | Date;
   updated_at?: string | Date;
 }

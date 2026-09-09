@@ -1,4 +1,4 @@
-<div class="sb-shell">
+<div class="sb-shell" [ngClass]="'theme-' + sidebarTheme">
 
   <!-- ── LOGO ── -->
   <div class="sb-logo">
@@ -216,6 +216,35 @@
       </a>
     </div>
 
+    <div class="sb-divider"></div>
+
+    <!-- CENTRE D'AIDE -->
+    <div class="sb-section">
+      <div class="sb-section-label">Centre d'aide</div>
+      <div class="sb-group">
+        <div class="sb-group-header" [class.open]="openGroups['aide']"
+             (click)="toggleGroup('aide')">
+          <i class="isax isax-info-circle icon"></i>
+          <span>Centre d'aide</span>
+          <i class="isax isax-arrow-right-3 arr"></i>
+        </div>
+        <div class="sb-sub" *ngIf="openGroups['aide']">
+          <a [routerLink]="routes.adminrhGuideUtilisation" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Guide d'utilisation</span>
+          </a>
+          <a [routerLink]="routes.adminrhTutorielsVideo" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Tutoriels vidéo</span>
+          </a>
+          <a [routerLink]="routes.adminrh_tickets" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Soumettre un ticket</span>
+          </a>
+          <a [routerLink]="routes.adminrhAnnouncements" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Annonces et mises à jour</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /sb-scroll -->
 
   <!-- ── WIDGET ALERTE DEMANDES ── -->
@@ -261,6 +290,22 @@
     <a *appHasPermission="'acceder-mode-formateur'" [routerLink]="routes.instructor_dashboard" class="sb-bottom-item sb-trainer-switch">
       <i class="isax isax-teacher"></i> Mode formateur
     </a>
+    <!-- Theme switcher -->
+    <div class="sb-theme">
+      <div class="sb-theme-label">THÈME</div>
+      <div class="sb-theme-options">
+        <button type="button" class="sb-theme-dot sb-theme-dot--navy"
+                [class.active]="sidebarTheme === 'navy'"
+                (click)="setTheme('navy')" aria-label="Thème bleu nuit"></button>
+        <button type="button" class="sb-theme-dot sb-theme-dot--teal"
+                [class.active]="sidebarTheme === 'teal'"
+                (click)="setTheme('teal')" aria-label="Thème teal"></button>
+        <button type="button" class="sb-theme-dot sb-theme-dot--plum"
+                [class.active]="sidebarTheme === 'plum'"
+                (click)="setTheme('plum')" aria-label="Thème prune"></button>
+      </div>
+    </div>
+
     <a [routerLink]="routes.login" class="sb-bottom-item logout">
       <i class="isax isax-logout"></i> Déconnexion
     </a>

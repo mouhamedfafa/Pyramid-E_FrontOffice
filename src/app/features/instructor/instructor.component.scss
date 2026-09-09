@@ -1,6 +1,3 @@
-$blue:      #185FA5;
-$blue-lt:   #E6F1FB;
-$blue-bd:   #85B7EB;
 $gray-50:   #f9fafb;
 $gray-100:  #f3f4f6;
 $gray-200:  #e5e7eb;
@@ -12,8 +9,41 @@ $warn-bd:   #f5c77e;
 $warn-text: #b45309;
 $radius:    12px;
 
+// ── Theme definitions via CSS custom properties ──────────
 .content {
   padding: 21px 0 !important;
+
+  // Caramel (default)
+  --ins-accent:       #185FA5;
+  --ins-accent-lt:    #E6F1FB;
+  --ins-accent-bd:    #85B7EB;
+  --ins-next-bg:      #f0f7ff;
+  --ins-next-bd:      #d4e8fa;
+  --ins-next-badge-bg:  #dbeafe;
+  --ins-next-badge-text: #1d4ed8;
+  --ins-next-badge-bd: #93c5fd;
+
+  &.ins-theme-ember {
+    --ins-accent:       #EA580C;
+    --ins-accent-lt:    #FFF7ED;
+    --ins-accent-bd:    #FDBA74;
+    --ins-next-bg:      #FFF7ED;
+    --ins-next-bd:      #fed7aa;
+    --ins-next-badge-bg:  #ffedd5;
+    --ins-next-badge-text: #c2410c;
+    --ins-next-badge-bd: #fdba74;
+  }
+
+  &.ins-theme-slate {
+    --ins-accent:       #3b82f6;
+    --ins-accent-lt:    #eff6ff;
+    --ins-accent-bd:    #93c5fd;
+    --ins-next-bg:      #f0f7ff;
+    --ins-next-bd:      #d4e8fa;
+    --ins-next-badge-bg:  #dbeafe;
+    --ins-next-badge-text: #1d4ed8;
+    --ins-next-badge-bd: #93c5fd;
+  }
 }
 
 // ── Shell ──────────────────────────────────────
@@ -61,9 +91,9 @@ $radius:    12px;
   width: 48px;
   height: 48px;
   border-radius: $radius;
-  background: $blue-lt;
-  color: $blue;
-  border: 1.5px solid $blue-bd;
+  background: var(--ins-accent-lt);
+  color: var(--ins-accent);
+  border: 1.5px solid var(--ins-accent-bd);
   font-size: 17px;
   font-weight: 700;
   display: flex;
@@ -100,9 +130,9 @@ $radius:    12px;
   font-weight: 500;
   padding: 3px 10px;
   border-radius: 20px;
-  background: $blue-lt;
-  color: $blue;
-  border: 0.5px solid $blue-bd;
+  background: var(--ins-accent-lt);
+  color: var(--ins-accent);
+  border: 0.5px solid var(--ins-accent-bd);
 
   i { font-size: 12px; }
 
@@ -153,8 +183,8 @@ $radius:    12px;
   font-size: 13px;
   font-weight: 500;
   color: #fff;
-  background: $blue;
-  border: 1px solid $blue;
+  background: var(--ins-accent);
+  border: 1px solid var(--ins-accent);
   border-radius: 8px;
   text-decoration: none;
   transition: opacity .15s;
@@ -181,18 +211,18 @@ $radius:    12px;
   border: 1px solid $gray-200;
   border-radius: 10px;
   padding: 12px 14px;
-  border-left: 3px solid $blue-bd;
+  border-left: 3px solid var(--ins-accent-bd);
   transition: box-shadow .15s;
 
   &:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
 
   > i {
     font-size: 20px;
-    color: $blue;
+    color: var(--ins-accent);
     flex-shrink: 0;
     width: 34px;
     height: 34px;
-    background: $blue-lt;
+    background: var(--ins-accent-lt);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -226,12 +256,12 @@ $radius:    12px;
   align-items: center;
   gap: 10px;
   padding: 11px 20px;
-  background: #f0f7ff;
-  border-top: 1px solid #d4e8fa;
+  background: var(--ins-next-bg);
+  border-top: 1px solid var(--ins-next-bd);
   font-size: 12px;
   color: $gray-600;
 
-  > i { font-size: 15px; color: $blue; flex-shrink: 0; }
+  > i { font-size: 15px; color: var(--ins-accent); flex-shrink: 0; }
 
   span { flex: 1; }
 
@@ -244,9 +274,9 @@ $radius:    12px;
   font-weight: 500;
   padding: 3px 10px;
   border-radius: 20px;
-  background: #dbeafe;
-  color: #1d4ed8;
-  border: 0.5px solid #93c5fd;
+  background: var(--ins-next-badge-bg);
+  color: var(--ins-next-badge-text);
+  border: 0.5px solid var(--ins-next-badge-bd);
 }
 
 // ── Responsive ────────────────────────────────

@@ -1,10 +1,10 @@
-<div class="settings-sidebar" [class.collapsed]="isCollapsed">
+<div class="settings-sidebar" [class.collapsed]="isCollapsed" [ngClass]="'theme-' + sidebarTheme">
 
   <!-- Bannière retour (visible pour tous les profils non-employé en mode apprenant) -->
   <div *ngIf="isInLearnerMode()" class="rh-switch-banner">
     <div class="rh-switch-banner__label">
       <i class="isax isax-shield-tick"></i>
-      <span>Mode employé</span>
+      <span>Mode employ&eacute;</span>
     </div>
     <a [routerLink]="getAdminReturnRoute()" class="rh-switch-banner__btn">
       <i class="isax isax-arrow-left-2"></i> Mon espace
@@ -54,7 +54,6 @@
         <i class="submenu-arrow isax isax-arrow-right-3"
            [style.transform]="openGroups['demandes'] ? 'rotate(90deg)' : 'none'"></i>
       </a>
-      <!-- Style identique à Mes formations : texte simple, gras, sans pastilles -->
       <ul class="submenu" [class.open]="openGroups['demandes']">
         <li>
           <a [routerLink]="routes.studentDemande"
@@ -87,17 +86,17 @@
     <li class="menu-item" [class.active]="isCompetencesActive()">
       <a (click)="toggleGroup('competences')">
         <i class="isax isax-chart"></i>
-        <span>Mes compétences</span>
+        <span>Mes comp&eacute;tences</span>
         <i class="submenu-arrow isax isax-arrow-right-3"
            [style.transform]="openGroups['competences'] ? 'rotate(90deg)' : 'none'"></i>
       </a>
       <ul class="submenu" [class.open]="openGroups['competences']">
         <li><a [routerLink]="routes.student_MesCompetences"
-               [class.active]="isExactActive(routes.student_MesCompetences)">Compétences acquises</a></li>
+               [class.active]="isExactActive(routes.student_MesCompetences)">Comp&eacute;tences acquises</a></li>
         <li><a [routerLink]="routes.student_CompetencesRecommandees"
-               [class.active]="isExactActive(routes.student_CompetencesRecommandees)">Recommandées</a></li>
+               [class.active]="isExactActive(routes.student_CompetencesRecommandees)">Recommand&eacute;es</a></li>
         <li><a [routerLink]="routes.student_EcartCompetences"
-               [class.active]="isExactActive(routes.student_EcartCompetences)">Écart de compétences</a></li>
+               [class.active]="isExactActive(routes.student_EcartCompetences)">&Eacute;cart de comp&eacute;tences</a></li>
       </ul>
     </li>
 
@@ -129,7 +128,7 @@
     <li class="menu-item" [class.active]="isPalmaresActive()">
       <a (click)="toggleGroup('palmares')">
         <i class="isax isax-medal"></i>
-        <span>Mes palmarès</span>
+        <span>Mes palmar&egrave;s</span>
         <i class="submenu-arrow isax isax-arrow-right-3"
            [style.transform]="openGroups['palmares'] ? 'rotate(90deg)' : 'none'"></i>
       </a>
@@ -150,20 +149,41 @@
            [style.transform]="openGroups['aide'] ? 'rotate(90deg)' : 'none'"></i>
       </a>
       <ul class="submenu" [class.open]="openGroups['aide']">
-        <li><a>Guide d'utilisation</a></li>
-        <li><a>Tutoriels vidéo</a></li>
-        <li><a>Soumettre un ticket</a></li>
-        <li><a>Annonces et mises à jour</a></li>
+        <li><a [routerLink]="routes.studentGuideUtilisation"
+               [class.active]="isExactActive(routes.studentGuideUtilisation)">Guide d'utilisation</a></li>
+        <li><a [routerLink]="routes.studentTutorielsVideo"
+               [class.active]="isExactActive(routes.studentTutorielsVideo)">Tutoriels vid&eacute;o</a></li>
+        <li><a [routerLink]="routes.students_tickets"
+               [class.active]="isExactActive(routes.students_tickets)">Soumettre un ticket</a></li>
+        <li><a [routerLink]="routes.studentAnnoncesMAJ"
+               [class.active]="isExactActive(routes.studentAnnoncesMAJ)">Annonces et mises &agrave; jour</a></li>
       </ul>
     </li>
 
-    <!-- ================= DÉCONNEXION ================= -->
+  </ul>
+
+  <!-- Theme Switcher -->
+  <div class="sb-theme">
+    <span class="sb-theme__label">Th&egrave;me</span>
+    <button type="button" class="sb-theme__dot sb-theme__dot--teal"
+            [class.active]="sidebarTheme === 'teal'"
+            (click)="setTheme('teal')" title="Teal"></button>
+    <button type="button" class="sb-theme__dot sb-theme__dot--navy"
+            [class.active]="sidebarTheme === 'navy'"
+            (click)="setTheme('navy')" title="Navy"></button>
+    <button type="button" class="sb-theme__dot sb-theme__dot--indigo"
+            [class.active]="sidebarTheme === 'indigo'"
+            (click)="setTheme('indigo')" title="Indigo"></button>
+  </div>
+
+  <!-- ================= DÉCONNEXION ================= -->
+  <ul class="main-menu">
     <li class="menu-item logout">
       <a [routerLink]="routes.login">
         <i class="isax isax-logout"></i>
-        <span>Déconnexion</span>
+        <span>D&eacute;connexion</span>
       </a>
     </li>
-
   </ul>
+
 </div>

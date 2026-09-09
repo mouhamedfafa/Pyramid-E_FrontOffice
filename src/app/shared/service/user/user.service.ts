@@ -98,6 +98,10 @@ export class UserService {
     return this.http.post<any>(`${this.baseUrl}/users/mass-invitation`, params, { headers: this.getHeaders() });
   }
 
+  unlockUser(userId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/users/${userId}/unlock`, {}, { headers: this.getHeaders() });
+  }
+
   // Headers pour l'upload de fichier (sans Content-Type)
   private getHeadersForFileUpload(): HttpHeaders {
     const token = localStorage.getItem('pyramide_token');

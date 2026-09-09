@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
+import { AdminrhThemeService, AdminrhTheme } from '../adminrh-theme.service';
 import { CommonService } from '../../../../shared/service/common/common.service';
 import { AuthService } from '../../../../shared/service/authentification/auth.service';
 import { routes } from '../../../../shared/service/routes/routes';
@@ -36,6 +37,8 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
   employes               = 0;
   tauxCompletion         = 73;
 
+  sidebarTheme: AdminrhTheme = 'navy';
+
   quotaUsed  = 18;
   quotaTotal = 25;
   get quotaPercent() { return Math.round((this.quotaUsed / this.quotaTotal) * 100); }
@@ -44,6 +47,7 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
     demandes:  false,
     formation: false,
     quiz:      false,
+    aide:      false,
   };
 
   toggleGroup(key: string): void {
@@ -88,13 +92,20 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
     private ticketService: TicketService,
     private sondageService: SondageService,
     private router: Router,
+    private themeService: AdminrhThemeService,
   ) {
     this.common.base.subscribe((base: string) => { this.base = base; });
     this.common.page.subscribe((page: string) => { this.page = page; });
     this.common.last.subscribe((last: string) => { this.last = last; });
   }
 
+  setTheme(theme: AdminrhTheme): void {
+    this.sidebarTheme = theme;
+    this.themeService.setTheme(theme);
+  }
+
   ngOnInit(): void {
+    this.sidebarTheme = this.themeService.theme$.value;
     this.currentUser = this.authService.getUser();
     this.loadBadgeCounts();
     if (this.router.url.includes('demande')) {

@@ -208,8 +208,12 @@ export class UserListComponent implements OnInit {
     }
 
     if (this.selectedStatutFilter !== '') {
-      const s = +this.selectedStatutFilter;
-      data = data.filter(u => u.statut === s);
+      if (this.selectedStatutFilter === 'locked') {
+        data = data.filter(u => this.isLocked(u));
+      } else {
+        const s = +this.selectedStatutFilter;
+        data = data.filter(u => u.statut === s);
+      }
     }
 
     this.actualData  = data;
@@ -465,6 +469,18 @@ export class UserListComponent implements OnInit {
   // ════════════════════════════════════════════
   // HELPERS TEMPLATE
   // ════════════════════════════════════════════
+  isLocked(u: User): boolean {
+    return !!u.locked_until && new Date(u.locked_until) > new Date();
+  }
+
+  unlockUser(user: User): void {
+    if (!confirm(`Débloquer le compte de ${user.email} ?`)) return;
+    this.userService.unlockUser(user.id).subscribe({
+      next: () => this.refreshData(),
+      error: (err) => alert(err.error?.message || 'Erreur lors du déblocage')
+    });
+  }
+
   trackById(_: number, u: User): number { return u.id; }
 
   getDisplayName(u: User): string {

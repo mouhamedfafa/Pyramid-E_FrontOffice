@@ -2,11 +2,13 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { FormationService } from '../../../shared/service/formation/formation.service';
+import { CommonService } from '../../../shared/service/common/common.service';
 import { CategorieService, CategorieFormation } from '../../../shared/service/categorie/categorie-service.service';
 import { AuthService } from '../../../shared/service/authentification/auth.service';
 import { QuizService } from '../../../shared/service/quiz/quiz.service';
@@ -139,6 +141,8 @@ export class InstructorCourseEditComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private quizService: QuizService,
     private questionService: QuestionQuizService,
+    private commonService: CommonService,
+    private location: Location,
   ) {
     this.initForms();
   }
@@ -158,6 +162,14 @@ export class InstructorCourseEditComponent implements OnInit, OnDestroy {
     this.loadCourseData();
     this.setupChangeDetection();
     this.setupBeforeUnloadHandler();
+  }
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      window.close();
+    }
   }
 
   ngOnDestroy(): void {
@@ -277,6 +289,8 @@ export class InstructorCourseEditComponent implements OnInit, OnDestroy {
 
         // Sauvegarder les données originales
         this.originalCourseData = JSON.parse(JSON.stringify(this.course));
+
+        this.commonService.page.next(this.course.titre || 'Modifier la formation');
 
         // Remplir les formulaires avec les données
         this.populateFormsWithCourseData();

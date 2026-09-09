@@ -1,13 +1,14 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Router, NavigationEnd, RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { routes } from '../../shared/service/routes/routes';
 import { StudentSidebarComponent } from './common/student-sidebar/student-sidebar.component';
 import { AuthService } from '../../shared/service/authentification/auth.service';
 import { FormationsService } from '../../shared/service/Formationsss/formations.service';
+import { StudentThemeService, StudentTheme } from './common/student-theme.service';
 
 interface FormationEnCours {
   id: number;
@@ -22,7 +23,7 @@ interface FormationEnCours {
   encapsulation: ViewEncapsulation.None,
   imports: [CommonModule, RouterOutlet, RouterModule, StudentSidebarComponent]
 })
-export class StudentComponent implements OnInit {
+export class StudentComponent implements OnInit, OnDestroy {
   public routes = routes;
   public last = '';
   public isExplorerRoute = false;
@@ -37,6 +38,10 @@ export class StudentComponent implements OnInit {
   // ── Formations en cours ───────────────────────────
   formationsEnCours: FormationEnCours[] = [];
   completionGlobale = 0;
+
+  // ── Thème ─────────────────────────────────────────
+  currentTheme: StudentTheme = 'teal';
+  private themeSub?: Subscription;
 
   // ── Badges ────────────────────────────────────────
   nbCertificats   = 0;
@@ -80,7 +85,8 @@ export class StudentComponent implements OnInit {
   constructor(
     private router: Router,
     private auth: AuthService,
-    private formationsService: FormationsService
+    private formationsService: FormationsService,
+    private themeService: StudentThemeService,
   ) {
     this.router.events.subscribe(data => {
       if (data instanceof NavigationEnd) {
@@ -104,12 +110,17 @@ export class StudentComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.themeSub = this.themeService.theme$.subscribe(t => this.currentTheme = t);
     const segments = this.router.url.split('/').filter(s => s.length > 0);
     this.isExplorerRoute = segments.includes('students-explorer') ||
                            segments.includes('catalogue-detail') ||
                            segments.includes('parcours-details');
     this.loadProfile();
     this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    this.themeSub?.unsubscribe();
   }
 
   private loadProfile(): void {

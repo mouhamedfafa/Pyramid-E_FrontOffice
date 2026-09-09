@@ -1,42 +1,66 @@
 /* =====================================
-   SIDEBAR LMS ENTREPRISE – TEAL DARK
+   SIDEBAR LMS EMPLOYÉ – THEMED
 ===================================== */
-
-$primary:       #14b8a6;   // teal-500
-$primary-light: #2dd4bf;   // teal-400
-$primary-dark:  #0f766e;   // teal-700
-
-$bg-sidebar:    #006F78;   // custom teal
-$bg-hover:      rgba(255,255,255,.08);
-$bg-active:     rgba(20,184,166,.18);
-
-$text-main:     #ffffff;
-$text-sub:      rgba(255,255,255,.95);
-$text-muted:    rgba(255,255,255,.75);
-$border:        rgba(255,255,255,.08);
 
 $radius:        10px;
 $transition:    all 0.25s ease;
+
+// ── Theme definitions via CSS custom properties ──────────
+.settings-sidebar {
+  // Teal (default)
+  --sb-bg:           #006F78;
+  --sb-hover:        rgba(255,255,255,.08);
+  --sb-active:       rgba(20,184,166,.18);
+  --sb-accent:       #14b8a6;
+  --sb-accent-light: #2dd4bf;
+  --sb-text:         #ffffff;
+  --sb-text-sub:     rgba(255,255,255,.95);
+  --sb-text-muted:   rgba(255,255,255,.75);
+  --sb-border:       rgba(255,255,255,.08);
+
+  &.theme-navy {
+    --sb-bg:           #161637;
+    --sb-hover:        rgba(255,255,255,.06);
+    --sb-active:       rgba(212,168,67,.14);
+    --sb-accent:       #D4A843;
+    --sb-accent-light: #e8c36a;
+    --sb-text:         #ffffff;
+    --sb-text-sub:     rgba(255,255,255,.92);
+    --sb-text-muted:   rgba(255,255,255,.6);
+    --sb-border:       rgba(255,255,255,.07);
+  }
+
+  &.theme-indigo {
+    --sb-bg:           #1e1b4b;
+    --sb-hover:        rgba(255,255,255,.06);
+    --sb-active:       rgba(129,140,248,.16);
+    --sb-accent:       #818cf8;
+    --sb-accent-light: #a5b4fc;
+    --sb-text:         #ffffff;
+    --sb-text-sub:     rgba(255,255,255,.92);
+    --sb-text-muted:   rgba(255,255,255,.6);
+    --sb-border:       rgba(255,255,255,.07);
+  }
+}
 
 // ── Conteneur ──────────────────────────────────────────
 .settings-sidebar {
   width: 280px;
   min-width: 280px;
   height: 100vh;
-  background: $bg-sidebar;
-  border-right: 1px solid $border;
+  background: var(--sb-bg);
+  border-right: 1px solid var(--sb-border);
   padding: 1.5rem 1rem;
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
-  transition: width 0.3s ease, min-width 0.3s ease;
+  transition: width 0.3s ease, min-width 0.3s ease, background 0.3s ease;
 
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
 }
 
-// ── Toggle ─────────────────────────────────────────────
 // ── Bannière mode apprenant (RH uniquement) ────────────
 .rh-switch-banner {
   display: flex;
@@ -81,13 +105,14 @@ $transition:    all 0.25s ease;
   }
 }
 
+// ── Toggle ─────────────────────────────────────────────
 .sidebar-toggle {
   text-align: right;
   margin-bottom: 1.25rem;
   cursor: pointer;
   font-size: 1.2rem;
-  color: $text-muted;
-  &:hover { color: $text-main; }
+  color: var(--sb-text-muted);
+  &:hover { color: var(--sb-text); }
 }
 
 // ── Menu principal ──────────────────────────────────────
@@ -110,17 +135,17 @@ $transition:    all 0.25s ease;
     border-radius: $radius;
     font-size: 0.9rem;
     font-weight: 500;
-    color: $text-sub;
+    color: var(--sb-text-sub);
     text-decoration: none;
     cursor: pointer;
     transition: $transition;
 
-    i:first-child { font-size: 1rem; color: $text-muted; }
+    i:first-child { font-size: 1rem; color: var(--sb-text-muted); }
 
     &:hover {
-      background: $bg-hover;
-      color: $text-main;
-      i { color: $primary-light; }
+      background: var(--sb-hover);
+      color: var(--sb-text);
+      i { color: var(--sb-accent-light); }
     }
   }
 }
@@ -130,7 +155,7 @@ $transition:    all 0.25s ease;
   opacity: 0.5;
   margin-left: auto;
   transition: transform 0.2s ease;
-  color: $text-muted;
+  color: var(--sb-text-muted);
 }
 
 // ── SOUS-MENU INLINE ───────────────────────────────────
@@ -139,7 +164,7 @@ $transition:    all 0.25s ease;
   list-style: none;
   padding: 4px 0 4px 14px;
   margin: 2px 0 4px 28px;
-  border-left: 2px solid rgba($primary, .3);
+  border-left: 2px solid rgba(255,255,255,.15);
   display: none;
 
   &.open { display: block; }
@@ -155,19 +180,19 @@ $transition:    all 0.25s ease;
       border-radius: $radius;
       font-size: 0.875rem;
       font-weight: 600;
-      color: $text-sub;
+      color: var(--sb-text-sub);
       text-decoration: none;
       transition: 0.15s ease;
 
       &:hover {
-        background: $bg-hover;
-        color: $text-main;
+        background: var(--sb-hover);
+        color: var(--sb-text);
       }
 
       &.active {
-        color: $primary-light;
+        color: var(--sb-accent-light);
         font-weight: 700;
-        background: $bg-active;
+        background: var(--sb-active);
       }
     }
   }
@@ -179,10 +204,47 @@ $transition:    all 0.25s ease;
 .demande-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: $text-sub;
+  color: var(--sb-text-sub);
   line-height: 1.3;
 }
 .demande-desc  { display: none; }
+
+// ── THEME SWITCHER ────────────────────────────────────
+.sb-theme {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  border-top: 1px solid var(--sb-border);
+
+  &__label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--sb-text-muted);
+    margin-right: auto;
+  }
+
+  &__dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.2);
+    cursor: pointer;
+    transition: border-color .2s, transform .2s;
+    padding: 0;
+    background: none;
+
+    &:hover { transform: scale(1.15); }
+    &.active { border-color: #fff; transform: scale(1.15); }
+
+    &--teal   { background: #006F78; }
+    &--navy   { background: #161637; }
+    &--indigo { background: #1e1b4b; }
+  }
+}
 
 // ── MODE RÉDUIT ────────────────────────────────────────
 .settings-sidebar.collapsed {
@@ -191,6 +253,7 @@ $transition:    all 0.25s ease;
 
   span, .submenu-arrow { display: none; }
   .submenu { display: none !important; }
+  .sb-theme__label { display: none; }
 }
 
 // ── DÉCONNEXION ────────────────────────────────────────
@@ -202,16 +265,16 @@ $transition:    all 0.25s ease;
 
 // ── ÉTATS ACTIFS ───────────────────────────────────────
 .menu-item > a.active {
-  background: $bg-active !important;
-  color: $text-main !important;
+  background: var(--sb-active) !important;
+  color: var(--sb-text) !important;
   font-weight: 700;
 
-  i { color: $primary-light !important; opacity: 1 !important; }
+  i { color: var(--sb-accent-light) !important; opacity: 1 !important; }
 
   &::before {
     content: '';
     width: 4px; height: 100%;
-    background: $primary-light;
+    background: var(--sb-accent-light);
     position: absolute;
     left: 0; top: 0;
     border-radius: 4px;
@@ -219,17 +282,17 @@ $transition:    all 0.25s ease;
 }
 
 .menu-item.active > a {
-  background: $bg-active !important;
-  color: $text-main !important;
+  background: var(--sb-active) !important;
+  color: var(--sb-text) !important;
   font-weight: 700;
 
-  i:first-child { color: $primary-light !important; opacity: 1 !important; }
-  .submenu-arrow { color: $primary-light !important; opacity: 0.9 !important; }
+  i:first-child { color: var(--sb-accent-light) !important; opacity: 1 !important; }
+  .submenu-arrow { color: var(--sb-accent-light) !important; opacity: 0.9 !important; }
 
   &::before {
     content: '';
     width: 4px; height: 100%;
-    background: $primary-light;
+    background: var(--sb-accent-light);
     position: absolute;
     left: 0; top: 0;
     border-radius: 4px;

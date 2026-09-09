@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { FormationService } from '../../../shared/service/formation/formation.service';
+import { CommonService } from '../../../shared/service/common/common.service';
 import { AuthService } from '../../../shared/service/authentification/auth.service';
 import { CategorieService, CategorieFormation, CategorieFormationRequest } from '../../../shared/service/categorie/categorie-service.service';
 import { QuizService } from '../../../shared/service/quiz/quiz.service';
@@ -140,12 +142,23 @@ export class InstructorCourseAddComponent implements OnInit {
     private authService: AuthService,
     private quizService: QuizService,
     private questionService: QuestionQuizService,
+    private commonService: CommonService,
+    private location: Location,
   ) {
     this.initForms();
   }
 
   ngOnInit(): void {
+    this.commonService.page.next('Nouvelle formation');
     this.loadCategories();
+  }
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      window.close();
+    }
   }
 
   // ==================== INITIALISATION ====================

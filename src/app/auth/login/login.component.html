@@ -1,243 +1,209 @@
-<div class="main-wrapper">
-  <div class="login-content">
-      <div class="row">
-          <!-- Login Banner -->
-          <div class="col-md-6 login-bg d-none d-lg-flex">
-              <!-- Floating decorative icons -->
-              <span class="lc-float-icon lc-float-book"><i class="isax isax-book"></i></span>
-              <span class="lc-float-icon lc-float-cap"><i class="isax isax-teacher"></i></span>
-              <span class="lc-float-icon lc-float-triangle"></span>
-              <span class="lc-float-icon lc-float-dots"></span>
-              <div class="login-carousel">
-                <ngx-slick-carousel [config]="authSlider">
-                  @for (slide of welcomeLogin; track slide) {
-                    <div ngxSlickItem>
-                      <div class="login-carousel-section mb-3">
-                          <div class="login-banner">
-                              <img [src]="slide.img" class="img-fluid" alt="Logo">
-                          </div>
-                          <div class="mentor-course text-center">
-                              <p class="lc-welcome">{{slide.content1}}</p>
-                              <h2 class="lc-title">
-                                  <span class="lc-brand">{{slide.content3}}</span>
-                                  <span class="lc-lms"> {{slide.content4}}</span>
-                              </h2>
-                              <div class="lc-divider mx-auto"></div>
-                              <p class="lc-subtitle">
-                                  Votre plateforme de <strong>formation</strong> et de <strong>développement des compétences</strong>.
-                              </p>
-                              <div class="lc-divider-thin mx-auto"></div>
-                              <p class="lc-paragraph">{{slide.paragraph}}</p>
-                          </div>
-                      </div>
-                  </div>
-                  }
-                </ngx-slick-carousel>
-              </div>
+<div class="login-page">
+  <div class="row g-0 min-vh-100">
+    <!-- Left Panel -->
+    <div class="col-lg-6 d-none d-lg-flex login-left">
+      <div class="login-left-content">
+        <div class="login-left-logo">
+          <img src="assets/img/logo.png" alt="Pyramide" />
+        </div>
+        <div class="login-left-visual">
+          <div class="login-image-card">
+            <div class="login-image-ring">
+              <img src="assets/img/auth/image-connexion.png" alt="Formation" class="login-image" />
+            </div>
+            <div class="login-image-badge">
+              <i class="isax isax-star-1"></i> LMS d'Excellence
+            </div>
           </div>
-          <!-- /Login Banner -->
-
-          <div class="col-md-6 login-wrap-bg">
-              <!-- Login -->
-              <div class="login-wrapper">
-                  <div class="loginbox">
-                      <div class="w-100">
-                          <div class="d-flex align-items-center justify-content-between login-header">
-                              <img src="assets/img/logo.png" class="img-fluid" alt="Logo Pyramide" style="width: 250px;height: 75px;">
-                              <a [routerLink]="routes.home" class="link-1">Retour à l'Accueil</a>
-                          </div>
-                          <h1 class="fs-32 fw-bold topic">Connectez-vous à Pyramide-e</h1>
-                          <p class="text-muted mb-3">Formez vous simplement</p>
-
-                          <!-- Toggle mode -->
-                          <div class="login-mode-toggle mb-4">
-                              <button type="button"
-                                      class="lmt-btn"
-                                      [class.active]="loginMode === 'password'"
-                                      (click)="loginMode = 'password'; magicSent = false; magicError = ''">
-                                  <i class="isax isax-lock"></i> Mot de passe
-                              </button>
-                              <button type="button"
-                                      class="lmt-btn"
-                                      [class.active]="loginMode === 'magic'"
-                                      (click)="loginMode = 'magic'; errorMessage = ''">
-                                  <i class="isax isax-sms"></i> Lien par e-mail
-                              </button>
-                          </div>
-
-                          <!-- ═══ MODE MOT DE PASSE ═══ -->
-                          <ng-container *ngIf="loginMode === 'password'">
-
-                            <!-- Message d'erreur -->
-                            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
-                                <i class="isax isax-close-circle me-2"></i>
-                                {{ errorMessage }}
-                                <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Fermer"></button>
-                            </div>
-
-                            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mb-3 pb-3">
-                                <!-- Email Field -->
-                                <div class="mb-3 position-relative">
-                                    <label class="form-label">Adresse Email<span class="text-danger ms-1">*</span></label>
-                                    <div class="position-relative">
-                                        <input
-                                            type="email"
-                                            class="form-control form-control-lg"
-                                            formControlName="email"
-                                            [class.is-invalid]="f['email'].invalid && f['email'].touched"
-                                            placeholder="Entrez votre adresse email">
-                                        <span><i class="isax isax-sms input-icon text-gray-7 fs-14"></i></span>
-                                    </div>
-                                    <div *ngIf="f['email'].invalid && f['email'].touched" class="invalid-feedback d-block">
-                                        <small *ngIf="f['email'].hasError('required')">L'email est requis</small>
-                                        <small *ngIf="f['email'].hasError('email')">Veuillez entrer un email valide</small>
-                                    </div>
-                                </div>
-
-                                <!-- Password Field -->
-                                <div class="mb-3 position-relative">
-                                    <label class="form-label">Mot de Passe <span class="text-danger ms-1">*</span></label>
-                                    <div class="position-relative" id="passwordInput">
-                                        <input
-                                            [type]="password ? 'text' : 'password'"
-                                            class="pass-inputs form-control form-control-lg"
-                                            formControlName="password"
-                                            [class.is-invalid]="f['password'].invalid && f['password'].touched"
-                                            placeholder="Entrez votre mot de passe">
-                                        <span
-                                            tabindex="0"
-                                            (click)="togglePassword()"
-                                            (keydown.enter)="togglePassword()"
-                                            class="isax toggle-passwords fs-14 cursor-pointer"
-                                            [ngClass]="password ? 'isax-eye' : 'isax-eye-slash'">
-                                        </span>
-                                    </div>
-                                    <div *ngIf="f['password'].invalid && f['password'].touched" class="invalid-feedback d-block">
-                                        <small *ngIf="f['password'].hasError('required')">Le mot de passe est requis</small>
-                                        <small *ngIf="f['password'].hasError('minlength')">Le mot de passe doit contenir au moins 6 caractères</small>
-                                    </div>
-                                </div>
-
-                                <!-- Remember Me & Forgot Password -->
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="remember-me d-flex align-items-center">
-                                        <input
-                                            class="form-check-input"
-                                            type="checkbox"
-                                            value="true"
-                                            id="flexCheckDefault">
-                                        <label class="form-check-label ms-2" for="flexCheckDefault">
-                                            Se souvenir de moi
-                                        </label>
-                                    </div>
-                                    <div>
-                                        <a [routerLink]="routes.forgot_password" class="link-2">
-                                            Mot de passe oublié ?
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <div class="d-grid">
-                                    <button
-                                        class="btn btn-secondary btn-lg"
-                                        type="submit"
-                                        [disabled]="isLoading || loginForm.invalid">
-                                        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                        {{ isLoading ? 'Connexion en cours...' : 'Se Connecter' }}
-                                        <i *ngIf="!isLoading" class="isax isax-arrow-right-3 ms-1"></i>
-                                    </button>
-                                </div>
-                            </form>
-
-                          </ng-container>
-
-                          <!-- ═══ MODE MAGIC LINK ═══ -->
-                          <ng-container *ngIf="loginMode === 'magic'">
-
-                            <!-- Succès envoi -->
-                            <div *ngIf="magicSent" class="magic-sent-box mb-3">
-                                <div class="msb-icon"><i class="isax isax-sms-star"></i></div>
-                                <div class="msb-text">
-                                    <div class="msb-title">E-mail envoyé !</div>
-                                    <div class="msb-sub">
-                                        Vérifiez votre boîte de réception à <strong>{{ magicEmail }}</strong>.<br>
-                                        Le lien est valable <strong>15 minutes</strong>.
-                                    </div>
-                                </div>
-                                <button type="button" class="msb-resend" (click)="magicSent = false">
-                                    Renvoyer
-                                </button>
-                            </div>
-
-                            <!-- Formulaire envoi -->
-                            <ng-container *ngIf="!magicSent">
-
-                              <div class="magic-desc mb-3">
-                                  <i class="isax isax-info-circle me-2"></i>
-                                  Entrez votre e-mail. Nous vous enverrons un lien de connexion instantané, sans mot de passe.
-                              </div>
-
-                              <div *ngIf="magicError" class="alert alert-danger mb-3">
-                                  <i class="isax isax-close-circle me-2"></i>{{ magicError }}
-                              </div>
-
-                              <div class="mb-3 position-relative">
-                                  <label class="form-label">Adresse Email<span class="text-danger ms-1">*</span></label>
-                                  <div class="position-relative">
-                                      <input
-                                          type="email"
-                                          class="form-control form-control-lg"
-                                          [(ngModel)]="magicEmail"
-                                          placeholder="votre@email.com"
-                                          (keydown.enter)="sendMagicLink()">
-                                      <span><i class="isax isax-sms input-icon text-gray-7 fs-14"></i></span>
-                                  </div>
-                              </div>
-
-                              <div class="d-grid mb-3">
-                                  <button
-                                      type="button"
-                                      class="btn btn-secondary btn-lg"
-                                      [disabled]="magicLoading"
-                                      (click)="sendMagicLink()">
-                                      <span *ngIf="magicLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                      <i *ngIf="!magicLoading" class="isax isax-send-2 me-2"></i>
-                                      {{ magicLoading ? 'Envoi en cours…' : 'Envoyer le lien de connexion' }}
-                                  </button>
-                              </div>
-
-                            </ng-container>
-
-                          </ng-container>
-
-                          <!-- <div class="d-flex align-items-center justify-content-center or fs-14 mb-3">
-                              Ou
-                          </div>
-
-                          <div class="d-flex align-items-center justify-content-center mb-3">
-                              <a href="javascript:void(0);" class="btn btn-light me-2"><img src="assets/img/icons/google.svg" alt="img" class="me-2">Google</a>
-                              <a href="javascript:void(0);" class="btn btn-light"><img src="assets/img/icons/facebook.svg" alt="img" class="me-2">Facebook</a>
-                          </div>
-
-                          <div class="fs-14 fw-normal d-flex align-items-center justify-content-center">
-                              Vous n'avez pas de compte ?<a [routerLink]="routes.register" class="link-2 ms-1"> Inscrivez-vous</a>
-                          </div> -->
-
-                          <div class="fs-13 text-center text-muted mt-4">
-                              <p class="mb-1">Besoin d'aide ? Contactez notre support</p>
-                              <p class="mb-0">
-                                  <i class="isax isax-call me-1"></i> +221 77 662 26 82 |
-                                  <i class="isax isax-sms ms-2 me-1"></i> support@pyramide-e.com
-                              </p>
-                          </div>
-
-                          <!-- /Login -->
-
-                      </div>
-                  </div>
+        </div>
+        <div class="login-left-text">
+          <ngx-slick-carousel [config]="authSlider">
+            @for (slide of welcomeLogin; track slide) {
+              <div ngxSlickItem>
+                <div class="login-slide">
+                  <span class="login-slide-label">BIENVENUE SUR PYRAMIDE LMS</span>
+                  <h2 class="login-slide-title">Votre plateforme de formation et de d&eacute;veloppement des comp&eacute;tences</h2>
+                  <p class="login-slide-desc">
+                    Pyramide LMS donne &agrave; vos experts internes et consultants externes les
+                    outils n&eacute;cessaires pour cr&eacute;er, diffuser et piloter des formations 100 %
+                    adapt&eacute;es &agrave; vos r&eacute;alit&eacute;s m&eacute;tier et mesurer leur impact sur la
+                    performance de vos &eacute;quipes.
+                  </p>
+                </div>
               </div>
-          </div>
+            }
+          </ngx-slick-carousel>
+        </div>
       </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-lg-6 login-right">
+      <div class="login-right-top">
+        <a [routerLink]="routes.home" class="login-back-link">
+          <i class="isax isax-arrow-left"></i> Retour &agrave; l'Accueil
+        </a>
+      </div>
+      <div class="login-right-content">
+        <div class="login-right-logo">
+          <img src="assets/img/logo-white.png" alt="Pyramide" />
+        </div>
+        <div class="login-card">
+          <h1 class="login-card-title">Connectez-vous &agrave; Pyramide LMS</h1>
+          <p class="login-card-subtitle">Am&eacute;liorer vos comp&eacute;tences simplement !</p>
+
+          <!-- Toggle mode -->
+          <div class="login-mode-toggle">
+            <button type="button"
+                    class="lmt-btn"
+                    [class.active]="loginMode === 'password'"
+                    (click)="loginMode = 'password'; magicSent = false; magicError = ''">
+              <i class="isax isax-lock"></i> Mot de passe
+            </button>
+            <button type="button"
+                    class="lmt-btn"
+                    [class.active]="loginMode === 'magic'"
+                    (click)="loginMode = 'magic'; errorMessage = ''">
+              <i class="isax isax-sms"></i> Lien par e-mail
+            </button>
+          </div>
+
+          <!-- MODE MOT DE PASSE -->
+          <ng-container *ngIf="loginMode === 'password'">
+            <div *ngIf="errorMessage && !isLocked" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+              <i class="isax isax-close-circle me-2"></i>
+              {{ errorMessage }}
+              <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Fermer"></button>
+            </div>
+            <div *ngIf="isLocked" class="alert alert-warning fade show mb-3" role="alert">
+              <i class="isax isax-lock me-2"></i>
+              <strong>Compte temporairement bloqué</strong><br>
+              <small>{{ errorMessage }}</small>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+              <div class="mb-3">
+                <label class="form-label">Adresse Email <span class="text-danger">*</span></label>
+                <div class="position-relative">
+                  <input
+                    type="email"
+                    class="form-control form-control-lg login-input"
+                    formControlName="email"
+                    [class.is-invalid]="f['email'].invalid && f['email'].touched"
+                    placeholder="Entrez votre adresse email">
+                  <span class="login-input-icon"><i class="isax isax-sms"></i></span>
+                </div>
+                <div *ngIf="f['email'].invalid && f['email'].touched" class="invalid-feedback d-block">
+                  <small *ngIf="f['email'].hasError('required')">L'email est requis</small>
+                  <small *ngIf="f['email'].hasError('email')">Veuillez entrer un email valide</small>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Mot de Passe <span class="text-danger">*</span></label>
+                <div class="position-relative">
+                  <input
+                    [type]="password ? 'text' : 'password'"
+                    class="form-control form-control-lg login-input"
+                    formControlName="password"
+                    [class.is-invalid]="f['password'].invalid && f['password'].touched"
+                    placeholder="Entrez votre mot de passe">
+                  <span class="login-input-icon"><i class="isax isax-lock"></i></span>
+                  <span
+                    tabindex="0"
+                    (click)="togglePassword()"
+                    (keydown.enter)="togglePassword()"
+                    class="login-eye-icon"
+                    [ngClass]="password ? 'isax isax-eye' : 'isax isax-eye-slash'">
+                  </span>
+                </div>
+                <div *ngIf="f['password'].invalid && f['password'].touched" class="invalid-feedback d-block">
+                  <small *ngIf="f['password'].hasError('required')">Le mot de passe est requis</small>
+                  <small *ngIf="f['password'].hasError('minlength')">Le mot de passe doit contenir au moins 6 caract&egrave;res</small>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center">
+                  <input class="form-check-input login-check" type="checkbox" id="rememberMe">
+                  <label class="form-check-label ms-2 login-check-label" for="rememberMe">Se souvenir de moi</label>
+                </div>
+                <a [routerLink]="routes.forgot_password" class="login-forgot">Mot de passe oubli&eacute; ?</a>
+              </div>
+
+              <div class="d-grid">
+                <button
+                  class="btn login-submit-btn"
+                  type="submit"
+                  [disabled]="isLoading || loginForm.invalid">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ isLoading ? 'Connexion en cours...' : 'Se Connecter' }}
+                  <i *ngIf="!isLoading" class="isax isax-arrow-right-3 ms-2"></i>
+                </button>
+              </div>
+            </form>
+          </ng-container>
+
+          <!-- MODE MAGIC LINK -->
+          <ng-container *ngIf="loginMode === 'magic'">
+            <div *ngIf="magicSent" class="magic-sent-box mb-3">
+              <div class="msb-icon"><i class="isax isax-sms-star"></i></div>
+              <div class="msb-text">
+                <div class="msb-title">E-mail envoy&eacute; !</div>
+                <div class="msb-sub">
+                  V&eacute;rifiez votre bo&icirc;te de r&eacute;ception &agrave; <strong>{{ magicEmail }}</strong>.<br>
+                  Le lien est valable <strong>15 minutes</strong>.
+                </div>
+              </div>
+              <button type="button" class="msb-resend" (click)="magicSent = false">Renvoyer</button>
+            </div>
+
+            <ng-container *ngIf="!magicSent">
+              <div class="magic-desc mb-3">
+                <i class="isax isax-info-circle me-2"></i>
+                Entrez votre e-mail. Nous vous enverrons un lien de connexion instantan&eacute;, sans mot de passe.
+              </div>
+
+              <div *ngIf="magicError" class="alert alert-danger mb-3">
+                <i class="isax isax-close-circle me-2"></i>{{ magicError }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Adresse Email <span class="text-danger">*</span></label>
+                <div class="position-relative">
+                  <input
+                    type="email"
+                    class="form-control form-control-lg login-input"
+                    [(ngModel)]="magicEmail"
+                    placeholder="votre&#64;email.com"
+                    (keydown.enter)="sendMagicLink()">
+                  <span class="login-input-icon"><i class="isax isax-sms"></i></span>
+                </div>
+              </div>
+
+              <div class="d-grid">
+                <button
+                  type="button"
+                  class="btn login-submit-btn"
+                  [disabled]="magicLoading"
+                  (click)="sendMagicLink()">
+                  <span *ngIf="magicLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!magicLoading" class="isax isax-send-2 me-2"></i>
+                  {{ magicLoading ? 'Envoi en cours...' : 'Envoyer le lien de connexion' }}
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+
+        <div class="login-right-footer">
+          <p>Besoins d'aide? Contactez-nous !</p>
+          <span>
+            <i class="isax isax-sms me-1"></i>
+            <a href="mailto:contact@pyramide-e.com">contact&#64;pyramide-e.com</a>
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

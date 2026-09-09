@@ -39,6 +39,9 @@ export const routes = {
   instructorDeleteAccount: '/instructor/settings/instructor-delete-account',
   instructorChangePassword: '/instructor/settings/instructor-change-password',
   instructorSettings: '/instructor/settings/instructor-settings',
+  instructorGuideUtilisation: '/instructor/guide-utilisation',
+  instructorTutorielsVideo: '/instructor/tutoriels-video',
+  instructorAnnoncesMAJ: '/instructor/instructor-announcements',
 
   // Student Routes
   students: '/student/',
@@ -76,6 +79,9 @@ export const routes = {
   student_CompetencesRecommandees: '/student/mes-competences-recommandees',
   student_EcartCompetences: '/student/ecart-competences',
   student_Planning: '/student/student-planning',
+  studentGuideUtilisation: '/student/guide-utilisation',
+  studentTutorielsVideo: '/student/tutoriels-video',
+  studentAnnoncesMAJ: '/student/annonces-maj',
   student_MesPalmares: '/student/mes-palmares',
   studentMessages: '/student/student-message',
   studentsMessage: '/student/student-message',
@@ -159,6 +165,10 @@ export const routes = {
   superadminSettings: '/superadmin/settings/superadmin-settings',
   superadminAuditLogs: '/superadmin/superadmin-audit-logs',
   superadminSondage: '/superadmin/superadmin-sondage',
+  superadminGuideUtilisation: '/superadmin/manage-guide-utilisation',
+  superadminVideoAccueil: '/superadmin/manage-video-acceuil',
+  superadminTutorielsVideo: '/superadmin/manage-tutoriels-video',
+  superadminAnnoncesMAJ: '/superadmin/manage-annonces',
 
   // Adminrh Routes
   adminrh: '/adminrh/',
@@ -218,6 +228,9 @@ export const routes = {
   adminrhDeleteAccount: '/adminrh/settings/adminrh-delete-account',
   adminrhChangePassword: '/adminrh/settings/adminrh-change-password',
   adminrhSettings: '/adminrh/settings/adminrh-settings',
+  adminrhGuideUtilisation: '/adminrh/guide-utilisation',
+  adminrhTutorielsVideo: '/adminrh/tutoriels-video',
+  adminrhAnnoncesMAJ: '/adminrh/adminrh-announcements',
 
   // Pages Routes
   pages: '/pages/',

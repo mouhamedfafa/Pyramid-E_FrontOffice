@@ -500,6 +500,8 @@ export class AdminrhCourseComponent implements OnInit {
   inscriptionSuccess = '';
   inscriptionError = '';
 
+  currentUserId: number = 0;
+
   constructor(
     private formationService: FormationService,
     private parcoursService: ParcoursService,
@@ -510,6 +512,8 @@ export class AdminrhCourseComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const user = JSON.parse(localStorage.getItem('pyramide_user') || '{}');
+    this.currentUserId = user.id || 0;
     this.getFormationsList();
   }
 

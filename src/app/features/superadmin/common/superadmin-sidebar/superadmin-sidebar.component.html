@@ -4,7 +4,7 @@
   <div class="sb-logo">
     <div class="sb-logo-mark">L</div>
     <div>
-      <div class="sb-logo-text">LMS Pro</div>
+      <div class="sb-logo-text">PYRAMIDE LMS</div>
       <div class="sb-logo-sub">Superadmin</div>
     </div>
   </div>
@@ -152,6 +152,35 @@
       <a [routerLink]="routes.superadminAuditLogs" routerLinkActive="active" class="sb-item">
         <i class="isax isax-clipboard-text"></i><span class="sb-item-label">Logs d'audit</span>
       </a>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- CENTRE D'AIDE (ADMINISTRATION) -->
+    <div class="sb-section">
+      <div class="sb-section-label">Centre d'aide</div>
+      <div class="sb-group">
+        <div class="sb-group-header" [class.open]="openGroups['aide']"
+             (click)="toggleGroup('aide')">
+          <i class="isax isax-info-circle icon"></i>
+          <span>Gestion du contenu</span>
+          <i class="isax isax-arrow-right-3 arr"></i>
+        </div>
+        <div class="sb-sub" *ngIf="openGroups['aide']">
+          <a [routerLink]="routes.superadminGuideUtilisation" routerLinkActive="active" class="sb-sub-item">
+            <i class="isax isax-document-text"></i> Guide d'utilisation
+          </a>
+          <a [routerLink]="routes.superadminTutorielsVideo" routerLinkActive="active" class="sb-sub-item">
+            <i class="isax isax-video-circle"></i> Tutoriels vidéo
+          </a>
+          <a [routerLink]="routes.superadminAnnoncesMAJ" routerLinkActive="active" class="sb-sub-item">
+            <i class="isax isax-volume-high"></i> Annonces et mises à jour
+          </a>
+          <a [routerLink]="routes.superadminVideoAccueil" routerLinkActive="active" class="sb-sub-item">
+            <i class="isax isax-video-circle"></i> Vidéo d'accueil
+          </a>
+        </div>
+      </div>
     </div>
 
   </div><!-- /sb-scroll -->

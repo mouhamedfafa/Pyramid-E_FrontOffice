@@ -2,7 +2,7 @@
 import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { catchError, Observable } from 'rxjs';
+import { catchError, Observable, shareReplay } from 'rxjs';
 import { FormationsApiResponse } from '../../models/formation.models';
 
 @Injectable({
@@ -52,6 +52,7 @@ unpublishFormation(id: number): Observable<any> {
   private baseUrl = environment.apiUrl;
   private storageBase = environment.apiUrl.replace('/api', '');
   handleError: any;
+  private formateurCache$: Observable<any> | null = null;
 
   getImageUrl(imageCouverture: string | null | undefined): string {
     if (!imageCouverture) return 'assets/img/course/course-01.jpg';
@@ -63,16 +64,14 @@ unpublishFormation(id: number): Observable<any> {
 
   private getHeaders(): any {
     const token = localStorage.getItem('pyramide_token');
-    return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-
+    const headers: any = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
   }
 
   private getAuthHeader(): any {
     const token = localStorage.getItem('pyramide_token');
-    return { 'Authorization': `Bearer ${token}` };
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
 
   uploadImageCouverture(file: File): Observable<any> {
@@ -117,9 +116,17 @@ unpublishFormation(id: number): Observable<any> {
     );
   }
    getFormationsformateur(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/formateur/formations`, {
-      headers: this.getHeaders()
-    });
+    if (!this.formateurCache$) {
+      this.formateurCache$ = this.http.get<any>(`${this.baseUrl}/formateur/formations`, {
+        headers: this.getHeaders()
+      }).pipe(shareReplay(1));
+      setTimeout(() => this.formateurCache$ = null, 30000);
+    }
+    return this.formateurCache$;
+  }
+
+  clearFormateurCache(): void {
+    this.formateurCache$ = null;
   }
 
   getApprenantsUniques(): Observable<any> {

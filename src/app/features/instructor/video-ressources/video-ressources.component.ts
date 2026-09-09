@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormationService } from '../../../shared/service/formation/formation.service';
 import { Formation, Module, Section } from '../../../shared/models/formation.models';
+import { environment } from '../../../../environments/environment';
 
 export interface Ressource {
   id: number;
   titre: string;
   type: 'video' | 'pdf' | 'ressource' | 'image' | 'fichier' | 'exercice';
   contenu?: string;
-  ressources?: string[];
+  ressources?: string[] | string;
   metadata?: any;
   duree_estimee?: string | number;
   statut?: string;
@@ -56,7 +58,13 @@ export class VideoRessourcesComponent implements OnInit {
 
   formationNames: string[] = [];
 
-  constructor(private formationService: FormationService) {}
+  private embedCache = new Map<number, SafeResourceUrl | null>();
+  private storageBase = environment.apiUrl.replace('/api', '');
+
+  constructor(
+    private formationService: FormationService,
+    private sanitizer: DomSanitizer,
+  ) {}
 
   ngOnInit(): void {
     this.loadRessources();
@@ -97,7 +105,7 @@ export class VideoRessourcesComponent implements OnInit {
                   ressources: section.ressources,
                   metadata: section.metadata,
                   duree_estimee: section.duree_estimee,
-                  statut: section.statut,
+                  statut: (formation as any).est_publie ? 'publie' : (section.statut || 'brouillon'),
                   ordre: section.ordre,
                   formationTitre: formation.titre,
                   formationId: formation.id,
@@ -120,7 +128,7 @@ export class VideoRessourcesComponent implements OnInit {
   private computeStats(): void {
     this.stats.videos = this.allRessources.filter(r => r.type === 'video').length;
     this.stats.documents = this.allRessources.filter(r => ['ressource', 'image', 'fichier', 'exercice'].includes(r.type)).length;
-    this.stats.pdf = this.allRessources.filter(r => r.type === 'pdf').length;
+    this.stats.pdf = this.allRessources.filter(r => r.type === 'pdf' || this.isPdfFile(r)).length;
     this.stats.liens = this.allRessources.filter(r => this.isLien(r)).length;
 
     const totalSections = this.allRessources.length;
@@ -209,18 +217,125 @@ export class VideoRessourcesComponent implements OnInit {
   }
 
   getTypeIcon(r: Ressource): string {
+    if (this.isPdfFile(r)) return 'isax-document-copy';
+    if (this.isImageFile(r)) return 'isax-gallery';
     switch (r.type) {
-      case 'video': return 'ti-video';
-      case 'pdf': return 'ti-file-type-pdf';
-      case 'image': return 'ti-photo';
-      case 'fichier': return 'ti-file-text';
-      case 'exercice': return 'ti-writing';
-      case 'ressource': return this.isLien(r) ? 'ti-link' : 'ti-file-text';
-      default: return 'ti-file';
+      case 'video': return 'isax-video-circle';
+      case 'pdf': return 'isax-document-copy';
+      case 'image': return 'isax-gallery';
+      case 'fichier': return 'isax-document-text';
+      case 'exercice': return 'isax-edit-2';
+      case 'ressource': return this.isLien(r) ? 'isax-link-21' : 'isax-document-text';
+      default: return 'isax-document';
     }
   }
 
+  getTypeIconIsax(r: Ressource): string {
+    return this.getTypeIcon(r);
+  }
+
+  openRessource(r: Ressource): void {
+    const src = this.extractFirstUrl(r.ressources) || r.contenu || '';
+    const url = this.resolveContentUrl(src);
+    if (url) {
+      window.open(url, '_blank');
+    }
+  }
+
+  private resolveContentUrl(content: string | undefined): string | null {
+    if (!content) return null;
+    if (content.startsWith('http://') || content.startsWith('https://')) {
+      return content;
+    }
+    return `${this.storageBase}/storage/${content}`;
+  }
+
+  getVideoSource(r: Ressource): string {
+    return this.extractFirstUrl(r.ressources) || r.contenu || '';
+  }
+
+  private extractFirstUrl(res: any): string {
+    if (!res) return '';
+    if (typeof res === 'string') return res;
+    if (Array.isArray(res) && res.length > 0) {
+      const first = res[0];
+      if (typeof first === 'string') return first;
+      if (Array.isArray(first) && first.length > 0) return first[0];
+    }
+    return '';
+  }
+
+  getEmbedUrl(r: Ressource): SafeResourceUrl | null {
+    if (this.embedCache.has(r.id)) return this.embedCache.get(r.id)!;
+    const url = this.getVideoSource(r);
+    const embed = this.toEmbedUrl(url);
+    const safe = embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed) : null;
+    this.embedCache.set(r.id, safe);
+    return safe;
+  }
+
+  getVideoFileUrl(r: Ressource): string | null {
+    const url = this.getVideoSource(r);
+    if (!url) return null;
+    if (this.toEmbedUrl(url)) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${this.storageBase}/storage/${url}`;
+  }
+
+  isEmbedVideo(r: Ressource): boolean {
+    return !!this.toEmbedUrl(this.getVideoSource(r));
+  }
+
+  isFileVideo(r: Ressource): boolean {
+    const src = this.getVideoSource(r);
+    return r.type === 'video' && !this.isEmbedVideo(r) && !!src;
+  }
+
+  isPdfFile(r: Ressource): boolean {
+    if (r.type === 'pdf') return true;
+    const url = this.extractFirstUrl(r.ressources);
+    return !!url && url.toLowerCase().endsWith('.pdf');
+  }
+
+  isImageFile(r: Ressource): boolean {
+    if (r.type === 'image') return true;
+    const url = this.extractFirstUrl(r.ressources);
+    if (!url) return false;
+    return /\.(jpe?g|png|gif|webp|svg|bmp)$/i.test(url);
+  }
+
+  getDocumentUrl(r: Ressource): string | null {
+    const src = this.extractFirstUrl(r.ressources) || r.contenu || '';
+    return this.resolveContentUrl(src);
+  }
+
+  getDocumentSafeUrl(r: Ressource): SafeResourceUrl | null {
+    if (this.embedCache.has(r.id)) return this.embedCache.get(r.id)!;
+    const url = this.getDocumentUrl(r);
+    const safe = url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+    this.embedCache.set(r.id, safe);
+    return safe;
+  }
+
+  private toEmbedUrl(url: string): string | null {
+    if (!url) return null;
+    let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+    match = url.match(/vimeo\.com\/(\d+)/);
+    if (match) return `https://player.vimeo.com/video/${match[1]}`;
+    match = url.match(/dailymotion\.com\/video\/([\w]+)/);
+    if (match) return `https://www.dailymotion.com/embed/video/${match[1]}`;
+    if (url.includes('/embed/') || url.includes('player.vimeo.com')) return url;
+    return null;
+  }
+
+  editFormation(r: Ressource): void {
+    window.open('/courses/instructor-course-edit/' + r.formationId, '_blank');
+  }
+
   getTypeLabel(r: Ressource): string {
+    if (this.isPdfFile(r)) return 'PDF';
+    if (this.isImageFile(r)) return 'Image';
     switch (r.type) {
       case 'video': return 'Vidéo';
       case 'pdf': return 'PDF';
@@ -233,6 +348,8 @@ export class VideoRessourcesComponent implements OnInit {
   }
 
   getThumbClass(r: Ressource): string {
+    if (this.isPdfFile(r)) return 'mt-pdf';
+    if (this.isImageFile(r)) return 'mt-img';
     switch (r.type) {
       case 'video': return 'mt-video';
       case 'pdf': return 'mt-pdf';
@@ -245,6 +362,8 @@ export class VideoRessourcesComponent implements OnInit {
   }
 
   getIconColor(r: Ressource): string {
+    if (this.isPdfFile(r)) return '#F0A8A8';
+    if (this.isImageFile(r)) return '#A8F0C8';
     switch (r.type) {
       case 'video': return '#F0CFA8';
       case 'pdf': return '#F0A8A8';
@@ -255,6 +374,8 @@ export class VideoRessourcesComponent implements OnInit {
   }
 
   getListIconBg(r: Ressource): string {
+    if (this.isPdfFile(r)) return '#FCEBEB';
+    if (this.isImageFile(r)) return '#EAF3DE';
     switch (r.type) {
       case 'video': return '#FAEEDA';
       case 'pdf': return '#FCEBEB';
@@ -265,6 +386,8 @@ export class VideoRessourcesComponent implements OnInit {
   }
 
   getListIconColor(r: Ressource): string {
+    if (this.isPdfFile(r)) return '#A32D2D';
+    if (this.isImageFile(r)) return '#3B6D11';
     switch (r.type) {
       case 'video': return '#854F0B';
       case 'pdf': return '#A32D2D';
