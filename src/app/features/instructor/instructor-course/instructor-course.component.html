@@ -1,185 +1,235 @@
 <!-- Loading -->
-<div *ngIf="loading" class="ip-loader">
+<div *ngIf="loading" class="ac-loader">
   <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div>
 </div>
 
 <!-- Error -->
-<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<div *ngIf="error" class="ac-alert"><i class="isax isax-warning-2"></i> {{ error }}</div>
 
-<ng-container *ngIf="!loading && !error">
-
-  <!-- Page header -->
-  <div class="ip-page-head">
-    <div>
-      <h5 class="ip-page-head__title">Mes formations <span class="ip-count">{{ totalData }}</span></h5>
-      <p class="ip-page-head__sub">Gérez vos formations, modules et contenus</p>
-    </div>
-    <a href="/courses/instructor-course-add" target="_blank" class="ip-btn ip-btn--primary">
-      <i class="isax isax-add-circle"></i> Nouvelle formation
-    </a>
-  </div>
+<div class="ac-shell" *ngIf="!loading && !error">
 
   <!-- KPI row -->
-  <div class="ip-kpi-row">
-    <div class="ip-kpi">
-      <div class="ip-kpi__icon ki-green"><i class="isax isax-tick-circle"></i></div>
-      <div><div class="ip-kpi__val">{{ getActiveFormationsCount() }}</div><div class="ip-kpi__lbl">Publiées</div></div>
+  <div class="ac-kpi-row">
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-tick-circle"></i> Publiées</div>
+      <div class="ac-kpi__val">{{ getActiveFormationsCount() }}</div>
+      <div class="ac-kpi__delta neutral">en ligne</div>
     </div>
-    <div class="ip-kpi">
-      <div class="ip-kpi__icon ki-amber"><i class="isax isax-clock"></i></div>
-      <div><div class="ip-kpi__val">{{ getPendingFormationsCount() }}</div><div class="ip-kpi__lbl">En attente</div></div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-clock"></i> En attente</div>
+      <div class="ac-kpi__val">{{ getPendingFormationsCount() }}</div>
+      <div class="ac-kpi__delta neutral">à valider</div>
     </div>
-    <div class="ip-kpi">
-      <div class="ip-kpi__icon ki-blue"><i class="isax isax-edit-2"></i></div>
-      <div><div class="ip-kpi__val">{{ getDraftFormationsCount() }}</div><div class="ip-kpi__lbl">Brouillons</div></div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-document"></i> Brouillons</div>
+      <div class="ac-kpi__val">{{ getDraftFormationsCount() }}</div>
+      <div class="ac-kpi__delta neutral">non publiées</div>
     </div>
-    <div class="ip-kpi">
-      <div class="ip-kpi__icon ki-teal"><i class="isax isax-people"></i></div>
-      <div><div class="ip-kpi__val">{{ getTotalParticipants() }}</div><div class="ip-kpi__lbl">Employés</div></div>
+    <div class="ac-kpi">
+      <div class="ac-kpi__label"><i class="isax isax-people"></i> Employés</div>
+      <div class="ac-kpi__val">{{ getTotalParticipants() }}</div>
+      <div class="ac-kpi__delta neutral">inscrits total</div>
     </div>
   </div>
 
   <!-- Toolbar -->
-  <div class="ip-toolbar">
-    <input type="text" class="ip-search" placeholder="Rechercher une formation…"
+  <div class="ac-toolbar">
+    <input type="search" class="ac-search__input" placeholder="Rechercher une formation…"
+           style="flex:1; max-width:280px"
            [(ngModel)]="searchDataValue" (ngModelChange)="searchData(searchDataValue)">
-    <select class="ip-select" (change)="filterByStatus($any($event.target).value)">
+    <select class="ac-select" (change)="filterByStatus($any($event.target).value)">
       <option value="all">Tous les statuts</option>
       <option value="active">Publiées</option>
       <option value="pending">En attente</option>
       <option value="draft">Brouillons</option>
     </select>
-    <div class="ip-toolbar__right">
-      <a [routerLink]="routes.instructorCourse"     class="ip-view-btn active"><i class="isax isax-task"></i></a>
-      <a [routerLink]="routes.instructorCourseGrid" class="ip-view-btn"><i class="isax isax-element-3"></i></a>
+    <div class="ac-spacer"></div>
+    <div class="ac-view-group">
+      <button type="button" class="ac-view-toggle" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'">
+        <i class="isax isax-task"></i>
+      </button>
+      <button type="button" class="ac-view-toggle" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'">
+        <i class="isax isax-element-3"></i>
+      </button>
     </div>
+    <a href="/courses/instructor-course-add" target="_blank" class="ac-add-btn">
+      <i class="isax isax-add"></i> Nouvelle formation
+    </a>
   </div>
 
-  <!-- Table -->
-  <div class="ip-card">
-    <div class="table-responsive">
-      <table class="table ip-table">
-        <thead>
-          <tr>
-            <th>Formation</th>
-            <th>Employés</th>
-            <th>Coût</th>
-            <th>Durée</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let f of tableData; trackBy: trackByFormation">
-            <td>
-              <div class="ip-course-cell">
-                <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ip-course-img">
-                  <img [src]="getFormationImage(f)" [alt]="f.titre" onerror="this.src='assets/img/course/course-01.jpg'">
-                </a>
-                <div>
-                  <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ip-course-title">{{ f.titre }}</a>
-                  <div class="ip-course-meta">
-                    <span><i class="isax isax-video-circle"></i> {{ f.nombre_modules || 0 }} modules</span>
-                    <span><i class="isax isax-flag"></i> {{ f.niveau_display || f.niveau || 'N/A' }}</span>
-                    <span><i class="isax isax-clock"></i> {{ f.duree_totale || 0 }}h</span>
-                  </div>
-                </div>
+  <!-- Table (liste) -->
+  <table *ngIf="viewMode === 'list'" class="ac-table">
+    <thead>
+      <tr>
+        <th>Formation</th>
+        <th>Employés</th>
+        <th>Coût</th>
+        <th>Durée</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let f of tableData; trackBy: trackByFormation">
+        <td>
+          <div class="ac-table-cell">
+            <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-course-img">
+              <img [src]="getFormationImage(f)" [alt]="f.titre" onerror="this.src='assets/img/course/course-01.jpg'">
+            </a>
+            <div>
+              <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-course-title">{{ f.titre }}</a>
+              <div class="ac-table-sub">
+                <span><i class="isax isax-video-circle"></i> {{ f.nombre_modules || 0 }} modules</span>
+                <span><i class="isax isax-flag"></i> {{ f.niveau_display || f.niveau || 'N/A' }}</span>
               </div>
-            </td>
-            <td>
-              <span class="ip-pill"><i class="isax isax-people"></i> {{ f.nb_participants || 0 }}/{{ f.nb_max_participants || '∞' }}</span>
-            </td>
-            <td>
-              <span [class]="isFormationGratuite(f) ? 'badge bg-success-subtle text-success' : 'fw-medium text-primary'">
-                {{ formatPrix(f.prix) }}
-              </span>
-            </td>
-            <td>
-              <span class="ip-pill"><i class="isax isax-clock"></i> {{ f.duree_totale || 0 }}h</span>
-            </td>
-            <td>
-              <span class="badge badge-sm d-inline-flex align-items-center" [ngClass]="getStatusClass(f)">
-                <i class="fa-solid fa-circle fs-5 me-1"></i>{{ getStatusText(f) }}
-              </span>
-            </td>
-            <td>
-              <div class="ip-actions">
-                <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ip-action-btn" title="Voir">
-                  <i class="isax isax-eye"></i>
-                </a>
-                <a [href]="'/courses/instructor-course-edit/' + f.id" target="_blank" class="ip-action-btn" title="Modifier">
-                  <i class="isax isax-edit-2"></i>
-                </a>
-                <button type="button" class="ip-action-btn"
-                        [class.text-warning]="f.est_publie" [class.text-success]="!f.est_publie"
-                        [title]="f.est_publie ? 'Dépublier' : 'Publier'"
-                        (click)="togglePublishStatus(f)">
-                  <i [class]="f.est_publie ? 'isax isax-eye-slash' : 'isax isax-send-2'"></i>
-                </button>
-                <ng-container *appHasPermission="'assigner formations'">
-                  <button type="button" class="ip-action-btn text-info" title="Participants" (click)="openParticipants(f)">
-                    <i class="isax isax-people"></i>
-                  </button>
-                </ng-container>
-                <button type="button" class="ip-action-btn ip-action-btn--arch" title="Archiver" (click)="archiveFormation(f)">
-                  <i class="isax isax-archive"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="tableData.length === 0">
-            <td colspan="6" class="ip-empty">
-              <i class="isax isax-book-1"></i>
-              <span>Aucune formation trouvée</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="ac-pill"><i class="isax isax-people"></i> {{ f.nb_participants || 0 }}/{{ f.nb_max_participants || '∞' }}</span>
+        </td>
+        <td>
+          <span [class]="isFormationGratuite(f) ? 'ac-badge ac-badge--free' : 'ac-badge ac-badge--paid'">
+            {{ formatPrix(f.prix) }}
+          </span>
+        </td>
+        <td>
+          <span class="ac-pill"><i class="isax isax-clock"></i> {{ f.duree_totale || 0 }}h</span>
+        </td>
+        <td>
+          <span class="ac-status" [attr.data-s]="(f.est_publie === true || f.est_publie === 1) ? 'pub' : 'draft'">
+            {{ getStatusText(f) }}
+          </span>
+        </td>
+        <td>
+          <div class="ac-actions">
+            <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-act" title="Voir">
+              <i class="isax isax-eye"></i>
+            </a>
+            <a [href]="'/courses/instructor-course-edit/' + f.id" target="_blank" class="ac-act" title="Modifier">
+              <i class="isax isax-edit-2"></i>
+            </a>
+            <button type="button" class="ac-act"
+                    [class.ac-act--warn]="f.est_publie === true || f.est_publie === 1"
+                    [class.ac-act--ok]="!f.est_publie || f.est_publie === 0"
+                    [title]="(f.est_publie === true || f.est_publie === 1) ? 'Dépublier' : 'Publier'"
+                    (click)="togglePublishStatus(f)">
+              <i [class]="(f.est_publie === true || f.est_publie === 1) ? 'isax isax-eye-slash' : 'isax isax-send-2'"></i>
+            </button>
+            <ng-container *appHasPermission="'assigner formations'">
+              <button type="button" class="ac-act ac-act--people" title="Participants" (click)="openParticipants(f)">
+                <i class="isax isax-people"></i>
+              </button>
+            </ng-container>
+            <button type="button" class="ac-act ac-act--arch" title="Archiver" (click)="archiveFormation(f)">
+              <i class="isax isax-archive"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="!tableData.length">
+        <td colspan="6" class="ac-empty">
+          <i class="isax isax-book-1" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+          Aucune formation trouvée
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-    <!-- Pagination -->
-    <div class="ip-pagination" *ngIf="totalData > pageSize">
-      <span class="pg-info">{{ totalData }} formation{{ totalData > 1 ? 's' : '' }}</span>
-      <div class="pg-controls">
-        <button type="button" class="pg-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
-          <i class="isax isax-arrow-left-2"></i>
-        </button>
-        <button type="button" class="pg-btn"
-                *ngFor="let p of getPageNumbers()"
-                [class.active]="p === currentPage"
-                (click)="onPageChange(p)">{{ p }}</button>
-        <button type="button" class="pg-btn"
-                [disabled]="currentPage * pageSize >= totalData"
-                (click)="onPageChange(currentPage + 1)">
-          <i class="isax isax-arrow-right-2"></i>
-        </button>
+  <!-- Grille (cards) -->
+  <div *ngIf="viewMode === 'grid'" class="ac-card-grid">
+    <div class="ac-fcard" *ngFor="let f of tableData; trackBy: trackByFormation">
+      <div class="ac-fcard__thumb">
+        <img class="ac-fcard__img" [src]="getFormationImage(f)" [alt]="f.titre"
+             onerror="this.src='assets/img/course/course-01.jpg'">
+      </div>
+      <div class="ac-fcard__body">
+        <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-fcard__title">{{ f.titre }}</a>
+        <div class="ac-fcard__meta">
+          <span><i class="isax isax-video-circle"></i> {{ f.nombre_modules || 0 }} modules</span>
+          <span><i class="isax isax-clock"></i> {{ f.duree_totale || 0 }}h</span>
+          <span><i class="isax isax-people"></i> {{ f.nb_participants || 0 }}</span>
+        </div>
+      </div>
+      <div class="ac-fcard__footer">
+        <span class="ac-status" [attr.data-s]="(f.est_publie === true || f.est_publie === 1) ? 'pub' : 'draft'">
+          {{ getStatusText(f) }}
+        </span>
+        <span [class]="isFormationGratuite(f) ? 'ac-badge ac-badge--free' : 'ac-badge ac-badge--paid'">
+          {{ formatPrix(f.prix) }}
+        </span>
+        <div class="ac-fcard__actions">
+          <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-act" title="Voir">
+            <i class="isax isax-eye"></i>
+          </a>
+          <a [href]="'/courses/instructor-course-edit/' + f.id" target="_blank" class="ac-act" title="Modifier">
+            <i class="isax isax-edit-2"></i>
+          </a>
+          <button type="button" class="ac-act"
+                  [class.ac-act--warn]="f.est_publie === true || f.est_publie === 1"
+                  [class.ac-act--ok]="!f.est_publie || f.est_publie === 0"
+                  [title]="(f.est_publie === true || f.est_publie === 1) ? 'Dépublier' : 'Publier'"
+                  (click)="togglePublishStatus(f)">
+            <i [class]="(f.est_publie === true || f.est_publie === 1) ? 'isax isax-eye-slash' : 'isax isax-send-2'"></i>
+          </button>
+          <ng-container *appHasPermission="'assigner formations'">
+            <button type="button" class="ac-act ac-act--people" title="Participants" (click)="openParticipants(f)">
+              <i class="isax isax-people"></i>
+            </button>
+          </ng-container>
+          <button type="button" class="ac-act ac-act--arch" title="Archiver" (click)="archiveFormation(f)">
+            <i class="isax isax-archive"></i>
+          </button>
+        </div>
       </div>
     </div>
+    <div *ngIf="!tableData.length" class="ac-empty ac-empty--span">
+      <i class="isax isax-book-1" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+      Aucune formation trouvée
+    </div>
   </div>
 
-</ng-container>
+  <!-- Pagination -->
+  <div class="ac-pager" *ngIf="totalData > pageSize">
+    <span class="ac-pager__info">{{ totalData }} formation{{ totalData > 1 ? 's' : '' }}</span>
+    <div class="ac-pager__btns">
+      <button type="button" class="ac-pager__btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+        <i class="isax isax-arrow-left-2"></i>
+      </button>
+      <button type="button" *ngFor="let p of getPageNumbers()"
+              class="ac-pager__btn" [class.active]="p === currentPage"
+              (click)="onPageChange(p)">{{ p }}</button>
+      <button type="button" class="ac-pager__btn"
+              [disabled]="currentPage * pageSize >= totalData"
+              (click)="onPageChange(currentPage + 1)">
+        <i class="isax isax-arrow-right-3"></i>
+      </button>
+    </div>
+  </div>
 
-<!-- Publish Modal -->
+</div>
+
+<!-- Modal confirmation publier/dépublier -->
 <div class="modal fade" id="publish_modal">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-body text-center custom-modal-body">
+      <div class="modal-body text-center" style="padding:28px 24px">
         <span class="avatar avatar-lg rounded-circle mb-2"
-              [ngClass]="selectedFormation?.est_publie ? 'bg-warning-transparent' : 'bg-success-transparent'">
-          <i [class]="selectedFormation?.est_publie ? 'isax isax-eye-slash fs-24 text-warning' : 'isax isax-send-2 fs-24 text-success'"></i>
+              [ngClass]="(selectedFormation?.est_publie === true || selectedFormation?.est_publie === 1) ? 'bg-warning-transparent' : 'bg-success-transparent'">
+          <i [class]="(selectedFormation?.est_publie === true || selectedFormation?.est_publie === 1) ? 'isax isax-eye-slash fs-24 text-warning' : 'isax isax-send-2 fs-24 text-success'"></i>
         </span>
-        <h4 class="mb-2">{{ selectedFormation?.est_publie ? 'Dépublier' : 'Publier' }} la formation</h4>
+        <h4 class="mb-2">{{ (selectedFormation?.est_publie === true || selectedFormation?.est_publie === 1) ? 'Dépublier' : 'Publier' }} la formation</h4>
         <p class="mb-3">
-          {{ selectedFormation?.est_publie ?
-              'Cette formation ne sera plus visible par les employés.' :
-              'Cette formation sera visible par tous les employés.' }}
+          {{ (selectedFormation?.est_publie === true || selectedFormation?.est_publie === 1)
+              ? 'Cette formation ne sera plus visible par les employés.'
+              : 'Cette formation sera visible par tous les employés.' }}
         </p>
         <div class="d-flex align-items-center justify-content-center gap-2">
           <button type="button" class="btn bg-gray-100 rounded-pill" data-bs-dismiss="modal">Annuler</button>
           <button type="button"
-                  [class]="selectedFormation?.est_publie ? 'btn btn-warning rounded-pill' : 'btn btn-success rounded-pill'"
+                  [class]="(selectedFormation?.est_publie === true || selectedFormation?.est_publie === 1) ? 'btn btn-warning rounded-pill' : 'btn btn-success rounded-pill'"
                   (click)="confirmTogglePublish()" data-bs-dismiss="modal">
-            {{ selectedFormation?.est_publie ? 'Oui, Dépublier' : 'Oui, Publier' }}
+            {{ (selectedFormation?.est_publie === true || selectedFormation?.est_publie === 1) ? 'Oui, Dépublier' : 'Oui, Publier' }}
           </button>
         </div>
       </div>
@@ -193,7 +243,6 @@
 <div class="pm-overlay" *ngIf="participantsModalOpen" (click)="closeParticipants()">
   <div class="pm-modal" (click)="$event.stopPropagation()">
 
-    <!-- Head -->
     <div class="pm-head">
       <div class="pm-head__icon"><i class="isax isax-people"></i></div>
       <div class="pm-head__text">
@@ -205,7 +254,6 @@
       </button>
     </div>
 
-    <!-- Alerts -->
     <div *ngIf="inscriptionSuccess" class="pm-alert pm-alert--ok">
       <i class="isax isax-tick-circle"></i> {{ inscriptionSuccess }}
     </div>
@@ -214,8 +262,6 @@
     </div>
 
     <div class="pm-body">
-
-      <!-- Colonne gauche : inscrits -->
       <div class="pm-col">
         <div class="pm-col__header">
           <span class="pm-col__title"><i class="isax isax-tick-circle"></i> Inscrits</span>
@@ -225,16 +271,10 @@
                    [(ngModel)]="participantsSearch" [ngModelOptions]="{standalone:true}">
           </div>
         </div>
-
-        <div *ngIf="participantsLoading" class="pm-loading">
-          <span class="pm-spin"></span> Chargement...
-        </div>
-
+        <div *ngIf="participantsLoading" class="pm-loading"><span class="pm-spin"></span> Chargement...</div>
         <div *ngIf="!participantsLoading && !participantsFiltered.length" class="pm-empty">
-          <i class="isax isax-people"></i>
-          <p>Aucun participant</p>
+          <i class="isax isax-people"></i><p>Aucun participant</p>
         </div>
-
         <div class="pm-list" *ngIf="!participantsLoading && participantsFiltered.length">
           <div *ngFor="let p of participantsFiltered; trackBy: trackByUserId" class="pm-user-row">
             <div class="pm-user-av">{{ ((p.prenom || p.nom || p.name || p.email || '?').charAt(0)).toUpperCase() }}</div>
@@ -243,11 +283,9 @@
               <div class="pm-user-email">{{ p.email }}</div>
             </div>
             <ng-container *appHasPermission="'desassigner formations'">
-              <button type="button" class="pm-unenroll-btn"
-                      [disabled]="inscriptionPending" (click)="desinscrireUser(p)">
+              <button type="button" class="pm-unenroll-btn" [disabled]="inscriptionPending" (click)="desinscrireUser(p)">
                 <span *ngIf="inscriptionPending" class="pm-spin pm-spin--sm"></span>
-                <i *ngIf="!inscriptionPending" class="isax isax-user-remove"></i>
-                Retirer
+                <i *ngIf="!inscriptionPending" class="isax isax-user-remove"></i> Retirer
               </button>
             </ng-container>
           </div>
@@ -256,7 +294,6 @@
 
       <div class="pm-divider"></div>
 
-      <!-- Colonne droite : à inscrire -->
       <div class="pm-col">
         <div class="pm-col__header">
           <span class="pm-col__title"><i class="isax isax-user-add"></i> Inscrire un employé</span>
@@ -267,16 +304,10 @@
                    (ngModelChange)="applyUsersFilter()">
           </div>
         </div>
-
-        <div *ngIf="usersLoading" class="pm-loading">
-          <span class="pm-spin"></span> Chargement...
-        </div>
-
+        <div *ngIf="usersLoading" class="pm-loading"><span class="pm-spin"></span> Chargement...</div>
         <div *ngIf="!usersLoading && !availableUsersFiltered.length" class="pm-empty">
-          <i class="isax isax-user-add"></i>
-          <p>Tous les employés sont déjà inscrits</p>
+          <i class="isax isax-user-add"></i><p>Tous les employés sont déjà inscrits</p>
         </div>
-
         <div class="pm-list" *ngIf="!usersLoading && availableUsersFiltered.length">
           <div *ngFor="let u of availableUsersFiltered; trackBy: trackByUserId" class="pm-user-row">
             <div class="pm-user-av pm-user-av--blue">{{ ((u.prenom || u.nom || u.name || u.email || '?').charAt(0)).toUpperCase() }}</div>
@@ -285,20 +316,16 @@
               <div class="pm-user-email">{{ u.email }}</div>
             </div>
             <ng-container *appHasPermission="'assigner formations'">
-              <button type="button" class="pm-enroll-btn"
-                      [disabled]="inscriptionPending" (click)="inscrireUser(u)">
+              <button type="button" class="pm-enroll-btn" [disabled]="inscriptionPending" (click)="inscrireUser(u)">
                 <span *ngIf="inscriptionPending" class="pm-spin pm-spin--sm"></span>
-                <i *ngIf="!inscriptionPending" class="isax isax-user-add"></i>
-                Inscrire
+                <i *ngIf="!inscriptionPending" class="isax isax-user-add"></i> Inscrire
               </button>
             </ng-container>
           </div>
         </div>
       </div>
-
     </div>
 
-    <!-- Footer -->
     <div class="pm-foot">
       <span class="pm-foot__info">{{ participants.length }} inscrit(s) · {{ availableUsers.length }} disponible(s)</span>
       <button type="button" class="pm-close-btn" (click)="closeParticipants()">Fermer</button>
@@ -306,4 +333,3 @@
 
   </div>
 </div>
-

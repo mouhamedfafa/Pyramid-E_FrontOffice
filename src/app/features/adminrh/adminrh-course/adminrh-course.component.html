@@ -58,6 +58,14 @@
         <option value="draft">Brouillons</option>
       </select>
       <div class="ac-spacer"></div>
+      <div class="ac-view-group">
+        <button type="button" class="ac-view-toggle" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'">
+          <i class="isax isax-task"></i>
+        </button>
+        <button type="button" class="ac-view-toggle" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'">
+          <i class="isax isax-element-3"></i>
+        </button>
+      </div>
       <ng-container *appHasPermission="'creer formations'">
         <a [routerLink]="routes.instructorCourseAdd" class="ac-add-btn">
           <i class="isax isax-add"></i> Nouvelle formation
@@ -75,8 +83,8 @@
       <div *ngFor="let i of [1,2,3,4,5]" class="ac-skeleton-row"></div>
     </div>
 
-    <!-- Table -->
-    <table *ngIf="!loading" class="ac-table">
+    <!-- Table (liste) -->
+    <table *ngIf="!loading && viewMode === 'list'" class="ac-table">
       <thead>
         <tr>
           <th>Formation</th>
@@ -150,6 +158,97 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Grille (cards) -->
+    <div *ngIf="!loading && viewMode === 'grid'" class="ac-grid-wrap">
+      <div class="row">
+        <div class="col-xl-4 col-lg-6 col-md-6" *ngFor="let f of tableData; trackBy: trackByFormation">
+          <div class="card border-0 shadow-sm mb-4 ac-gcard">
+            <div class="position-relative">
+              <a [href]="routes.courseDetails + '/' + f.id" target="_blank">
+                <img class="card-img-top ac-gcard__img"
+                     [src]="getDefaultImage(f)" [alt]="f.titre"
+                     onerror="this.src='assets/img/course/course-01.jpg'">
+              </a>
+              <div class="position-absolute top-0 end-0 m-2">
+                <span class="ac-status" [attr.data-s]="getStatusKey(f)">{{ getStatusText(f) }}</span>
+              </div>
+              <div class="position-absolute bottom-0 start-0 m-2">
+                <span class="badge" [ngClass]="{'bg-success': isFormationGratuite(f), 'bg-primary': !isFormationGratuite(f)}">
+                  {{ formatPrix(f.prix) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="mb-2" *ngIf="$any(f).categorie?.nom">
+                <span class="badge rounded-pill"
+                      [style.background-color]="$any(f).categorie?.couleur || '#6c757d'"
+                      style="color: white; font-size: 11px;">
+                  {{ $any(f).categorie?.nom }}
+                </span>
+              </div>
+
+              <h6 class="fw-bold mb-2">
+                <a [href]="routes.courseDetails + '/' + f.id" target="_blank"
+                   class="text-decoration-none text-dark ac-gcard__title">
+                  {{ f.titre }}
+                </a>
+              </h6>
+
+              <p class="text-muted small mb-3 ac-gcard__desc">
+                {{ $any(f).short_description || $any(f).description || '' }}
+              </p>
+
+              <div class="d-flex align-items-center mb-3 small text-muted">
+                <span class="me-3"><i class="isax isax-video-circle me-1"></i> {{ f.nombre_modules || 0 }} modules</span>
+                <span class="me-3"><i class="isax isax-clock me-1"></i> {{ getDuree(f) }}</span>
+                <span><i class="isax isax-flag me-1"></i> {{ f.niveau || 'N/A' }}</span>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center small text-muted">
+                  <i class="isax isax-people me-1"></i>
+                  <span>{{ $any(f).nb_participants || 0 }}/{{ f.nb_max_participants || '∞' }} participants</span>
+                </div>
+                <div *ngIf="$any(f).est_certifiante">
+                  <span class="badge bg-warning"><i class="isax isax-award me-1"></i> Certifiante</span>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="ac-gcard__actions">
+                  <a [href]="routes.courseDetails + '/' + f.id" target="_blank"
+                     class="ac-act" title="Voir"><i class="isax isax-eye"></i></a>
+                  <a *ngIf="f.created_by === currentUserId"
+                     [href]="'/courses/instructor-course-edit/' + f.id" target="_blank"
+                     class="ac-act" title="Modifier"><i class="isax isax-edit-2"></i></a>
+                  <button type="button" class="ac-act"
+                          [class.ac-act--warn]="f.est_publie" [class.ac-act--ok]="!f.est_publie"
+                          [title]="f.est_publie ? 'Dépublier' : 'Publier'"
+                          (click)="togglePublishStatus(f)">
+                    <i [class]="'isax ' + (f.est_publie ? 'isax-eye-slash' : 'isax-send-2')"></i>
+                  </button>
+                  <ng-container *appHasPermission="'assigner formations'">
+                    <button type="button" class="ac-act ac-act--people" title="Participants" (click)="openParticipants(f)">
+                      <i class="isax isax-people"></i>
+                    </button>
+                  </ng-container>
+                  <button type="button" class="ac-act ac-act--arch" title="Archiver" (click)="archiveFormation(f)">
+                    <i class="isax isax-archive"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!tableData.length" class="col-12 text-center py-5">
+          <i class="isax isax-book-1" style="font-size:2.5rem;opacity:.4;display:block;margin-bottom:8px"></i>
+          <h5 class="text-muted">Aucune formation trouvée</h5>
+        </div>
+      </div>
+    </div>
 
     <!-- Pagination -->
     <div class="ac-pager" *ngIf="!loading && totalData > pageSize">

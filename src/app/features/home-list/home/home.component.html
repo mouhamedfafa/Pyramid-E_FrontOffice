@@ -16,13 +16,41 @@
             organisation et mesurez l'impact réel sur la performance globale de
             votre entreprise.
           </p>
-          <a href="javascript:void(0);" class="btn btn-demo">Demander une démo</a>
+          <a href="https://calendar.app.google/u8est9D1WgQ4mMkf6" class="btn btn-demo">Demander une démo</a>
         </div>
       </div>
     </div>
   </div>
 </section>
 <!-- banner -->
+
+<!-- video nouveautés -->
+<section class="video-nouveautes-section" *ngIf="videoAccueil">
+  <div class="container">
+    <div class="text-center video-nouveautes-header">
+      <span class="video-nouveautes-badge">NOUVEAUT&Eacute; SUR LA PLATEFORME</span>
+      <h2 class="video-nouveautes-title">Suivez les nouveaut&eacute;s sur la plateforme</h2>
+    </div>
+    <div class="video-showcase">
+      <img [src]="videoAccueil.coverUrl || 'assets/img/feature/feature-1.jpg'" class="img-fluid w-100" alt="Aperçu de la vidéo d'accueil" />
+      <div class="video-play">
+        <lightgallery [settings]="settings" [onInit]="onInit" size="1400-933">
+          <a *ngIf="videoAccueil.isEmbed" [href]="videoAccueil.safeUrl" title="Voir la vidéo d'accueil" class="video-play-link">
+            <span class="play-icon-wrap">
+              <i class="isax isax-play5"></i>
+            </span>
+          </a>
+          <a *ngIf="!videoAccueil.isEmbed" [href]="videoAccueil.accueil_url" title="Voir la vidéo d'accueil" class="video-play-link">
+            <span class="play-icon-wrap">
+              <i class="isax isax-play5"></i>
+            </span>
+          </a>
+        </lightgallery>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- /video nouveautés -->
 
 <!-- catalogue de formations -->
 <section class="catalogue-section">
@@ -68,7 +96,7 @@
 <!-- /catalogue de formations -->
 
 <!-- course browser mockup -->
-<section class="course-browser-section">
+<!-- <section class="course-browser-section">
   <div class="container">
     <div class="browser-mockup">
       <div class="browser-toolbar">
@@ -178,7 +206,7 @@
       </div>
     </div>
   </div>
-</section>
+</section> -->
 <!-- /course browser mockup -->
 
 <!-- why classic training fails -->
@@ -367,104 +395,6 @@
 </section> -->
 <!-- /top courses -->
 
-<!-- trust -->
-<section class="trust-sec">
-  <div class="container">
-
-  <!-- <div class="text-center">
-      <span class="catalogue-badge">CATALOGUE DE FORMATIONS</span>
-      <h2 class="catalogue-title">Organisez, cat&eacute;gorisez, explorez &mdash; en toute simplicit&eacute;</h2>
-      <p class="catalogue-description">
-        Structurez votre offre de formation avec des cat&eacute;gories, tags et th&eacute;matiques pour que vos collaborateurs
-        trouvent instantan&eacute;ment le parcours qui leur correspond.
-      </p>
-    </div> -->
-
-<div class="text-center">
-
-        <span class="catalogue-badge" style ="display: inline-block;
-    border: 2px solid #006F78;
-    color: #006F78;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    padding: 8px 24px;
-    border-radius: 30px;
-    margin-bottom: 24px;
-    text-transform: uppercase;">NOUVEAUTE SUR LA PLATEFORME</span>
-
-        <h2 class="catalogue-title" style ="margin-bottom: 24px;">
-          Suivez les nouveautés sur la plateforme </h2>
-
-         <!-- <p class="catalogue-description">
-        Structurez votre offre de formation avec des cat&eacute;gories, tags et th&eacute;matiques pour que vos collaborateurs
-        trouvent instantan&eacute;ment le parcours qui leur correspond.
-      </p> -->
-</div>
-  <div class="container">
-
-    <div class="video-showcase" *ngIf="videoAccueil">
-      <img [src]="videoAccueil.coverUrl || 'assets/img/feature/feature-1.jpg'" class="img-fluid w-100 rounded-2" alt="Aperçu de la vidéo d’accueil" />
-      <div class="video-play">
-        <lightgallery [settings]="settings" [onInit]="onInit" size="1400-933">
-          <a *ngIf="videoAccueil.isEmbed" [href]="videoAccueil.safeUrl" title="Voir la vidéo d’accueil" class="video-play-link">
-            <span class="play-icon-wrap">
-              <i class="isax isax-play5"></i>
-            </span>
-          </a>
-          <a *ngIf="!videoAccueil.isEmbed" [href]="videoAccueil.accueil_url" title="Voir la vidéo d’accueil" class="video-play-link">
-            <span class="play-icon-wrap">
-              <i class="isax isax-play5"></i>
-            </span>
-          </a>
-        </lightgallery>
-      </div>
-    </div>
-
-    <div class="trust-content">
-      <img src="./assets/img/bg/bg-19.png" alt="img" class="w-100 trust-bg" />
-      <div class="row justify-content-between">
-        <!-- <div class="col-md-4">
-          <h4>
-            Approuvé par 5.000+ entreprises et employés satisfaits depuis 2020
-          </h4>
-          <div class="d-flex align-items-center flex-wrap mt-5 gap-2">
-            <a [routerLink]="routes.login" class="btn btn-secondary">S'inscrire comme Employé</a>
-            <a [routerLink]="routes.becomeAnExpert" class="btn btn-dark">Devenir Formateur</a>
-          </div>
-        </div> -->
-        <div class="col-md-7">
-          <!-- <div class="row">
-            <div class="col-md-6">
-              <h4 class="text-white mb-2">4.9/5</h4>
-              <h5 class="text-white mb-2">Note de Satisfaction</h5>
-              <p class="text-white mb-5">
-                Un taux de satisfaction exceptionnel qui témoigne de la qualité de nos formations.
-              </p>
-            </div>
-            <div class="col-md-6">
-              <h4 class="text-white mb-2">5000+</h4>
-              <h5 class="text-white mb-2">Employés Satisfaits en Afrique</h5>
-              <p class="text-white mb-5">
-                Des milliers de professionnels africains ont transformé leur carrière grâce à Pyramide.
-              </p>
-            </div>
-          </div> -->
-          <div class="d-flex align-items-center bg-white user-goal p-2">
-            <div class="avatar avatar-lg flex-shrink-0">
-              <img class="rounded-pill" src="./assets/img/user/user-28.jpg" alt="img" />
-            </div>
-            <p class="text-gray-9 mb-0">
-              "Toutes les formations sont incroyablement utiles pour atteindre vos objectifs professionnels"
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  </div>
-
-</section>
 <!-- notre solution -->
 <section class="solution-section">
   <div class="container">
@@ -644,7 +574,8 @@
         Rejoignez d&egrave;s aujourd'hui les entreprises leaders en Afrique qui font confiance &agrave; Pyramide LMS
         pour la mont&eacute;e en comp&eacute;tences et la fid&eacute;lisation de leurs talents.
       </p>
-      <a href="javascript:void(0);" class="btn btn-cta">Contacter notre &eacute;quipe</a>
+      <a href="https://calendar.app.google/u8est9D1WgQ4mMkf6
+" class="btn btn-cta">Contacter notre &eacute;quipe</a>
     </div>
   </div>
 </section>

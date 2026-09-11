@@ -72,6 +72,18 @@ body {
 @import url("https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.4/css/lg-zoom.css");
 @import url("https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.4/css/lg-video.css");
 
+/* ---------------- Auth logo sizing ---------------- */
+.login-left-logo img,
+.login-right-logo img,
+.auth-logo,
+.fp-logo,
+.sp-logo {
+  height: 80px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
 .hide-dropdown {
   display: none;
 }
@@ -129,7 +141,7 @@ div.cdk-overlay-container {
   z-index: 10000000;
 }
 
-//mat-select 
+//mat-select
 
 .mat-mdc-select-placeholder{
   color: #191919 !important;
@@ -331,10 +343,10 @@ color: #ffffff !important;
   background:  #0a0a0a;
  border-color: #0a0a0a;
 }
-             
+
 .dark.main-chat-blk.chat-page .left-chat-title{
   background:  #0f0c1c;
-}  
+}
 .dark.main-chat-blk.chat-page .top-online-contacts{
   background: #2B2838;
 }
@@ -394,11 +406,11 @@ color: #ffffff !important;
 .swiper-wrapper{
   .swiper-wrapper{
     width: 50%;
-  }      
+  }
 }
 .swiper.swiper-slider-banner{
   overflow: visible !important;
-} 
+}
 .owl-theme .owl-dots .owl-dot span {
   display: none;
 }
@@ -564,7 +576,7 @@ header.fixed{
   padding-left: 10px;
   .mat-mdc-select-trigger {
     border: none !important;
-    
+
   }
 }
 
@@ -613,7 +625,7 @@ p-inputotp{
 .dark-mode{
   .mat-mdc-select-panel{
     background-color: #0D0D0D;
-    
+
   }
   .mdc-list-item__primary-text{
     color: #4B5563 !important;

@@ -19,8 +19,14 @@
 }
 
 .login-left-logo img {
-  height: 40px;
-  margin-bottom: 40px;
+  height: 200px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  // margin-bottom: 40px;
+  display: block;
+margin: 0 auto;
+  // margin-left: 195px;
 }
 
 .login-left-visual {
@@ -217,7 +223,10 @@
   text-align: center;
 
   img {
-    height: 48px;
+    height: 200px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
   }
 }
 

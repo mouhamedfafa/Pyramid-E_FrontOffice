@@ -125,10 +125,28 @@ export class AdminrhCategorieComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    // Implémentation de la suppression si l'endpoint existe
-    console.log('Suppression de la catégorie:', this.selectedCategorie?.nom);
-  }
+  if (!this.selectedCategorie) return;
 
+  this.loading = true;
+
+  this.categorieService.deleteCategorie(this.selectedCategorie.id).subscribe({
+    next: (response: { status: boolean; message?: string }) => {
+      this.loading = false;
+
+      if (response.status) {
+        this.loadCategories();   // refresh the categories list
+        this.selectedCategorie = null;
+        this.resetForm();
+      } else {
+        console.error('Erreur suppression catégorie:', response.message);
+      }
+    },
+    error: (error: any) => {
+      this.loading = false;
+      console.error('Erreur suppression catégorie:', error);
+    }
+  });
+}
   resetForm(): void {
     this.editMode = false;
     this.selectedCategorie = null;

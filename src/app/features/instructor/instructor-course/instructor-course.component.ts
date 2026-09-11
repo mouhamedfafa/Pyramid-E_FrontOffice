@@ -32,6 +32,7 @@ export class InstructorCourseComponent implements OnInit {
   public statusFilter = 'all';
 
   public selectedFormation: any = null;
+  public viewMode: 'list' | 'grid' = 'list';
 
   private _filtered: any[] = [];
 

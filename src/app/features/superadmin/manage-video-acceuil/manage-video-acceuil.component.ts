@@ -21,9 +21,20 @@ import { environment } from '../../../../environments/environment';
   template: `
     <div class="manage-guide">
       <div class="mg-header">
-        <div>
-          <h4><i class="isax isax-document-text"></i> Gestion Vidéo de presentation dans la page d'accueil</h4>
-          <p class="mg-sub">Publiez une vodéo visible par tous les utilisateurs (lien ou fichier).</p>
+        <div class="mg-header-top">
+          <div>
+            <h4><i class="isax isax-document-text"></i> Gestion Vidéo de presentation dans la page d'accueil</h4>
+            <p class="mg-sub">Publiez une vidéo visible par tous les utilisateurs (lien ou fichier).</p>
+          </div>
+          <div class="mg-toggle-wrapper">
+            <label class="mg-toggle" [class.active]="estActif">
+              <input type="checkbox" [checked]="estActif" (change)="toggleVisibility()" [disabled]="toggling">
+              <span class="mg-toggle-slider"></span>
+            </label>
+            <span class="mg-toggle-label" [class.active]="estActif">
+              {{ estActif ? 'Visible' : 'Masquée' }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -96,9 +107,19 @@ import { environment } from '../../../../environments/environment';
   styles: [`
     .manage-guide { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; }
     .mg-header { padding: 20px 24px; border-bottom: 1px solid #f0f0f0; }
+    .mg-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
     .mg-header h4 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
     .mg-header h4 i { font-size: 18px; color: #6366f1; }
     .mg-sub { font-size: 13px; color: #6b7280; margin: 0; }
+    .mg-toggle-wrapper { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .mg-toggle { position: relative; width: 44px; height: 24px; cursor: pointer; display: inline-block; }
+    .mg-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .mg-toggle-slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 24px; transition: background .2s; }
+    .mg-toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    .mg-toggle.active .mg-toggle-slider { background: #16a34a; }
+    .mg-toggle.active .mg-toggle-slider::before { transform: translateX(20px); }
+    .mg-toggle-label { font-size: 13px; font-weight: 600; color: #9ca3af; }
+    .mg-toggle-label.active { color: #16a34a; }
     .mg-body { padding: 24px; }
     .mg-source-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
     .mg-source-btn { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 500; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .15s; }
@@ -140,6 +161,8 @@ export class ManageVideoAcceuilComponent implements OnInit {
   uploadProgress = 0;
   saving = false;
   saved = false;
+  estActif = true;
+  toggling = false;
 
   constructor(private http: HttpClient) {}
 
@@ -150,6 +173,7 @@ export class ManageVideoAcceuilComponent implements OnInit {
         this.accueilType = res?.accueil_type || 'url';
         this.currentAccueilUrl = res?.accueil_url || '';
         this.currentaccueilType = res?.accueil_type || 'url';
+        this.estActif = res?.est_actif ?? true;
         if (res?.accueil_type === 'upload' && res?.file_name) {
           this.uploadedFileName = res.file_name;
         }
@@ -175,6 +199,17 @@ export class ManageVideoAcceuilComponent implements OnInit {
   formatSize(bytes: number): string {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' Ko';
     return (bytes / (1024 * 1024)).toFixed(1) + ' Mo';
+  }
+
+  toggleVisibility(): void {
+    this.toggling = true;
+    this.http.post<any>(`${environment.apiUrl}/help-center/accueil/toggle`, {}).subscribe({
+      next: (res) => {
+        this.estActif = res.est_actif;
+        this.toggling = false;
+      },
+      error: () => { this.toggling = false; }
+    });
   }
 
   save(): void {

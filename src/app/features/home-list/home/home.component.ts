@@ -308,6 +308,11 @@ public testimonialSlider={
 
     this.http.get<any>(`${environment.apiUrl}/help-center/accueil`).subscribe({
       next: (res) => {
+        if (!res?.est_actif) {
+          this.videoAccueil = null;
+          this.loading = false;
+          return;
+        }
         const url = res?.accueil_url || '';
         const embedUrl = this.toEmbedUrl(url);
         const isEmbed = embedUrl !== null;

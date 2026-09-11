@@ -183,4 +183,10 @@ export class CategorieService {
   getCategoriesAvecFormations(): Observable<CategorieFormationResponse> {
     return this.getCategories({ avec_formations: true });
   }
+
+   deleteCategorie(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  
+  }
+
 }
