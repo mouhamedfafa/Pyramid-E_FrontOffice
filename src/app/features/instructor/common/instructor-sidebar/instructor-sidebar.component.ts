@@ -8,6 +8,7 @@ import { SessionFormationService } from '../../../../shared/service/session/sess
 import { SondageService } from '../../../../shared/service/sondage/sondage.service';
 import { routes } from '../../../../shared/service/routes/routes';
 import { InstructorThemeService, InstructorTheme } from '../instructor-theme.service';
+import { HasPermissionDirective } from '../../../../directive/has-permission-directive.directive';
 
 interface ProgressBar { name: string; pct: number; }
 
@@ -15,7 +16,7 @@ interface ProgressBar { name: string; pct: number; }
   selector: 'app-instructor-sidebar',
   templateUrl: './instructor-sidebar.component.html',
   styleUrl: './instructor-sidebar.component.scss',
-  imports: [CommonModule, RouterLink, RouterLinkActive]
+  imports: [CommonModule, RouterLink, RouterLinkActive, HasPermissionDirective]
 })
 export class InstructorSidebarComponent implements OnInit {
   public routes = routes;

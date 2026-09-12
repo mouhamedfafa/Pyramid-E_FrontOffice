@@ -36,6 +36,16 @@
     </div>
   </div>
 
+  <!-- SWITCHER ESPACES -->
+  <div class="sb-space-switcher">
+     <a *ngIf="isRhInInstructorMode()" [routerLink]="routes.adminrh_dashboard" class="sb-bottom-item sb-rh-return">
+      <i class="isax isax-arrow-left-2"></i> Retour espace AdminRH
+    </a>
+    <a *appHasPermission="'acceder-mode-employe'" [routerLink]="routes.students_Dashboard" class="sb-bottom-item sb-learner-switch">
+      <i class="isax isax-user-octagon"></i> Mode employé
+    </a>
+  </div>
+
   <!-- NAV -->
   <div class="sb-scroll">
 
@@ -242,9 +252,7 @@
       <i class="isax isax-setting-2"></i> Préférences
     </a> -->
     <!-- Retour espace AdminRH (visible uniquement si RH en mode formateur) -->
-    <a *ngIf="isRhInInstructorMode()" [routerLink]="routes.adminrh_dashboard" class="sb-bottom-item sb-rh-return">
-      <i class="isax isax-arrow-left-2"></i> Retour espace AdminRH
-    </a>
+   
     <a [routerLink]="routes.login" class="sb-bottom-item logout">
       <i class="isax isax-logout"></i> Déconnexion
     </a>

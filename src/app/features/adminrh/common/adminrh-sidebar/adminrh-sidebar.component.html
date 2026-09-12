@@ -21,6 +21,16 @@
     </div>
   </div>
 
+  <!-- ── SWITCHER ESPACES ── -->
+  <div class="sb-space-switcher">
+    <a *appHasPermission="'acceder-mode-employe'" [routerLink]="routes.students_Dashboard" class="sb-bottom-item sb-learner-switch">
+      <i class="isax isax-user-octagon"></i> Mode employé
+    </a>
+    <a *appHasPermission="'acceder-mode-formateur'" [routerLink]="routes.instructor_dashboard" class="sb-bottom-item sb-trainer-switch">
+      <i class="isax isax-teacher"></i> Mode formateur
+    </a>
+  </div>
+
   <!-- ── MINI-STATS ── -->
   <div class="sb-ministats">
     <div class="sb-ministat">
@@ -281,14 +291,6 @@
     </a>
     <a [routerLink]="routes.adminrhProfile" routerLinkActive="active" class="sb-bottom-item">
       <i class="isax isax-user-square"></i> Mon profil
-    </a>
-    <!-- Mode employé : accède à l'espace employé sans re-login -->
-    <a *appHasPermission="'acceder-mode-employe'" [routerLink]="routes.students_Dashboard" class="sb-bottom-item sb-learner-switch">
-      <i class="isax isax-user-octagon"></i> Mode employé
-    </a>
-    <!-- Mode formateur : accède à l'espace formateur sans re-login -->
-    <a *appHasPermission="'acceder-mode-formateur'" [routerLink]="routes.instructor_dashboard" class="sb-bottom-item sb-trainer-switch">
-      <i class="isax isax-teacher"></i> Mode formateur
     </a>
     <!-- Theme switcher -->
     <div class="sb-theme">
