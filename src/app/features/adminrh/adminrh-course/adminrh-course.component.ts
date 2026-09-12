@@ -509,19 +509,39 @@ export class AdminrhCourseComponent implements OnInit {
     private catalogueService: CatalogueService,
     private fb: FormBuilder,
     private userService: UserService,
+
   ) {}
 
-  ngOnInit(): void {
-    const user = JSON.parse(localStorage.getItem('pyramide_user') || '{}');
-    this.currentUserId = user.id || 0;
-    this.getFormationsList();
-  }
-
+   ngOnInit(): void {
+  const user = JSON.parse(localStorage.getItem('pyramide_user') || '{}');
+  this.currentUserId = Number(user.id ?? user.user_id ?? user.user?.id ?? 0);
+  this.getFormationsList();
+}
   // ✅ Corrigé : prix peut être undefined ou string ou number
   isFormationGratuite(formation: Formation): boolean {
     return parseFloat(String(formation.prix ?? 0)) === 0;
   }
+canEditFormation(f: Formation): boolean {
+  const current = Number(this.currentUserId ?? 0);
+  if (!current) return false;
 
+  const anyFormation = f as any;
+  const ids = new Set<number>();
+
+  const createdBy = anyFormation.created_by;
+  if (createdBy && typeof createdBy === 'object') {
+    const nestedCreatorId = Number(createdBy.id ?? createdBy.user_id ?? createdBy.user?.id ?? 0);
+    if (nestedCreatorId) ids.add(nestedCreatorId);
+  } else if (createdBy != null) {
+    const parsedCreatorId = Number(createdBy ?? 0);
+    if (parsedCreatorId) ids.add(parsedCreatorId);
+  }
+
+  const formateurId = Number(anyFormation.formateur_id ?? anyFormation.formateur?.id ?? 0);
+  if (formateurId) ids.add(formateurId);
+
+  return ids.has(current);
+}
   formatPrix(prix: string | number | undefined): string {
     const montant = parseFloat(String(prix ?? 0));
     return montant === 0 ? 'Gratuit' : `${montant.toFixed(2)} FCFA`;

@@ -130,7 +130,7 @@
               <a [href]="routes.courseDetails + '/' + f.id" target="_blank" class="ac-act" title="Voir">
                 <i class="isax isax-eye"></i>
               </a>
-              <a *ngIf="f.created_by === currentUserId" [href]="'/courses/instructor-course-edit/' + f.id" target="_blank" class="ac-act" title="Modifier">
+              <a *ngIf="canEditFormation(f)" [href]="'/courses/instructor-course-edit/' + f.id" target="_blank" class="ac-act" title="Modifier">
                 <i class="isax isax-edit-2"></i>
               </a>
               <button type="button" class="ac-act"
@@ -220,7 +220,7 @@
                 <div class="ac-gcard__actions">
                   <a [href]="routes.courseDetails + '/' + f.id" target="_blank"
                      class="ac-act" title="Voir"><i class="isax isax-eye"></i></a>
-                  <a *ngIf="f.created_by === currentUserId"
+                  <a *ngIf="canEditFormation(f)"
                      [href]="'/courses/instructor-course-edit/' + f.id" target="_blank"
                      class="ac-act" title="Modifier"><i class="isax isax-edit-2"></i></a>
                   <button type="button" class="ac-act"
