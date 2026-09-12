@@ -27,7 +27,7 @@ export class AdminrhCategorieComponent implements OnInit {
   ) {
     this.categorieForm = this.formBuilder.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['', [Validators.required]],
+      // description: ['', [Validators.required]],
       short_description: [''],
       couleur: ['#3B82F6', [Validators.required]],
       icone: ['code', [Validators.required]],
