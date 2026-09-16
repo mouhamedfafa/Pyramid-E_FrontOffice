@@ -244,7 +244,7 @@ export class CompanyManagementComponent implements OnInit {
     if (this.isHoldingUser()) {
       if (!userClientId) {
         // L'endpoint /mes-entreprises restreint déjà au client de l'utilisateur.
-        console.log('🏢 Holding — client_id inconnu côté front, on garde le périmètre renvoyé par l'API');
+        console.log('🏢 Holding — client_id inconnu côté front, on garde le périmètre renvoyé par API');
         return [...companies];
       }
 
