@@ -177,68 +177,90 @@ export class CompanyManagementComponent implements OnInit {
     this.getTableData({ skip: 0, limit: this.pageSize });
   }
 
+  /** Super Admin plateforme (role_id = 1). */
+  private isSuperAdminUser(): boolean {
+    return Number(this.currentUser?.role_id) === 1;
+  }
+
+  /**
+   * Détecte les rôles Holding (Superadmin Holding, Admin RH Holding).
+   * Les ids de rôle ne sont pas stables d'un environnement à l'autre : on se base
+   * d'abord sur les noms de rôles / le type, les ids ne servent que de repli.
+   */
+  private isHoldingUser(): boolean {
+    if (!this.currentUser) return false;
+
+    const roleNames: string[] = (this.currentUser.roles ?? [])
+      .map((r: any) => (typeof r === 'string' ? r : r?.name) ?? '');
+    const directRoleName = this.currentUser.role?.name ?? this.currentUser.role_name ?? '';
+    const roleType = this.currentUser.role_type ?? '';
+    const legacyHoldingRoleIds = [5, 14, 25, 26];
+
+    return roleNames.some((n: string) => n.toLowerCase().includes('holding'))
+      || String(directRoleName).toLowerCase().includes('holding')
+      || String(roleType).toLowerCase().includes('holding')
+      || legacyHoldingRoleIds.includes(Number(this.currentUser.role_id));
+  }
+
+  /** client_id de l'utilisateur, directement ou via son entreprise. */
+  private getUserClientId(): number {
+    return Number(this.currentUser?.client_id)
+      || Number(this.currentUser?.entreprise?.client_id)
+      || 0;
+  }
+
+  /** client_id de l'entreprise : l'API renvoie l'objet `client`, pas toujours `client_id`. */
+  private getCompanyClientId(company: Company): number {
+    return Number((company as any)?.client_id)
+      || Number((company as any)?.client?.id)
+      || 0;
+  }
+
   private filterCompaniesByRole(companies: Company[]): Company[] {
     if (!this.currentUser) {
       console.warn('⚠️ Aucun utilisateur connecté');
       return [];
     }
 
-    const userRoleId: number = Number(this.currentUser.role_id) || 0;
-    const userClientId: number = Number(this.currentUser.client_id) || 0;
-    const userEntrepriseId: number = Number(this.currentUser.entreprise_id) || 0;
+    const userClientId = this.getUserClientId();
+    const userEntrepriseId = Number(this.currentUser.entreprise_id) || 0;
 
-    console.log('🔍 Filtrage des entreprises par rôle:');
-    console.log('- Role ID:', userRoleId);
-    console.log('- Client ID (groupe):', userClientId);
-    console.log('- Entreprise ID:', userEntrepriseId);
-    console.log('- Total entreprises avant filtrage:', companies.length);
-    
-    if (companies.length > 0) {
-      console.log('- Structure entreprise exemple:', companies[0]);
+    console.log('🔍 Filtrage des entreprises par rôle:', {
+      role_id: this.currentUser.role_id,
+      roles: this.currentUser.roles,
+      role_type: this.currentUser.role_type,
+      client_id: userClientId,
+      entreprise_id: userEntrepriseId,
+      total: companies.length
+    });
+
+    // Super Admin plateforme : toutes les entreprises.
+    if (this.isSuperAdminUser()) {
+      console.log('👑 Super Admin — accès à toutes les entreprises');
+      return [...companies];
     }
 
-    let filteredCompanies: Company[] = [];
+    // Rôles Holding : toutes les entreprises du même client (groupe).
+    if (this.isHoldingUser()) {
+      if (!userClientId) {
+        // L'endpoint /mes-entreprises restreint déjà au client de l'utilisateur.
+        console.log('🏢 Holding — client_id inconnu côté front, on garde le périmètre renvoyé par l'API');
+        return [...companies];
+      }
 
-    switch (userRoleId) {
-      case 1: // Super Admin
-        console.log('👑 Super Admin - Accès à toutes les entreprises');
-        filteredCompanies = [...companies];
-        break;
-
-      case 5: // Responsable RH Groupe
-      case 14: // Super Admin RH Holding Groupe
-        console.log('👥 RH Groupe - Filtrage par client_id:', userClientId);
-        filteredCompanies = companies.filter(company => {
-          const companyClientId = Number(company.client_id) || 0;
-          const hasAccess = companyClientId === userClientId;
-          
-          console.log(`${hasAccess ? '✅' : '❌'} Entreprise "${company.nom || 'Sans nom'}" (client_id: ${companyClientId} ${hasAccess ? '===' : '!=='} ${userClientId})`);
-          
-          return hasAccess;
-        });
-        break;
-
-      case 4: // Admin RH
-      case 9: // Autre rôle limité
-        console.log('🏢 Admin RH/Role limité - Filtrage par entreprise:', userEntrepriseId);
-        filteredCompanies = companies.filter(company => {
-          const companyId = Number(company.id) || 0;
-          const hasAccess = companyId === userEntrepriseId;
-          
-          console.log(`${hasAccess ? '✅' : '❌'} Entreprise "${company.nom || 'Sans nom'}" (id: ${companyId} ${hasAccess ? '===' : '!=='} ${userEntrepriseId})`);
-          
-          return hasAccess;
-        });
-        break;
-
-      default:
-        console.warn('⚠️ Rôle non reconnu:', userRoleId);
-        filteredCompanies = [];
-        break;
+      const scoped = companies.filter(c => this.getCompanyClientId(c) === userClientId);
+      if (scoped.length === 0 && companies.length > 0) {
+        // Le client_id n'est pas exposé sur les entreprises : on garde le périmètre serveur.
+        console.warn('⚠️ Holding — aucun client_id exploitable sur les entreprises, périmètre serveur conservé');
+        return [...companies];
+      }
+      console.log('🏢 Holding — entreprises du client', userClientId, ':', scoped.length);
+      return scoped;
     }
 
-    console.log('✅ Entreprises après filtrage:', filteredCompanies.length);
-    return filteredCompanies;
+    // Rôles d'entreprise : uniquement leur propre entreprise.
+    console.log('🏢 Rôle entreprise — filtrage sur entreprise_id:', userEntrepriseId);
+    return companies.filter(c => (Number(c.id) || 0) === userEntrepriseId);
   }
 
   private getTableData(pageOption: pageSelection): void {
@@ -275,43 +297,34 @@ export class CompanyManagementComponent implements OnInit {
 
   canAddCompany(): boolean {
     if (!this.currentUser) return false;
-    
-    const userRoleId = Number(this.currentUser.role_id) || 0;
-    
-    // Seuls Super Admin (1) et RH Groupe (5, 14) peuvent ajouter des entreprises
-    return [1, 5, 14].includes(userRoleId);
+
+    // Seuls le Super Admin et les rôles Holding peuvent ajouter des entreprises
+    return this.isSuperAdminUser() || this.isHoldingUser();
   }
 
   canEditCompany(company: Company | null | undefined): boolean {
     if (!this.currentUser || !company) return false;
-    
-    const userRoleId = Number(this.currentUser.role_id) || 0;
-    const userClientId = Number(this.currentUser.client_id) || 0;
-    const userEntrepriseId = Number(this.currentUser.entreprise_id) || 0;
-    const companyId = Number(company.id) || 0;
-    const companyClientId = Number(company.client_id) || 0;
 
-    switch (userRoleId) {
-      case 1: // Super Admin
-        return true;
-      case 5: // RH Groupe
-      case 14: // Super Admin RH Holding Groupe
-        return companyClientId === userClientId;
-      case 4:
-      case 9: // Rôles limités
-        return companyId === userEntrepriseId;
-      default:
-        return false;
+    if (this.isSuperAdminUser()) return true;
+
+    if (this.isHoldingUser()) {
+      const userClientId = this.getUserClientId();
+      const companyClientId = this.getCompanyClientId(company);
+      // Sans client_id exploitable, on s'appuie sur le périmètre déjà filtré par l'API.
+      if (!userClientId || !companyClientId) return true;
+      return companyClientId === userClientId;
     }
+
+    const userEntrepriseId = Number(this.currentUser.entreprise_id) || 0;
+    return (Number(company.id) || 0) === userEntrepriseId;
   }
 
   canDeleteCompany(company: Company | null | undefined): boolean {
     if (!this.currentUser || !company) return false;
-    
-    const userRoleId = Number(this.currentUser.role_id) || 0;
-    
-    // Seuls Super Admin et RH Groupe peuvent supprimer
-    return userRoleId === 1 || ([5, 14].includes(userRoleId) && this.canEditCompany(company));
+
+    // Seuls le Super Admin et les rôles Holding peuvent supprimer
+    if (this.isSuperAdminUser()) return true;
+    return this.isHoldingUser() && this.canEditCompany(company);
   }
 
   // === MÉTHODES DE RECHERCHE ET TRI ===

@@ -8,6 +8,15 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-guide-utilisation',
   template: `
     <div class="guide-page">
+      <a class="guide-cta" [href]="helpCenterUrl" target="_blank" rel="noopener noreferrer">
+        <span class="guide-cta-icon"><i class="isax isax-lifebuoy"></i></span>
+        <span class="guide-cta-text">
+          <strong>Ouvrir Pyramide HelpCare</strong>
+          <small>Le centre d'aide interactif : retrouvez en quelques secondes le mode op&eacute;ratoire de chaque action, selon votre profil.</small>
+        </span>
+        <span class="guide-cta-arrow"><i class="isax isax-export-3"></i></span>
+      </a>
+
       <div class="guide-header">
         <h4><i class="isax isax-document-text"></i> Guide d'utilisation</h4>
         <p class="guide-sub">Consultez le guide pour d&eacute;couvrir toutes les fonctionnalit&eacute;s de la plateforme.</p>
@@ -51,6 +60,15 @@ import { environment } from '../../../../environments/environment';
   `,
   styles: [`
     .guide-page { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; }
+    .guide-cta { display: flex; align-items: center; gap: 16px; padding: 16px 24px; text-decoration: none; background: linear-gradient(90deg, #f0fdfa 0%, #ffffff 70%); border-bottom: 1px solid #e5e7eb; transition: background .15s; }
+    .guide-cta:hover { background: linear-gradient(90deg, #e6fbf7 0%, #f9fdfd 70%); }
+    .guide-cta:hover .guide-cta-arrow { transform: translateX(3px); }
+    .guide-cta-icon { flex-shrink: 0; width: 42px; height: 42px; border-radius: 12px; background: #006F78; color: #fff; display: flex; align-items: center; justify-content: center; }
+    .guide-cta-icon i { font-size: 20px; }
+    .guide-cta-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .guide-cta-text strong { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+    .guide-cta-text small { font-size: 12px; color: #6b7280; line-height: 1.5; }
+    .guide-cta-arrow { margin-left: auto; flex-shrink: 0; color: #006F78; font-size: 18px; display: flex; transition: transform .15s; }
     .guide-header { padding: 20px 24px; border-bottom: 1px solid #f0f0f0; }
     .guide-header h4 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
     .guide-header h4 i { font-size: 18px; color: #006F78; }
@@ -78,6 +96,8 @@ export class GuideUtilisationComponent implements OnInit {
   isPdf = false;
   fileName = '';
   loading = true;
+  /** Centre d'aide externe, ouvert dans un nouvel onglet depuis l'en-tete. */
+  helpCenterUrl = 'https://helpcare.pyramide-e.com/';
 
   constructor(private http: HttpClient, private sanitizer: DomSanitizer) {}
 
