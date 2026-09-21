@@ -14,15 +14,10 @@ export class FormationService {
   //getCompetencesAcquises() {
    // throw new //Error('Method not implemented.');
   //}
+  // Competences acquises = celles des formations terminees (calculees par l'API),
+  // et non les lignes historiques de user_competences.
   getCompetencesAcquises(): Observable<any> {
-    const user = this.getCurrentUser();
-    const userId = user?.id ?? user?.user_id;
-
-    const url = userId
-      ? `${this.baseUrl}/student/competences/${userId}/formations`
-      : `${this.baseUrl}/student/competences`;
-
-    return this.http.get<any>(url, {
+    return this.http.get<any>(`${this.baseUrl}/student/competences`, {
       headers: this.getHeaders()
     });
   }

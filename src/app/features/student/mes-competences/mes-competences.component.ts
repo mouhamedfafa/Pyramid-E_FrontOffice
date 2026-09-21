@@ -90,45 +90,50 @@ export class MesCompetencesComponent implements OnInit {
   }
 
   loadCompetences(): void {
-  this.loading = true;
-  this.error = '';
+    this.loading = true;
+    this.error = '';
 
-  this.formationsService.getCompetencesAcquises().subscribe({
-    next: (res: any) => {
-      const competences = res?.user?.competences ?? res?.competences ?? [];
+    this.formationsService.getCompetencesAcquises().subscribe({
+      next: (res: any) => {
+        // L'API renvoie les formations terminees et leurs competences.
+        const formations: FormationAcquise[] = (res?.par_formation?.acquises ?? []).map((f: any) => ({
+          formation_id: Number(f.formation_id) || 0,
+          formation_titre: f.formation_titre || `Formation #${f.formation_id || ''}`,
+          competences: Array.isArray(f.competences) ? f.competences : [],
+          date_fin: f.date_fin ?? null,
+        }));
 
-      const formationIds = Array.from(
-        new Set(
-          competences
-            .map((c: any) => Number(c.formation_id))
-            .filter((id: number) => Number.isFinite(id))
-        )
-      );
+        const competencesUniques: string[] = Array.from(
+          new Set(formations.flatMap(f => f.competences))
+        );
 
-      this.data = {
-        stats: {
-          total_acquises: competences.length,
-          formations_terminees: formationIds.length
-        },
-        total_acquises: competences.length,
-        formations_terminees: formationIds.length,
-        competences_acquises: competences.map((c: any) => c.nom),
-        par_domaine: [],
-        domaine_user: res?.user ?? null,
-        user: res?.user ?? null,
-        competences
-      } as any;
+        this.data = {
+          stats: {
+            total_acquises: res?.stats?.total_acquises ?? competencesUniques.length,
+            formations_terminees: res?.stats?.formations_terminees ?? formations.length,
+          },
+          total_acquises: competencesUniques.length,
+          formations_terminees: formations.length,
+          competences_acquises: competencesUniques,
+          // Un seul groupe : le regroupement competence -> formations est fait plus bas.
+          par_domaine: formations.length
+            ? [{ domaine: res?.domaine_user ?? null, competences: competencesUniques, formations }]
+            : [],
+          domaine_user: res?.domaine_user ?? null,
+          user: null,
+        } as CompetencesAcquisesData;
 
-      this.currentPage = 1;
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Erreur compétences acquises:', err);
-      this.error = 'Impossible de charger vos compétences acquises.';
-      this.loading = false;
-    },
-  });
-}
+        this.currentPage = 1;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur competences acquises:', err);
+        this.error = 'Impossible de charger vos competences acquises.';
+        this.loading = false;
+      },
+    });
+  }
+
   get stats(): StatsAcquises {
     return {
       total_acquises:
@@ -143,49 +148,35 @@ export class MesCompetencesComponent implements OnInit {
   }
 
   get competencesAcquises(): CompetenceAcquiseView[] {
-  const directCompetences = this.data?.user?.competences ?? this.data?.competences ?? [];
+    const groupes = this.data?.par_domaine ?? [];
+    const map = new Map<string, Map<number, FormationAcquise>>();
 
-  if (directCompetences.length > 0 && (!this.data?.par_domaine || this.data.par_domaine.length === 0)) {
-    return directCompetences.map((c: any) => ({
-      nom: c.nom || 'Compétence',
-      formations: [{
-        formation_id: Number(c.formation_id) || 0,
-        formation_titre: c.formation_titre || `Formation #${c.formation_id || ''}`,
-        competences: [c.nom || 'Compétence'],
-        date_fin: c.acquired_at || null
-      }]
-    }));
-  }
+    groupes.forEach(groupe => {
+      groupe.competences.forEach(competence => {
+        if (!map.has(competence)) {
+          map.set(competence, new Map<number, FormationAcquise>());
+        }
 
-  const groupes = this.data?.par_domaine ?? [];
-  const map = new Map<string, Map<number, FormationAcquise>>();
+        const formationsMap = map.get(competence)!;
 
-  groupes.forEach(groupe => {
-    groupe.competences.forEach(competence => {
-      if (!map.has(competence)) {
-        map.set(competence, new Map<number, FormationAcquise>());
-      }
-
-      const formationsMap = map.get(competence)!;
-
-      groupe.formations
-        .filter(formation => formation.competences.includes(competence))
-        .forEach(formation => {
-          formationsMap.set(formation.formation_id, {
-            ...formation,
-            competences: [competence],
+        groupe.formations
+          .filter(formation => formation.competences.includes(competence))
+          .forEach(formation => {
+            formationsMap.set(formation.formation_id, {
+              ...formation,
+              competences: [competence],
+            });
           });
-        });
+      });
     });
-  });
 
-  return Array.from(map.entries())
-    .map(([nom, formations]) => ({
-      nom,
-      formations: Array.from(formations.values()),
-    }))
-    .sort((a, b) => a.nom.localeCompare(b.nom));
-}
+    return Array.from(map.entries())
+      .map(([nom, formations]) => ({
+        nom,
+        formations: Array.from(formations.values()),
+      }))
+      .sort((a, b) => a.nom.localeCompare(b.nom));
+  }
 
   get competencesFiltrees(): CompetenceAcquiseView[] {
     const q = this.recherche.trim().toLowerCase();

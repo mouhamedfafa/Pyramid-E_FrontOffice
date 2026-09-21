@@ -97,8 +97,8 @@
   transition: all 0.3s ease;
 
   .header-content {
-    padding: 1rem 0;
-    min-height: 70px;
+    padding: 0.5rem 0;
+    height: 59px;
   }
 }
 
@@ -112,8 +112,10 @@
     &:hover { opacity: 0.8; }
 
     .logo-img {
-      height: 100px;
-      width: auto;
+      width: 190px;
+      height: 40px;
+      object-fit: cover;
+      object-position: center;
     }
 
     .brand-text {
@@ -143,8 +145,8 @@
   .theme-toggle-btn {
     background: transparent;
     border: none;
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -163,7 +165,84 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    i { font-size: 1.2rem; }
+    i { font-size: 1.05rem; }
+  }
+}
+
+// Language Switcher
+.lang-btn {
+  background: transparent;
+  border: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--bs-dark);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: var(--hdr-primary-light);
+    color: var(--hdr-primary);
+  }
+
+  .lang-flag {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .lang-code {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+}
+
+.lang-dropdown {
+  min-width: 190px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 0.4rem;
+  margin-top: 0.5rem;
+
+  .lang-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.65rem;
+    border-radius: 8px;
+    color: var(--bs-dark);
+
+    img {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .lang-check {
+      margin-left: auto;
+      color: var(--hdr-primary);
+      font-size: 0.95rem;
+    }
+
+    &.active {
+      background: var(--hdr-primary-light);
+      color: var(--hdr-primary);
+      font-weight: 600;
+    }
+
+    &.disabled {
+      opacity: 0.45;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(.disabled) {
+      background: var(--hdr-primary-light);
+    }
   }
 }
 
@@ -171,8 +250,8 @@
 .header-icon-btn {
   background: transparent;
   border: none;
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -480,35 +559,6 @@
   }
 }
 
-// Notification Dropdown
-.notification-dropdown {
-  min-width: 320px;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  margin-top: 0.5rem;
-
-  .dropdown-header {
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, var(--hdr-primary-light), var(--hdr-accent-light));
-    border-radius: 12px 12px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    h6 {
-      margin: 0;
-      font-weight: 600;
-      color: var(--hdr-primary);
-    }
-
-    .badge {
-      background: var(--hdr-accent) !important;
-      color: var(--bs-white);
-    }
-  }
-}
-
 // Dark Mode Support
 .dark-mode {
   .header-wrapper {
@@ -532,6 +582,15 @@
     .header-icon-btn:hover {
       background: rgba(255,255,255,.08);
       color: var(--hdr-accent);
+    }
+
+    .lang-btn {
+      color: var(--bs-white);
+
+      &:hover {
+        background: rgba(255,255,255,.08);
+        color: var(--hdr-accent);
+      }
     }
 
     .profile-btn:hover {
@@ -558,15 +617,23 @@
 // Responsive Design
 @media (max-width: 768px) {
   .header-wrapper .header-content {
-    padding: 0.75rem 0;
+    padding: 0.4rem 0;
+    height: 48px;
 
     .brand-text { display: none; }
+
+    .logo-img {
+      width: 152px;
+      height: 32px;
+    }
 
     .header-actions {
       gap: 0.25rem;
 
       .header-item { margin-right: 0.5rem !important; }
     }
+
+    .lang-btn .lang-code { display: none; }
 
     .auth-buttons .btn span { display: none; }
   }
@@ -576,8 +643,7 @@
     margin-right: 1rem;
   }
 
-  .notification-dropdown {
-    min-width: 280px;
+  .lang-dropdown {
     margin-right: 1rem;
   }
 }

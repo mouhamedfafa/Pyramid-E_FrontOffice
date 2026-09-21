@@ -37,20 +37,34 @@
               </div>
             </div>
 
-            <!-- Notifications -->
+            <!-- Language Switcher -->
             <div class="header-item me-3">
               <div class="dropdown">
-                <button class="header-icon-btn" type="button" data-bs-toggle="dropdown">
-                  <i class="isax isax-notification"></i>
-                  <span class="notification-badge">3</span>
+                <button class="lang-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Changer de langue">
+                  <img src="assets/img/flags/france-flag.svg" alt="FR" class="lang-flag">
+                  <span class="lang-code">FR</span>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end notification-dropdown">
-                  <div class="dropdown-header">
-                    <h6>Notifications</h6>
-                    <span class="badge bg-primary">3 New</span>
-                  </div>
-                  <!-- Notification items would go here -->
-                </div>
+                <ul class="dropdown-menu dropdown-menu-end lang-dropdown">
+                  <li>
+                    <a class="dropdown-item lang-item active" href="javascript:void(0);">
+                      <img src="assets/img/flags/france-flag.svg" alt="FR" class="me-2">
+                      <span>Français</span>
+                      <i class="isax isax-tick-circle5 lang-check"></i>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item lang-item disabled" href="javascript:void(0);" aria-disabled="true">
+                      <img src="assets/img/flags/us-flag.svg" alt="EN" class="me-2">
+                      <span>English</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item lang-item disabled" href="javascript:void(0);" aria-disabled="true">
+                      <img src="assets/img/flags/arab-flag.svg" alt="AR" class="me-2">
+                      <span>العربية</span>
+                    </a>
+                  </li>
+                </ul>
               </div>
             </div>
 

@@ -9,8 +9,11 @@
   }
 
   .footer-logo {
-    height: 200px;
-    margin-bottom: 24px;
+    width: 190px;
+    height: 40px;
+    object-fit: cover;
+    object-position: center;
+    margin-bottom: 20px;
   }
 
   .footer-text {

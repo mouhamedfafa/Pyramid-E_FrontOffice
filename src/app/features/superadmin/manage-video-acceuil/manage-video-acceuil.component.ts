@@ -100,6 +100,7 @@ import { environment } from '../../../../environments/environment';
             {{ uploading ? 'Upload en cours...' : saving ? 'Enregistrement...' : 'Enregistrer' }}
           </button>
           <span class="mg-success" *ngIf="saved">Enregistré avec succès</span>
+          <span class="mg-error" *ngIf="errorMessage">{{ errorMessage }}</span>
         </div>
       </div>
     </div>
@@ -147,6 +148,7 @@ import { environment } from '../../../../environments/environment';
     .mg-actions { display: flex; align-items: center; gap: 12px; }
     .mg-actions .btn { font-size: 13px; padding: 8px 20px; border-radius: 8px; }
     .mg-success { font-size: 12px; color: #16a34a; font-weight: 500; }
+    .mg-error { font-size: 12px; color: #dc2626; font-weight: 500; }
   `],
   imports: [CommonModule, FormsModule],
 })
@@ -163,6 +165,7 @@ export class ManageVideoAcceuilComponent implements OnInit {
   saved = false;
   estActif = true;
   toggling = false;
+  errorMessage = '';
 
   constructor(private http: HttpClient) {}
 
@@ -203,12 +206,16 @@ export class ManageVideoAcceuilComponent implements OnInit {
 
   toggleVisibility(): void {
     this.toggling = true;
+    this.errorMessage = '';
     this.http.post<any>(`${environment.apiUrl}/help-center/accueil/toggle`, {}).subscribe({
       next: (res) => {
         this.estActif = res.est_actif;
         this.toggling = false;
       },
-      error: () => { this.toggling = false; }
+      error: (err) => {
+        this.toggling = false;
+        this.errorMessage = this.extractErrorMessage(err);
+      }
     });
   }
 
@@ -223,6 +230,7 @@ export class ManageVideoAcceuilComponent implements OnInit {
   private saveUrl(): void {
     this.saving = true;
     this.saved = false;
+    this.errorMessage = '';
     this.http.post<any>(`${environment.apiUrl}/help-center/accueil`, {
       accueil_url: this.accueilUrl,
       accueil_type: 'url',
@@ -233,14 +241,33 @@ export class ManageVideoAcceuilComponent implements OnInit {
         this.currentAccueilUrl = this.accueilUrl;
         this.currentaccueilType = 'url';
       },
-      error: () => { this.saving = false; }
+      error: (err) => {
+        this.saving = false;
+        this.errorMessage = this.extractErrorMessage(err);
+      }
     });
+  }
+
+  private extractErrorMessage(err: any): string {
+    if (err?.status === 0) {
+      return "Impossible de contacter le serveur. Vérifiez que le backend est démarré.";
+    }
+    const validationErrors = err?.error?.errors;
+    if (validationErrors) {
+      const first = Object.values(validationErrors)[0];
+      if (Array.isArray(first) && first.length) return first[0] as string;
+    }
+    if (err?.error?.message) return err.error.message;
+    if (err?.status === 403) return "Vous n'avez pas la permission de gérer cette section.";
+    if (err?.status === 401) return "Session expirée, veuillez vous reconnecter.";
+    return "Une erreur est survenue lors de l'enregistrement.";
   }
 
   private uploadFile(): void {
     this.uploading = true;
     this.uploadProgress = 0;
     this.saved = false;
+    this.errorMessage = '';
 
     const formData = new FormData();
     formData.append('accueil_file', this.selectedFile!);
@@ -261,14 +288,23 @@ export class ManageVideoAcceuilComponent implements OnInit {
         this.currentaccueilType = 'upload';
         this.uploadedFileName = this.selectedFile?.name || '';
         this.selectedFile = null;
+      } else {
+        this.errorMessage = this.extractErrorMessage({ status: xhr.status, error: this.tryParseJson(xhr.responseText) });
       }
     });
 
-    xhr.addEventListener('error', () => { this.uploading = false; });
+    xhr.addEventListener('error', () => {
+      this.uploading = false;
+      this.errorMessage = this.extractErrorMessage({ status: 0 });
+    });
 
     const token = localStorage.getItem('pyramide_token');
     xhr.open('POST', `${environment.apiUrl}/help-center/accueil/upload`);
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.send(formData);
+  }
+
+  private tryParseJson(text: string): any {
+    try { return JSON.parse(text); } catch { return null; }
   }
 }
