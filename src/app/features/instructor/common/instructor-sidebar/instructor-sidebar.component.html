@@ -44,6 +44,11 @@
     <a *appHasPermission="'acceder-mode-employe'" [routerLink]="routes.students_Dashboard" class="sb-bottom-item sb-learner-switch">
       <i class="isax isax-user-octagon"></i> Mode employé
     </a>
+    <!-- Hiérarchie : visible pour tout utilisateur ayant au moins un N-1 -->
+    <a *ngIf="managerStatut?.is_manager" [routerLink]="routes.manager_dashboard" class="sb-bottom-item sb-manager-switch">
+      <i class="isax isax-hierarchy"></i> Mode manager
+      <span *ngIf="(managerStatut?.demandes_a_traiter ?? 0) > 0" class="sb-manager-count">{{ managerStatut?.demandes_a_traiter }}</span>
+    </a>
   </div>
 
   <!-- NAV -->

@@ -1,0 +1,218 @@
+@use '../organisation' as org;
+
+@include org.boutons;
+@include org.badges;
+@include org.spinner;
+@include org.modale;
+@include org.formulaires;
+
+.org {
+  background: org.$fond;
+  border: 0.5px solid org.$bordure;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.barre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-bottom: 0.5px solid org.$bordure;
+}
+
+.bascule {
+  display: inline-flex;
+  border: 0.5px solid org.$bordure-2;
+  border-radius: 8px;
+  overflow: hidden;
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    color: org.$texte-2;
+    cursor: pointer;
+    &.on { background: org.$vert-clair; color: org.$vert; font-weight: 500; }
+  }
+}
+
+.recherche {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 0.5px solid org.$bordure-2;
+  border-radius: 8px;
+  i { color: org.$texte-2; }
+  input { flex: 1; border: none; outline: none; font-size: 12px; background: transparent; color: org.$texte; min-width: 0; }
+}
+
+.outils { display: flex; gap: 4px; }
+.outil {
+  width: 30px;
+  height: 30px;
+  border: 0.5px solid org.$bordure-2;
+  border-radius: 8px;
+  background: transparent;
+  color: org.$texte-2;
+  cursor: pointer;
+  &:hover { background: org.$fond-2; color: org.$texte; }
+}
+
+.aide-edition {
+  font-size: 11px;
+  color: org.$texte-2;
+  padding: 6px 12px;
+  background: org.$fond-2;
+  border-bottom: 0.5px solid org.$bordure;
+}
+
+.zone {
+  position: relative;
+  background: #fafaf8;
+}
+.graphique { width: 100%; height: 100%; &.masque { visibility: hidden; } }
+.chargement, .vide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: org.$texte-2;
+  font-size: 13px;
+  i { font-size: 28px; }
+}
+.zone > .modal-error { position: absolute; top: 12px; left: 12px; right: 12px; margin: 0; }
+
+.panneau {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  bottom: 10px;
+  width: 300px;
+  max-width: calc(100% - 20px);
+  background: org.$fond;
+  border: 0.5px solid org.$bordure;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+.panneau-tete {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 0.5px solid org.$bordure;
+}
+.panneau-type { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: org.$texte-2; }
+.panneau-titre { font-size: 14px; font-weight: 500; color: org.$texte; }
+.panneau-sous { font-size: 12px; color: org.$texte-2; }
+.panneau-corps { padding: 12px 14px; overflow: auto; }
+
+.alertes { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+
+.infos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  font-size: 12px;
+  margin: 0 0 12px;
+  dt { color: org.$texte-2; font-weight: 400; }
+  dd { margin: 0; color: org.$texte; }
+}
+
+.action {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 12px;
+  padding-top: 10px;
+  border-top: 0.5px solid org.$bordure;
+  label { font-size: 12px; font-weight: 500; color: org.$texte; }
+  .btn-o { justify-self: start; }
+}
+
+// Cartes générées par d3-org-chart (HTML dynamique hors encapsulation)
+:host ::ng-deep {
+  .org-carte {
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #e8e8e4;
+    border-top: 4px solid #0f6e56;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-family: inherit;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    &.org-inactif { opacity: 0.55; }
+  }
+  .org-titre { font-size: 13px; font-weight: 600; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .org-sous { font-size: 11px; color: #6b6b6b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .org-ligne { font-size: 11px; color: #3d3d3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .org-pied { margin-top: auto; display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden; }
+  .org-pastille {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #f1f0ec;
+    color: #3d3d3a;
+    white-space: nowrap;
+  }
+  .org-manuel { background: #faeeda; color: #854f0b; }
+  .org-alerte {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #fcebeb;
+    color: #a32d2d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  // Bouton déplier / replier : pastille centrée sur le trait (le conteneur d3 fait 56 × 24)
+  g.node-button-g { cursor: pointer; }
+  .org-bouton {
+    margin: auto;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 22px;
+    min-width: 42px;
+    padding: 0 9px 0 7px;
+    border-radius: 999px;
+    border: 1px solid #d4d4d0;
+    background: #fff;
+    color: #3d3d3a;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    svg { width: 11px; height: 11px; flex-shrink: 0; }
+    span { display: block; }
+  }
+  .org-bouton--ouvert { background: #e1f5ee; border-color: #9fd6c4; color: #0f6e56; }
+  g.node-button-g:hover .org-bouton {
+    border-color: #0f6e56;
+    color: #0f6e56;
+    box-shadow: 0 2px 6px rgba(15, 110, 86, 0.18);
+  }
+  g.node.org-glisse { opacity: 0.75; cursor: grabbing; }
+  g.node.org-cible .org-carte { outline: 3px dashed #0f6e56; outline-offset: 2px; }
+}

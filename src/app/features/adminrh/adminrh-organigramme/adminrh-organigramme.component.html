@@ -1,0 +1,36 @@
+<div class="page">
+  <div class="ph">
+    <div class="ph-icon"><i class="ti ti-sitemap"></i></div>
+    <div class="ph-info">
+      <div class="ph-title">Organigramme<span *ngIf="entrepriseNom"> — {{ entrepriseNom }}</span></div>
+      <div class="ph-sub">Vue Structure (entités et responsables) ou Personnes (lignes hiérarchiques N+1).</div>
+    </div>
+    <div class="ph-acts">
+      <app-selecteur-entreprise (changement)="choisirEntreprise($event)"></app-selecteur-entreprise>
+      <app-import-export-organisation *ngIf="entrepriseId"
+        [entrepriseId]="entrepriseId"
+        [entrepriseNom]="entrepriseNom"
+        (changement)="rafraichirGraphique = rafraichirGraphique + 1; rafraichirAnomalies = rafraichirAnomalies + 1">
+      </app-import-export-organisation>
+      <a class="btn-o" [routerLink]="routes.adminrhDirection"><i class="ti ti-building"></i> Gérer les directions</a>
+    </div>
+  </div>
+
+  <div class="contenu" *ngIf="entrepriseId">
+    <app-organigramme
+      [entrepriseId]="entrepriseId"
+      [vue]="vue"
+      [editable]="true"
+      [rafraichir]="rafraichirGraphique"
+      (vueChange)="vue = $event"
+      (changement)="rafraichirAnomalies = rafraichirAnomalies + 1">
+    </app-organigramme>
+
+    <app-anomalies-organisation class="bloc"
+      [entrepriseId]="entrepriseId"
+      [rafraichir]="rafraichirAnomalies"
+      (utilisateurSelectionne)="voirPersonnes()"
+      (changement)="rafraichirGraphique = rafraichirGraphique + 1">
+    </app-anomalies-organisation>
+  </div>
+</div>

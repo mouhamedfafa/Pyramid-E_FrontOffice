@@ -76,6 +76,57 @@
         </div>
       </div>
 
+      <!-- Filtre Manager (N+1) -->
+      <div class="ul-filter-group" (click)="$event.stopPropagation()">
+        <button type="button" class="ul-filter" [class.ul-filter--on]="!!selectedManagerFilter"
+                (click)="showManagerDropdown = !showManagerDropdown">
+          <i class="isax isax-hierarchy"></i> Manager
+          <span *ngIf="selectedManagerFilter" class="ul-filter__chip">{{ managerFilterLabel }}</span>
+        </button>
+        <div class="ul-dropdown" *ngIf="showManagerDropdown">
+          <div class="ul-dropdown__item" (click)="setManagerFilter('')">Tous</div>
+          <div class="ul-dropdown__item" [class.ul-dropdown__item--on]="selectedManagerFilter === 'none'"
+               (click)="setManagerFilter('none')">Sans manager</div>
+          <div class="ul-dropdown__item"
+               *ngFor="let m of availableManagers"
+               [class.ul-dropdown__item--on]="selectedManagerFilter === '' + m.id"
+               (click)="setManagerFilter('' + m.id)">{{ m.label }}</div>
+        </div>
+      </div>
+
+      <!-- Filtre Direction (entité + sous-entités) -->
+      <div class="ul-filter-group" (click)="$event.stopPropagation()" *ngIf="directionsFiltre.length">
+        <button type="button" class="ul-filter" [class.ul-filter--on]="!!selectedDirectionFilter"
+                (click)="showDirectionDropdown = !showDirectionDropdown">
+          <i class="isax isax-buildings-2"></i> Direction
+          <span *ngIf="selectedDirectionFilter" class="ul-filter__chip">{{ directionFilterLabel }}</span>
+        </button>
+        <div class="ul-dropdown" *ngIf="showDirectionDropdown">
+          <div class="ul-dropdown__item" (click)="setDirectionFilter(null)">Toutes</div>
+          <div class="ul-dropdown__item"
+               *ngFor="let d of directionsFiltre"
+               [style.padding-left.px]="12 + d.niveau * 14"
+               [class.ul-dropdown__item--on]="selectedDirectionFilter === d.id"
+               (click)="setDirectionFilter(d.id)">{{ d.nom }}</div>
+        </div>
+      </div>
+
+      <!-- Filtre contrôles d'organisation -->
+      <div class="ul-filter-group" (click)="$event.stopPropagation()">
+        <button type="button" class="ul-filter" [class.ul-filter--on]="!!selectedOrgFilter"
+                (click)="showOrgDropdown = !showOrgDropdown">
+          <i class="isax isax-warning-2"></i> Organisation
+          <span *ngIf="selectedOrgFilter" class="ul-filter__chip">{{ orgFilterLabel }}</span>
+        </button>
+        <div class="ul-dropdown" *ngIf="showOrgDropdown">
+          <div class="ul-dropdown__item" (click)="setOrgFilter('')">Tous</div>
+          <div class="ul-dropdown__item" [class.ul-dropdown__item--on]="selectedOrgFilter === 'sans_direction'"
+               (click)="setOrgFilter('sans_direction')">Sans direction</div>
+          <div class="ul-dropdown__item" [class.ul-dropdown__item--on]="selectedOrgFilter === 'manuel'"
+               (click)="setOrgFilter('manuel')">N+1 défini manuellement</div>
+        </div>
+      </div>
+
       <button type="button" class="ul-invite-btn" (click)="openMassInviteDialog()">
         <i class="isax isax-sms"></i> Invitations
       </button>
@@ -108,13 +159,14 @@
     <table class="ul-table" *ngIf="!loading">
       <thead>
         <tr>
-          <th style="width:12%">Matricule</th>
-          <th style="width:26%">Utilisateur</th>
-          <th style="width:13%">Direction</th>
-          <th style="width:13%">Rôle</th>
-          <th style="width:10%">Statut</th>
-          <th style="width:11%">Dernière activité</th>
-          <th style="width:15%">Actions</th>
+          <th style="width:10%">Matricule</th>
+          <th style="width:23%">Utilisateur</th>
+          <th style="width:12%">Direction</th>
+          <th style="width:12%">Manager</th>
+          <th style="width:12%">Rôle</th>
+          <th style="width:9%">Statut</th>
+          <th style="width:9%">Dernière activité</th>
+          <th style="width:13%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -148,6 +200,16 @@
               </span>
             </div>
             <span class="ul-meta" *ngIf="!u.direction_obj">{{ u.direction || '—' }}</span>
+          </td>
+          <td>
+            <span class="ul-meta" *ngIf="u.manager; else sansManager">
+              {{ getDisplayName($any(u.manager)) }}
+              <small *ngIf="u.manager_mode === 'manuel'" title="N+1 défini manuellement (hors structure)"> · manuel</small>
+            </span>
+            <ng-template #sansManager><span class="ul-meta">—</span></ng-template>
+            <span class="ul-meta ul-n1-count" *ngIf="u.collaborateurs_count" title="Collaborateurs directs (N-1)">
+              <i class="isax isax-hierarchy"></i>{{ u.collaborateurs_count }} N-1
+            </span>
           </td>
           <td>
             <span class="ul-role-badge" [attr.data-role]="getRoleKey(getRoleName(u))">
@@ -187,7 +249,7 @@
           </td>
         </tr>
         <tr *ngIf="!tableData.length">
-          <td colspan="6" class="ul-empty">
+          <td colspan="8" class="ul-empty">
             <i class="isax isax-people d-block mb-2" style="font-size:2rem;"></i>
             Aucun utilisateur trouvé
           </td>
@@ -544,6 +606,7 @@
   [visible]="userDialog"
   [isEditMode]="isEditMode"
   [userData]="selectedUser"
+  [utilisateurs]="tableDataCopy"
   (onClose)="hideDialog()"
   (onSave)="refreshData()">
 </app-user-add>

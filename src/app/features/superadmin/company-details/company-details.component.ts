@@ -7,10 +7,19 @@ import { Company } from '../../../shared/models/client-company.models';
 import { ClientCompanyService } from '../../../shared/service/client/client-company.service';
 import { UserService } from '../../../shared/service/authentification/user.service';
 import { CompanyAddComponent } from '../company-add/company-add.component';
+import { StructureOrganisationComponent } from '../../../shared/components/organisation/structure-organisation/structure-organisation.component';
+import { OrganigrammeComponent } from '../../../shared/components/organisation/organigramme/organigramme.component';
+import { AnomaliesOrganisationComponent } from '../../../shared/components/organisation/anomalies-organisation/anomalies-organisation.component';
+import { CompletudeOrganisationComponent } from '../../../shared/components/organisation/completude-organisation/completude-organisation.component';
+import { ImportExportOrganisationComponent } from '../../../shared/components/organisation/import-export-organisation/import-export-organisation.component';
 
 @Component({
   selector: 'app-company-details',
-  imports: [TitleCasePipe, CommonModule, CompanyAddComponent],
+  imports: [
+    TitleCasePipe, CommonModule, CompanyAddComponent,
+    StructureOrganisationComponent, OrganigrammeComponent, AnomaliesOrganisationComponent, CompletudeOrganisationComponent,
+    ImportExportOrganisationComponent,
+  ],
   templateUrl: './company-details.component.html',
   styleUrls: ['./company-details.component.scss']
 })
@@ -28,6 +37,19 @@ export class CompanyDetailsComponent implements OnInit {
   // Dialog modification
   companyDialog: boolean = false;
 
+  // Onglet Organisation (directions, N+1, organigramme)
+  onglet: 'infos' | 'organisation' = 'infos';
+  vueOrganisation: 'structure' | 'organigramme' = 'structure';
+  rafraichirOrganisation = 0;
+  entiteAOuvrir: number | null = null;
+
+  ouvrirEntite(id: number): void {
+    this.vueOrganisation = 'structure';
+    // Réaffecter la même valeur ne déclenche pas ngOnChanges : on repasse par null
+    this.entiteAOuvrir = null;
+    setTimeout(() => (this.entiteAOuvrir = id));
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -41,6 +63,10 @@ export class CompanyDetailsComponent implements OnInit {
       if (companyId) {
         this.loadCompanyDetails(companyId);
       }
+    });
+    // Lien direct vers l'onglet (ex. depuis la liste des entreprises) : ?onglet=organisation
+    this.route.queryParams.subscribe(q => {
+      if (q['onglet'] === 'organisation') this.onglet = 'organisation';
     });
   }
 

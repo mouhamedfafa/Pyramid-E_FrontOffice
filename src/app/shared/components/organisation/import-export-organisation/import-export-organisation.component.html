@@ -1,0 +1,206 @@
+<div class="ie">
+  <div class="ie-export" (click)="$event.stopPropagation()">
+    <button type="button" class="btn-o" (click)="menuExport = !menuExport" [disabled]="!!exportEnCours" [attr.aria-expanded]="menuExport" aria-haspopup="menu">
+      <span class="spinner-sm sombre" *ngIf="exportEnCours"></span>
+      <i class="ti ti-download" *ngIf="!exportEnCours"></i> Exporter <i class="ti ti-chevron-down chevron"></i>
+    </button>
+    <div class="ie-menu" *ngIf="menuExport" role="menu">
+      <button type="button" role="menuitem" (click)="exporter('xlsx')">
+        <i class="ti ti-file-spreadsheet"></i>
+        <span><strong>Excel</strong><small>Modifiable puis réimportable</small></span>
+      </button>
+      <button type="button" role="menuitem" (click)="exporter('json')">
+        <i class="ti ti-braces"></i>
+        <span><strong>JSON</strong><small>Sauvegarde complète</small></span>
+      </button>
+      <button type="button" role="menuitem" (click)="menuExport = false; telechargerModele()">
+        <i class="ti ti-file-plus"></i>
+        <span><strong>Modèle vide</strong><small>À remplir pour un premier import</small></span>
+      </button>
+    </div>
+  </div>
+
+  <button type="button" class="btn-o" *ngIf="peutImporter" (click)="ouvrirImport()">
+    <i class="ti ti-upload"></i> Importer
+  </button>
+</div>
+<div class="ie-erreur" *ngIf="erreurExport" role="alert">{{ erreurExport }}</div>
+
+<!-- ═══ MODALE D'IMPORT ═══ -->
+<div class="modal-overlay" *ngIf="modaleVisible" (click)="fermer()">
+  <div class="modal-box modal-lg" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Importer un organigramme">
+    <div class="modal-header">
+      <h3>
+        {{ etape === 'compte_rendu' ? 'Import effectué' : 'Importer un organigramme' }}
+        <span class="sous" *ngIf="entrepriseNom">— {{ entrepriseNom }}</span>
+      </h3>
+      <button type="button" class="modal-close" (click)="fermer()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+
+    <ol class="etapes" aria-label="Étapes">
+      <li [class.on]="etape === 'fichier'" [class.fait]="etape !== 'fichier'">1. Fichier</li>
+      <li [class.on]="etape === 'analyse'" [class.fait]="etape === 'compte_rendu'">2. Analyse</li>
+      <li [class.on]="etape === 'compte_rendu'">3. Application</li>
+    </ol>
+
+    <div class="modal-body">
+      <!-- 1. Fichier et mode -->
+      <ng-container *ngIf="etape === 'fichier'">
+        <div class="modeles">
+          <div class="modeles-texte">
+            <strong>Partez d'un fichier Pyramide</strong>
+            <small>Les bons onglets, colonnes, listes de valeurs et codes sont déjà en place.</small>
+          </div>
+          <div class="modeles-actions">
+            <button type="button" class="btn-o btn-sm" (click)="exporter('xlsx')" [disabled]="!!exportEnCours"
+                    title="Organigramme actuel, à modifier puis réimporter (recommandé)">
+              <span class="spinner-sm sombre" *ngIf="exportEnCours === 'xlsx'"></span>
+              <i class="ti ti-file-spreadsheet" *ngIf="exportEnCours !== 'xlsx'"></i> Organigramme actuel
+            </button>
+            <button type="button" class="btn-o btn-sm" (click)="telechargerModele()" [disabled]="modeleEnCours"
+                    title="Onglets vides + onglet Référentiel des codes d'entités et matricules existants">
+              <span class="spinner-sm sombre" *ngIf="modeleEnCours"></span>
+              <i class="ti ti-file-plus" *ngIf="!modeleEnCours"></i> Modèle vide
+            </button>
+          </div>
+        </div>
+
+        <label class="depot" (dragover)="$event.preventDefault()" (drop)="deposer($event)" [class.plein]="fichier" [class.refuse]="problemesFichier.length">
+          <input type="file" accept=".xlsx,.json" (change)="choisirFichier($event)" />
+          <i class="ti" [ngClass]="fichier ? 'ti-file-check' : 'ti-file-upload'"></i>
+          <span *ngIf="!fichier"><strong>Choisissez un fichier</strong> ou déposez-le ici<br><small>Excel .xlsx (modèle ou export Pyramide) ou export .json · 5 Mo maximum</small></span>
+          <span *ngIf="fichier"><strong>{{ fichier.name }}</strong><br><small>{{ (fichier.size / 1024) | number: '1.0-0' }} Ko · cliquez pour changer</small></span>
+        </label>
+
+        <div class="refus" *ngIf="problemesFichier.length" role="alert">
+          <div class="refus-titre"><i class="ti ti-file-alert"></i> Fichier refusé</div>
+          <ul><li *ngFor="let p of problemesFichier">{{ p }}</li></ul>
+          <small>Téléchargez le modèle ou l'organigramme actuel ci-dessus, complétez-le, puis réessayez.</small>
+        </div>
+
+        <fieldset class="modes">
+          <legend>Entités absentes du fichier</legend>
+          <label class="mode" [class.on]="mode === 'mise_a_jour'">
+            <input type="radio" name="mode-import" value="mise_a_jour" [(ngModel)]="mode" />
+            <span><strong>Mise à jour</strong><small>Les lignes du fichier font foi ; les entités absentes ne sont pas touchées. Recommandé.</small></span>
+          </label>
+          <label class="mode" [class.on]="mode === 'miroir'">
+            <input type="radio" name="mode-import" value="miroir" [(ngModel)]="mode" />
+            <span><strong>Miroir</strong><small>Le fichier décrit toute l'organisation : les entités absentes sont <b>désactivées</b> (jamais supprimées).</small></span>
+          </label>
+        </fieldset>
+
+        <p class="aide"><i class="ti ti-info-circle"></i> L'analyse ne modifie rien : vous verrez les erreurs et l'impact sur les N+1 avant de confirmer. Partez d'un export pour garder les bons codes et matricules.</p>
+      </ng-container>
+
+      <!-- 2. Analyse / 3. Compte rendu -->
+      <ng-container *ngIf="etape !== 'fichier' && resultat">
+        <div class="bandeau ko" *ngIf="!resultat.applicable">
+          <i class="ti ti-alert-triangle"></i>
+          <span><strong>{{ resultat.erreurs.length }} erreur(s)</strong> : rien ne sera appliqué. Corrigez le fichier puis relancez l'analyse.</span>
+        </div>
+        <div class="bandeau ok" *ngIf="resultat.applicable && etape === 'analyse'">
+          <i class="ti ti-circle-check"></i>
+          <span *ngIf="!aucunChangement">Fichier valide. Vérifiez l'impact ci-dessous puis appliquez.</span>
+          <span *ngIf="aucunChangement">Fichier valide : il correspond déjà à l'organisation actuelle, aucun changement.</span>
+        </div>
+        <div class="bandeau ok" *ngIf="etape === 'compte_rendu'">
+          <i class="ti ti-circle-check"></i><span>L'organigramme a été mis à jour.</span>
+        </div>
+        <div class="bandeau attention" *ngFor="let a of resultat.avertissements || []">
+          <i class="ti ti-info-triangle"></i><span>{{ a }}</span>
+        </div>
+
+        <div class="chiffres">
+          <div class="chiffre"><span class="v">{{ resultat.resume.entites_creees }}</span><span class="l">entité(s) créée(s)</span></div>
+          <div class="chiffre"><span class="v">{{ resultat.resume.entites_modifiees }}</span><span class="l">modifiée(s)</span></div>
+          <div class="chiffre"><span class="v">{{ resultat.resume.entites_deplacees }}</span><span class="l">déplacée(s)</span></div>
+          <div class="chiffre" [class.alerte]="resultat.resume.entites_desactivees"><span class="v">{{ resultat.resume.entites_desactivees }}</span><span class="l">désactivée(s)</span></div>
+          <div class="chiffre"><span class="v">{{ resultat.rapport.resume.nb_changements_manager }}</span><span class="l">N+1 modifié(s)</span></div>
+          <div class="chiffre"><span class="v">{{ resultat.rapport.resume.nb_demandes_transferees }}</span><span class="l">demande(s) transférée(s)</span></div>
+        </div>
+        <p class="lignes">{{ resultat.resume.lignes_entites }} ligne(s) entités · {{ resultat.resume.lignes_collaborateurs }} ligne(s) collaborateurs</p>
+
+        <div class="section" *ngIf="resultat.erreurs.length">
+          <div class="section-titre rouge">Erreurs à corriger</div>
+          <div class="table-wrap">
+            <table class="tableau">
+              <thead><tr><th>Onglet</th><th class="num">Ligne</th><th>Problème</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let e of resultat.erreurs"><td>{{ e.onglet }}</td><td class="num">{{ e.ligne ?? '—' }}</td><td>{{ e.message }}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="resultat.details.creees.length || resultat.details.deplacees.length || resultat.details.desactivees.length || resultat.details.modifiees.length">
+          <div class="section-titre">Entités</div>
+          <div class="pastilles">
+            <span class="badge-org vert" *ngFor="let e of resultat.details.creees"><i class="ti ti-plus"></i> {{ e.nom }}</span>
+            <span class="badge-org bleu" *ngFor="let e of resultat.details.deplacees"><i class="ti ti-arrows-move"></i> {{ e.nom }}</span>
+            <span class="badge-org gris" *ngFor="let e of resultat.details.modifiees"><i class="ti ti-edit"></i> {{ e.nom }}</span>
+            <span class="badge-org rouge" *ngFor="let e of resultat.details.desactivees"><i class="ti ti-ban"></i> {{ e.nom }}</span>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="resultat.rapport.entites.length">
+          <div class="section-titre">Responsables</div>
+          <div class="ligne-resp" *ngFor="let e of resultat.rapport.entites">
+            <ng-container *ngIf="e.responsable_avant?.id !== e.responsable_apres?.id">
+              <strong>{{ e.entite.nom }}</strong> : {{ e.responsable_avant?.nom || 'aucun' }} <i class="ti ti-arrow-right"></i> <b>{{ e.responsable_apres?.nom || 'aucun' }}</b>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="resultat.rapport.changements.length">
+          <div class="section-titre">Collaborateurs ({{ resultat.rapport.changements.length }})</div>
+          <div class="table-wrap">
+            <table class="tableau">
+              <thead><tr><th>Collaborateur</th><th>Rattachement</th><th>N+1</th><th class="num">Demandes</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let c of changementsAffiches">
+                  <td>{{ c.user.nom }}</td>
+                  <td>
+                    <ng-container *ngIf="c.direction_avant?.id !== c.direction_apres?.id; else memeDir">
+                      <span class="avant">{{ c.direction_avant?.nom || '—' }}</span> <i class="ti ti-arrow-right"></i> <b>{{ c.direction_apres?.nom || 'aucune' }}</b>
+                    </ng-container>
+                    <ng-template #memeDir><span class="avant">{{ c.direction_apres?.nom || '—' }}</span></ng-template>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="c.manager_change; else memeN1">
+                      <span class="avant">{{ c.manager_avant?.nom || 'aucun' }}</span> <i class="ti ti-arrow-right"></i> <b>{{ c.manager_apres?.nom || 'aucun (RH)' }}</b>
+                    </ng-container>
+                    <ng-template #memeN1><span class="avant">{{ c.manager_apres?.nom || '—' }}</span></ng-template>
+                    <span class="badge-org ambre" *ngIf="c.mode_apres === 'manuel'">manuel</span>
+                  </td>
+                  <td class="num">{{ c.demandes_en_attente || '' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="lignes" *ngIf="resultat.rapport.changements.length > changementsAffiches.length">… et {{ resultat.rapport.changements.length - changementsAffiches.length }} autre(s).</p>
+        </div>
+      </ng-container>
+
+      <div class="modal-error" *ngIf="erreur">{{ erreur }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <ng-container *ngIf="etape === 'fichier'">
+        <button type="button" class="btn-o" (click)="fermer()">Annuler</button>
+        <button type="button" class="btn-p" [disabled]="!fichier || enCours" (click)="analyser()">
+          <span class="spinner-sm" *ngIf="enCours"></span> Analyser le fichier
+        </button>
+      </ng-container>
+      <ng-container *ngIf="etape === 'analyse'">
+        <button type="button" class="btn-o" (click)="recommencer()" [disabled]="enCours"><i class="ti ti-arrow-left"></i> Changer de fichier</button>
+        <button type="button" class="btn-p" [disabled]="!resultat?.applicable || aucunChangement || enCours" (click)="appliquer()">
+          <span class="spinner-sm" *ngIf="enCours"></span> Appliquer l'import
+        </button>
+      </ng-container>
+      <ng-container *ngIf="etape === 'compte_rendu'">
+        <button type="button" class="btn-p" (click)="fermer()">Fermer</button>
+      </ng-container>
+    </div>
+  </div>
+</div>

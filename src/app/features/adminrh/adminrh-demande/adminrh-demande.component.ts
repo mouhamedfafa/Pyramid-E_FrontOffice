@@ -12,6 +12,7 @@ import { CustomPaginationComponent } from '../../../shared/service/custom-pagina
 import { DemandeFormation, DemandeFormationResponse } from '../../../shared/models/formation.models';
 import { DemandeFormationService } from '../../../shared/service/demande/demande-formation.service';
 import { AuthService } from '../../../shared/service/authentification/auth.service';
+import { CircuitDemandeComponent } from '../../../shared/components/circuit-demande/circuit-demande.component';
 
 interface StatutFilter {
   value: string;
@@ -23,7 +24,7 @@ interface StatutFilter {
 @Component({
   selector: 'app-adminrh-demande',
   standalone: true,
-  imports: [RouterLink, FormsModule, CommonModule, MatSortModule, CustomPaginationComponent],
+  imports: [RouterLink, FormsModule, CommonModule, MatSortModule, CustomPaginationComponent, CircuitDemandeComponent],
   templateUrl: './adminrh-demande.component.html',
   styleUrl: './adminrh-demande.component.scss'
 })
@@ -66,7 +67,8 @@ export class AdminrhDemandeComponent implements OnInit {
   // Filtres de statut
   public statutFilters: StatutFilter[] = [
     { value: 'tous', label: 'Tous les statuts', count: 0, color: 'secondary' },
-    { value: 'en_attente', label: 'En attente', count: 0, color: 'warning' },
+    { value: 'en_attente_manager', label: 'En attente manager', count: 0, color: 'info' },
+    { value: 'en_attente', label: 'En attente RH', count: 0, color: 'warning' },
     { value: 'validee', label: 'Validées', count: 0, color: 'success' },
     { value: 'refusee', label: 'Refusées', count: 0, color: 'danger' },
     { value: 'annulee', label: 'Annulées', count: 0, color: 'secondary' }
@@ -131,6 +133,7 @@ export class AdminrhDemandeComponent implements OnInit {
 
           this.stats = {
             total:      this.allDemandes.length,
+            en_attente_manager: this.allDemandes.filter(d => d.statut === 'en_attente_manager').length,
             en_attente: this.allDemandes.filter(d => d.statut === 'en_attente').length,
             validee:    this.allDemandes.filter(d => d.statut === 'validee').length,
             refusee:    this.allDemandes.filter(d => d.statut === 'refusee').length,
@@ -244,9 +247,23 @@ export class AdminrhDemandeComponent implements OnInit {
       filteredData = filteredData.filter(demande => this.matchesSearch(demande, searchValue));
     }
 
-    this.actualData = filteredData;
+    this.actualData = filteredData.sort((a, b) => this.comparerParPriorite(a, b));
     this.totalData = this.actualData.length;
     this.getTableData({ skip: 0, limit: this.pageSize });
+  }
+
+  /**
+   * Demandes non encore validées en tête : à traiter par les RH, puis en attente du manager,
+   * puis les demandes traitées. Au sein d'un même statut, les plus récentes d'abord.
+   */
+  private comparerParPriorite(a: DemandeFormation, b: DemandeFormation): number {
+    const ordre: Record<string, number> = { en_attente: 0, en_attente_manager: 1, validee: 2, refusee: 3, annulee: 4 };
+    const ecart = (ordre[a.statut] ?? 5) - (ordre[b.statut] ?? 5);
+    if (ecart !== 0) return ecart;
+
+    const dateA = Date.parse((a as any).created_at ?? '') || 0;
+    const dateB = Date.parse((b as any).created_at ?? '') || 0;
+    return (dateB - dateA) || (b.id - a.id);
   }
 
   onStatutFilterChange(statut: string): void {
@@ -438,6 +455,7 @@ export class AdminrhDemandeComponent implements OnInit {
 
   getStatutClass(statut: string): string {
     const statutMap: Record<string, string> = {
+      'en_attente_manager': 'badge bg-info',
       'en_attente': 'badge bg-warning',
       'validee': 'badge bg-success',
       'refusee': 'badge bg-danger',
@@ -490,8 +508,9 @@ export class AdminrhDemandeComponent implements OnInit {
     return demande.statut === 'en_attente' && !this.refusingIds.has(demande.id);
   }
 
+  // La validation/refus RH reste limitée à 'en_attente' : une demande 'en_attente_manager' est en lecture seule
   canCancel(demande: DemandeFormation): boolean {
-    return ['en_attente', 'validee'].includes(demande.statut);
+    return ['en_attente_manager', 'en_attente', 'validee'].includes(demande.statut);
   }
 
   trackByDemandeId(index: number, demande: DemandeFormation): number {
@@ -538,6 +557,10 @@ export class AdminrhDemandeComponent implements OnInit {
 
   get demandesEnAttente(): number {
     return this.stats.en_attente || 0;
+  }
+
+  get demandesEnAttenteManager(): number {
+    return this.stats.en_attente_manager || 0;
   }
 
   get demandesValidees(): number {

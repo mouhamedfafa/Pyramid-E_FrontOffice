@@ -255,7 +255,7 @@
             <!-- ACTION -->
             <td class="text-center" (click)="$event.stopPropagation()">
               <div class="d-flex align-items-center justify-content-center gap-2">
-                <ng-container *ngIf="demande.statut === 'en_attente'">
+                <ng-container *ngIf="(demande.statut === 'en_attente' || demande.statut === 'en_attente_manager')">
                   <div class="sc-action-btn sc-action-btn--danger"
                        (click)="annulerDemande(demande.id, $event)"
                        title="Annuler la demande">
@@ -269,7 +269,7 @@
                     <span class="sc-action-btn__tooltip">Relancer la demande</span>
                   </div>
                 </ng-container>
-                <span *ngIf="demande.statut !== 'en_attente'"
+                <span *ngIf="(demande.statut !== 'en_attente' && demande.statut !== 'en_attente_manager')"
                       class="sc-statut-icon"
                       [title]="demande.statut_display">
                   <i class="isax isax-tick-circle sc-statut-icon--validee" *ngIf="demande.statut === 'validee'"></i>
@@ -294,7 +294,7 @@
          *ngFor="let demande of demandes"
          [class.sc-grid-card--validee]="demande.statut === 'validee'"
          [class.sc-grid-card--refusee]="demande.statut === 'refusee'"
-         [class.sc-grid-card--attente]="demande.statut === 'en_attente'"
+         [class.sc-grid-card--attente]="(demande.statut === 'en_attente' || demande.statut === 'en_attente_manager')"
          (click)="ouvrirDetailDemande(demande, $event)">
 
       <!-- Cover -->
@@ -337,7 +337,7 @@
           {{ demande.created_at | date:'dd/MM/yyyy' }}
         </span>
         <div class="sc-grid-card__actions">
-          <ng-container *ngIf="demande.statut === 'en_attente'">
+          <ng-container *ngIf="(demande.statut === 'en_attente' || demande.statut === 'en_attente_manager')">
             <button class="sc-btn-annuler sc-btn--xs" title="Annuler"
                     (click)="annulerDemande(demande.id, $event)">
               <i class="isax isax-close-circle"></i>
@@ -397,6 +397,10 @@
       </div>
 
       <div class="modal-body lms-modal__body">
+        <!-- Circuit de validation : Collaborateur → Manager → RH -->
+        <div class="lms-detail-section mb-3">
+          <app-circuit-demande [demande]="demandeSelectionnee" variante="timeline"></app-circuit-demande>
+        </div>
 
         <div class="lms-detail-chips mb-4">
           <div class="lms-detail-chips__left">
@@ -754,12 +758,12 @@
         </button>
         <div class="d-flex gap-2">
           <button class="btn sc-btn-annuler"
-                  [disabled]="demandeSelectionnee.statut !== 'en_attente'"
+                  [disabled]="(demandeSelectionnee.statut !== 'en_attente' && demandeSelectionnee.statut !== 'en_attente_manager')"
                   (click)="annulerDemande(demandeSelectionnee.id)">
             <i class="isax isax-close-circle me-1"></i>Annuler la demande
           </button>
           <button class="btn sc-btn-relancer"
-                  [disabled]="demandeSelectionnee.statut !== 'en_attente'"
+                  [disabled]="(demandeSelectionnee.statut !== 'en_attente' && demandeSelectionnee.statut !== 'en_attente_manager')"
                   (click)="relancerDemande(demandeSelectionnee.id)">
             <i class="isax isax-refresh me-1"></i>Relancer
           </button>

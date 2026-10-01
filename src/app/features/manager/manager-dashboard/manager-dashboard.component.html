@@ -1,0 +1,151 @@
+<div class="mgr-page">
+
+  <div class="mgr-page-head">
+    <div>
+      <h2><i class="isax isax-grid-3"></i>Tableau de bord de l'équipe</h2>
+      <p>Suivi de la montée en compétences de vos collaborateurs</p>
+    </div>
+    <div class="mgr-chips">
+      <button type="button" class="mgr-chip" [class.active]="perimetre === 'directs'" (click)="setPerimetre('directs')">
+        <i class="isax isax-user"></i>Directs (N-1)
+      </button>
+      <button type="button" class="mgr-chip" [class.active]="perimetre === 'tous'" (click)="setPerimetre('tous')">
+        <i class="isax isax-people"></i>Toute l'équipe
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="mgr-alert"><i class="isax isax-warning-2"></i>{{ error }}</div>
+
+  <ng-container *ngIf="loading && !data">
+    <div class="mgr-skeleton" *ngFor="let i of [1,2,3]"></div>
+  </ng-container>
+
+  <ng-container *ngIf="data">
+
+    <!-- ── KPIs ── -->
+    <div class="mgr-kpis" [class.is-loading]="loading">
+      <div class="mgr-kpi">
+        <div class="mgr-kpi__val">{{ data.kpis.effectif }}</div>
+        <div class="mgr-kpi__lbl"><i class="isax isax-people"></i>Collaborateurs ({{ data.kpis.actifs }} actifs)</div>
+      </div>
+      <div class="mgr-kpi" [class.mgr-kpi--warn]="data.kpis.demandes_a_traiter > 0">
+        <div class="mgr-kpi__val">{{ data.kpis.demandes_a_traiter }}</div>
+        <div class="mgr-kpi__lbl"><i class="isax isax-clock"></i>Demandes à traiter</div>
+      </div>
+      <div class="mgr-kpi mgr-kpi--ok">
+        <div class="mgr-kpi__val">{{ data.kpis.taux_completion_moyen }}%</div>
+        <div class="mgr-kpi__lbl"><i class="isax isax-chart-2"></i>Progression moyenne</div>
+      </div>
+      <div class="mgr-kpi">
+        <div class="mgr-kpi__val">{{ data.kpis.formations_en_cours }}</div>
+        <div class="mgr-kpi__lbl"><i class="isax isax-play-circle"></i>Formations en cours</div>
+      </div>
+      <div class="mgr-kpi" [class.mgr-kpi--danger]="data.kpis.formations_en_retard > 0">
+        <div class="mgr-kpi__val">{{ data.kpis.formations_en_retard }}</div>
+        <div class="mgr-kpi__lbl"><i class="isax isax-danger"></i>Formations en retard</div>
+      </div>
+      <div class="mgr-kpi mgr-kpi--ok">
+        <div class="mgr-kpi__val">{{ data.kpis.certificats }}</div>
+        <div class="mgr-kpi__lbl"><i class="isax isax-medal-star"></i>Certificats obtenus</div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <!-- ── Demandes à traiter ── -->
+      <div class="col-xl-7">
+        <div class="mgr-card h-100">
+          <div class="mgr-card__title">
+            <span><i class="isax isax-task-square"></i>Demandes en attente de votre avis</span>
+            <a [routerLink]="routes.managerDemandes">Tout voir →</a>
+          </div>
+
+          <div *ngIf="!data.demandes_a_traiter.length" class="mgr-empty">
+            <i class="isax isax-tick-circle"></i>Aucune demande en attente. Tout est à jour !
+          </div>
+
+          <div class="dash-demande" *ngFor="let d of data.demandes_a_traiter">
+            <div class="mgr-user">
+              <div class="mgr-user__av">{{ initiales(d.employe) }}</div>
+              <div class="dash-demande__info">
+                <div class="mgr-user__name">{{ nomComplet(d.employe) }}
+                  <span class="mgr-badge mgr-badge--niveau ms-1">{{ libelleNiveau(d.niveau) }}</span>
+                </div>
+                <div class="mgr-user__sub">
+                  <i class="isax" [ngClass]="iconeTypeDemande(d.type_demande)"></i>
+                  {{ libelleTypeDemande(d.type_demande) }} · {{ d.titre }}
+                </div>
+              </div>
+            </div>
+            <div class="dash-demande__meta">
+              <span class="dash-demande__date">{{ d.created_at | date:'dd/MM/yyyy' }}</span>
+              <a [routerLink]="routes.managerDemandes" [queryParams]="{ demande: d.id }" class="mgr-btn mgr-btn--primary mgr-btn--sm">Traiter</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Répartition par niveau ── -->
+      <div class="col-xl-5">
+        <div class="mgr-card h-100">
+          <div class="mgr-card__title">
+            <span><i class="isax isax-hierarchy"></i>Répartition hiérarchique</span>
+            <a [routerLink]="routes.managerEquipe" [queryParams]="{ vue: 'arbre' }">Organigramme →</a>
+          </div>
+          <div class="dash-niveau" *ngFor="let r of data.repartition_niveaux">
+            <span class="mgr-badge mgr-badge--niveau">{{ libelleNiveau(r.niveau) }}</span>
+            <div class="dash-niveau__bar"><div class="dash-niveau__fill" [style.width.%]="largeurNiveau(r.effectif)"></div></div>
+            <span class="dash-niveau__val">{{ r.effectif }}</span>
+          </div>
+
+          <div class="dash-formations">
+            <div><strong>{{ data.kpis.formations_total }}</strong><span>inscriptions</span></div>
+            <div><strong>{{ data.kpis.formations_terminees }}</strong><span>terminées</span></div>
+            <div><strong>{{ data.kpis.formations_non_commencees }}</strong><span>non commencées</span></div>
+            <div><strong>{{ data.kpis.demandes_en_attente_rh }}</strong><span>chez les RH</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Collaborateurs à suivre ── -->
+    <div class="mgr-card">
+      <div class="mgr-card__title">
+        <span><i class="isax isax-flag"></i>Collaborateurs à accompagner</span>
+        <a [routerLink]="routes.managerEquipe">Toute l'équipe →</a>
+      </div>
+      <div *ngIf="!data.collaborateurs_a_suivre.length" class="mgr-empty">
+        <i class="isax isax-people"></i>Aucune formation en cours dans ce périmètre.
+      </div>
+      <div class="mgr-table-wrap" *ngIf="data.collaborateurs_a_suivre.length">
+        <table class="mgr-table">
+          <thead>
+            <tr><th>Collaborateur</th><th>Niveau</th><th>Formations</th><th>Progression</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of data.collaborateurs_a_suivre">
+              <td>
+                <div class="mgr-user">
+                  <div class="mgr-user__av">{{ initiales(c) }}</div>
+                  <div><div class="mgr-user__name">{{ nomComplet(c) }}</div><div class="mgr-user__sub">{{ c.fonction || '—' }}</div></div>
+                </div>
+              </td>
+              <td><span class="mgr-badge mgr-badge--niveau">{{ libelleNiveau(c.niveau) }}</span></td>
+              <td>{{ c.formations_en_cours }} en cours · {{ c.formations_terminees }}/{{ c.formations_total }}</td>
+              <td>
+                <div class="mgr-progress" [ngClass]="classeProgression(c.progression_moyenne)">
+                  <div class="mgr-progress__bar"><div class="mgr-progress__fill" [style.width.%]="c.progression_moyenne"></div></div>
+                  <span class="mgr-progress__val">{{ c.progression_moyenne }}%</span>
+                </div>
+              </td>
+              <td class="text-end">
+                <a [routerLink]="[routes.managerCollaborateur, c.id]" class="mgr-btn mgr-btn--sm"><i class="isax isax-eye"></i>Voir</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

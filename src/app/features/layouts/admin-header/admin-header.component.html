@@ -257,6 +257,19 @@
                       <i class="isax isax-arrow-right-3 trainer-mode-btn__arrow"></i>
                     </a>
 
+                    <!-- Mode manager — tout utilisateur ayant au moins un N-1 -->
+                    <a *ngIf="managerStatut?.is_manager" class="manager-mode-btn" [routerLink]="routes.manager_dashboard">
+                      <span class="manager-mode-btn__icon"><i class="isax isax-hierarchy"></i></span>
+                      <span class="manager-mode-btn__text">
+                        <span class="manager-mode-btn__label">
+                          Mode manager
+                          <span *ngIf="(managerStatut?.demandes_a_traiter ?? 0) > 0" class="manager-mode-btn__count">{{ managerStatut?.demandes_a_traiter }}</span>
+                        </span>
+                        <span class="manager-mode-btn__sub">Suivre et valider pour votre équipe</span>
+                      </span>
+                      <i class="isax isax-arrow-right-3 manager-mode-btn__arrow"></i>
+                    </a>
+
                     <!-- Logout Button -->
                     <button type="button" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center mt-2" (click)="logout()">
                       <i class="isax isax-logout me-2"></i>

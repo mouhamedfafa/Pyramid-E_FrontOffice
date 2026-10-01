@@ -1,0 +1,41 @@
+@use '../common/manager-ui';
+
+.is-loading { opacity: .55; transition: opacity .2s; }
+
+.dash-demande {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f2f4;
+
+  &:last-child { border-bottom: none; }
+  &__info { min-width: 0; }
+  &__meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  &__date { font-size: 11px; color: #6b7280; }
+}
+
+.dash-niveau {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  &__bar  { flex: 1; height: 10px; background: #eef0f4; border-radius: 6px; overflow: hidden; }
+  &__fill { height: 100%; background: linear-gradient(90deg, #6366F1, #4F46E5); border-radius: 6px; }
+  &__val  { font-size: 13px; font-weight: 700; color: #1a1a2e; min-width: 24px; text-align: right; }
+}
+
+.dash-formations {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f2f4;
+
+  div { background: #f8fafc; border-radius: 8px; padding: 10px 12px; }
+  strong { display: block; font-size: 18px; color: #1a1a2e; }
+  span { font-size: 11px; color: #6b7280; }
+}

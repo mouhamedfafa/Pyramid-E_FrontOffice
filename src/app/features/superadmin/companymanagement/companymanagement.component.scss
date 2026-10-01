@@ -612,3 +612,17 @@ $shadow-sm: 0 1px 3px rgba(0,0,0,.08);
 }
 
 .cm-spin { animation: cm-rotate .8s linear infinite; display: inline-block; }
+
+// Taux de complétude de l'organisation (direction + N+1) dans la liste
+.cm-org {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-right: 6px;
+
+  &[data-niveau='ok'] { background: #e1f5ee; color: #0f6e56; }
+  &[data-niveau='moyen'] { background: #faeeda; color: #854f0b; }
+  &[data-niveau='faible'] { background: #fcebeb; color: #a32d2d; }
+}

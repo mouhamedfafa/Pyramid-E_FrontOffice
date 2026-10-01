@@ -1,0 +1,88 @@
+// ── Sélecteur de manager (N+1) ──
+.ua-manager-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  border-radius: 8px;
+  font-size: 13px;
+
+  i { color: #4f46e5; font-size: 16px; }
+  small { color: #6b7280; }
+}
+
+.ua-manager-search { position: relative; }
+
+.ua-manager-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.ua-manager-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid #f3f4f6;
+
+  strong { display: block; color: #1a1a2e; }
+  small { color: #6b7280; }
+  &:hover { background: #eef2ff; }
+}
+
+.ua-manager-empty { padding: 10px 12px; font-size: 12px; color: #6b7280; }
+
+.ua-n1-list { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.ua-n1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f3f4f6;
+  color: #374151;
+
+  i { font-size: 12px; color: #4f46e5; }
+}
+
+// ── Mode du N+1 (automatique selon la direction / manuel) ──
+.ua-mode {
+  display: inline-flex;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: none;
+    background: #fff;
+    font-size: 12px;
+    color: #6b7280;
+    cursor: pointer;
+
+    &.on { background: #eef2ff; color: #4f46e5; font-weight: 600; }
+    & + button { border-left: 1px solid #e5e7eb; }
+  }
+}
+
+.ua-calcule { border-color: #bbf7d0; background: #f0fdf4; i { color: #15803d; } }

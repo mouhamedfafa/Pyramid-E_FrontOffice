@@ -1,0 +1,225 @@
+@use '../organisation' as org;
+
+@include org.boutons;
+@include org.modale;
+@include org.formulaires;
+@include org.badges;
+@include org.spinner;
+
+:host { display: block; }
+
+.btn-o.danger { color: org.$rouge; }
+
+.toast-zone { position: fixed; top: 80px; right: 20px; z-index: 1070; display: grid; gap: 6px; }
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  &.ok { background: org.$vert-clair; color: org.$vert; }
+  &.ko { background: org.$rouge-clair; color: org.$rouge; }
+  button { border: none; background: transparent; color: inherit; font-size: 16px; cursor: pointer; }
+}
+
+// KPI
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.kpi {
+  background: org.$fond;
+  border: 0.5px solid org.$bordure;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  &.alerte { border-color: #f0c98a; }
+}
+.ki { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.ki-g { background: org.$vert-clair; color: org.$vert; }
+.ki-b { background: org.$bleu-clair; color: org.$bleu; }
+.ki-a { background: org.$ambre-clair; color: org.$ambre; }
+.ki-p { background: #eaf3de; color: #3b6d11; }
+.ki-r { background: org.$rouge-clair; color: org.$rouge; }
+.kpi-v { font-size: 18px; font-weight: 500; color: org.$texte; }
+.kpi-l { font-size: 10px; color: org.$texte-2; margin-top: 1px; }
+
+// Disposition
+.disposition {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  min-height: 520px;
+  border: 0.5px solid org.$bordure;
+  border-radius: 12px;
+  overflow: hidden;
+  background: org.$fond;
+}
+.col-arbre { border-right: 0.5px solid org.$bordure; display: flex; flex-direction: column; min-width: 0; }
+.arbre-tete { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 0.5px solid org.$bordure; }
+.arbre-titre { font-size: 12px; font-weight: 500; color: org.$texte; }
+.filtre {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 0.5px solid org.$bordure-2;
+  border-radius: 8px;
+  min-width: 0;
+  i { color: org.$texte-2; font-size: 13px; }
+  input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 12px; color: org.$texte; }
+  &.large { margin-bottom: 10px; padding: 7px 10px; }
+}
+.arbre { flex: 1; overflow: auto; padding: 6px 0; max-height: 640px; }
+
+.noeud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: org.$texte;
+  border-left: 3px solid transparent;
+  &:hover { background: org.$fond-2; }
+  &.actif { background: org.$vert-clair; border-left-color: org.$vert; }
+  &.inactif { opacity: 0.55; }
+}
+.deplier {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: org.$texte-2;
+  i { transition: transform 0.15s; display: inline-block; }
+  i.ouvert { transform: rotate(90deg); }
+}
+.deplier-vide { width: 18px; flex-shrink: 0; }
+.type-icone { font-size: 14px; }
+.type-direction { color: org.$vert; }
+.type-sous_direction { color: org.$bleu; }
+.type-departement { color: org.$ambre; }
+.noeud-nom { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sans-resp { color: #c07a12; font-size: 13px; }
+.noeud-compte { font-size: 11px; color: org.$texte-2; font-variant-numeric: tabular-nums; }
+
+// Fiche
+.col-fiche { min-width: 0; display: flex; flex-direction: column; }
+.fiche-tete { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-bottom: 0.5px solid org.$bordure; flex-wrap: wrap; }
+.fiche-icone { width: 38px; height: 38px; border-radius: 8px; background: org.$vert-clair; color: org.$vert; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.fiche-infos { flex: 1; min-width: 180px; }
+.fiche-nom { font-size: 15px; font-weight: 500; color: org.$texte; display: flex; align-items: center; gap: 8px; }
+.fil { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; font-size: 11px; color: org.$texte-2; margin-top: 3px; i { font-size: 10px; } }
+.fil-lien { border: none; background: transparent; padding: 0; font-size: 11px; color: org.$bleu; cursor: pointer; &.courant { color: org.$texte-2; cursor: default; } }
+.fiche-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.fiche-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 12px 16px; }
+.stat { background: org.$fond-2; border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.stat-v { font-size: 13px; font-weight: 500; color: org.$texte; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-l { font-size: 10px; color: org.$texte-2; margin-top: 2px; }
+
+.info-resp {
+  margin: 0 16px 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: org.$ambre-clair;
+  color: org.$ambre;
+  font-size: 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.onglets { display: flex; gap: 4px; padding: 0 16px; border-bottom: 0.5px solid org.$bordure; }
+.onglets button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  color: org.$texte-2;
+  cursor: pointer;
+  &.on { color: org.$vert; border-bottom-color: org.$vert; font-weight: 500; }
+}
+.onglet-corps { padding: 12px 16px; overflow: auto; }
+
+.table-wrap { overflow-x: auto; }
+.table-membres {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  th { text-align: left; font-weight: 500; color: org.$texte-2; padding: 6px 8px; border-bottom: 0.5px solid org.$bordure; }
+  td { padding: 8px; border-bottom: 0.5px solid org.$bordure; color: org.$texte; vertical-align: middle; }
+}
+.membre { display: flex; align-items: center; gap: 8px; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: org.$vert-clair; color: org.$vert; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.membre-nom { font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.membre-sous { font-size: 11px; color: org.$texte-2; }
+.td-actions { text-align: right; }
+.icone-btn { width: 26px; height: 26px; border: 0.5px solid org.$bordure-2; border-radius: 6px; background: transparent; color: org.$rouge; cursor: pointer; }
+
+.cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.carte {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0.5px solid org.$bordure;
+  border-radius: 8px;
+  background: org.$fond;
+  cursor: pointer;
+  text-align: left;
+  &:hover { background: org.$fond-2; }
+  &.ajout { justify-content: center; border-style: dashed; color: org.$texte-2; font-size: 12px; }
+}
+.carte-infos { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.carte-nom { font-size: 13px; font-weight: 500; color: org.$texte; }
+.carte-sous { font-size: 11px; color: org.$texte-2; }
+
+.vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: org.$texte-2;
+  font-size: 13px;
+  text-align: center;
+  i { font-size: 28px; }
+  p { margin: 0; }
+  &.petit { padding: 20px 12px; }
+}
+
+.liste-employes { display: grid; gap: 4px; max-height: 380px; overflow: auto; }
+.employe {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 0.5px solid org.$bordure;
+  border-radius: 8px;
+  background: org.$fond;
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  &.choisi { border-color: org.$vert; background: org.$vert-clair; }
+  i { font-size: 15px; color: org.$vert; }
+}
+.employe-nom { font-weight: 500; color: org.$texte; }
+.employe-sous { flex: 1; color: org.$texte-2; }
+.compte { margin-right: auto; font-size: 12px; color: org.$texte-2; }
+
+@media (max-width: 992px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .disposition { grid-template-columns: 1fr; }
+  .col-arbre { border-right: none; border-bottom: 0.5px solid org.$bordure; }
+  .arbre { max-height: 320px; }
+  .fiche-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -2,6 +2,12 @@ import { AdminrhDemandeComponent } from "../../../features/adminrh/adminrh-deman
 import { AdminrhStatementsComponent } from "../../../features/adminrh/adminrh-statements/adminrh-statements.component";
 
 export const routes = {
+  // Manager Routes (hiérarchie N+1 / N-1, tout rôle)
+  manager_dashboard: '/manager/manager-dashboard',
+  managerEquipe: '/manager/manager-equipe',
+  managerCollaborateur: '/manager/manager-collaborateur',
+  managerDemandes: '/manager/manager-demandes',
+
   // Instructor Routes
   instructor: '/instructor/',
   instructor_dashboard: '/instructor/instructor-dashboard',
@@ -211,6 +217,7 @@ export const routes = {
   adminrhDemandeCatalogue: '/adminrh/adminrh-demande-catalogue',
   adminrhSession: '/adminrh/adminrh-session',  // ✅ lead
   adminrhDirection: '/adminrh/adminrh-direction',
+  adminrhOrganigramme: '/adminrh/adminrh-organigramme',
   adminrhCourse: '/adminrh/adminrh-course',
   adminrhCategorie: '/adminrh/adminrh-categorie',
   adminrhCatalogue: '/adminrh/adminrh-catalogue',

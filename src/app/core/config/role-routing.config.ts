@@ -33,9 +33,10 @@ export const ROLE_ROUTING: RoleRoutingConfig[] = [
 
 // Layouts autorisés par préfixe de route
 // Tous les profils non-employé peuvent accéder à /student (mode apprenant) et /courses
+// /manager : tout profil peut être N+1 — l'accès réel est contrôlé par managerGuard (hiérarchie)
 export const LAYOUT_ROUTE_PREFIXES: Record<LayoutType, string[]> = {
-  superadmin: ['/superadmin', '/student', '/instructor', '/courses'],
-  adminrh:    ['/adminrh',    '/student', '/instructor', '/courses'],
-  formateur:  ['/instructor', '/student',               '/courses'],
-  employe:    ['/student',                              '/courses'],
+  superadmin: ['/superadmin', '/student', '/instructor', '/courses', '/manager'],
+  adminrh:    ['/adminrh',    '/student', '/instructor', '/courses', '/manager'],
+  formateur:  ['/instructor', '/student',               '/courses', '/manager'],
+  employe:    ['/student',                              '/courses', '/manager'],
 };

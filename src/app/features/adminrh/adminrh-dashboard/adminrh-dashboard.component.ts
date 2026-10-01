@@ -7,6 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { AdminRHStatsService, AdminRHDashboardStats } from '../../../shared/service/stat/adminrh-stat.service';
 import { routes } from '../../../shared/service/routes/routes';
+import { CompletudeOrganisationComponent } from '../../../shared/components/organisation/completude-organisation/completude-organisation.component';
 
 export interface FormationRecente {
   id: string | number;
@@ -49,7 +50,8 @@ export interface AdminRHDashboardMetrics {
   imports: [
     CommonModule,
     NgApexchartsModule,
-    RouterModule
+    RouterModule,
+    CompletudeOrganisationComponent
   ],
   providers: [DecimalPipe],
   templateUrl: './adminrh-dashboard.component.html',

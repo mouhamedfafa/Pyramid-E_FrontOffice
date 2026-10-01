@@ -6,6 +6,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { HasPermissionDirective } from '../../../../directive/has-permission-directive.directive';
 import { AuthService } from '../../../../shared/service/authentification/auth.service';
 import { RoleRedirectService } from '../../../../shared/service/role/role-redirect.service';
+import { ManagerService } from '../../../../shared/service/manager/manager.service';
+import { ManagerStatut } from '../../../../shared/models/manager.models';
 
 @Component({
     selector: 'app-superadmin-sidebar',
@@ -19,6 +21,7 @@ export class SuperadminSidebarComponent implements OnInit {
   public page = '';
   public last = '';
   currentUser: any;
+  managerStatut: ManagerStatut | null = null;
 
   openGroups: Record<string, boolean> = {
     utilisateurs: true,
@@ -52,6 +55,7 @@ export class SuperadminSidebarComponent implements OnInit {
     private common: CommonService,
     private auth: AuthService,
     private roleRedirectService: RoleRedirectService,
+    private managerService: ManagerService,
   ) {
     this.common.base.subscribe((base: string) => { this.base = base; });
     this.common.page.subscribe((page: string) => { this.page = page; });
@@ -60,6 +64,7 @@ export class SuperadminSidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();
+    this.managerService.getStatut(true).subscribe(s => this.managerStatut = s);
   }
 
   logout(): void {

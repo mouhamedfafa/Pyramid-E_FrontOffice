@@ -524,6 +524,35 @@
   &__arrow { color: #8b5cf6; }
 }
 
+.manager-mode-btn {
+  @include mode-btn-base;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border: 1px solid #a5b4fc;
+
+  &:hover {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    border-color: #818cf8;
+    box-shadow: 0 4px 12px rgba(79,70,229,.2);
+  }
+
+  &__icon  { background: #4f46e5; }
+  &__label { color: #1e1b4b; }
+  &__sub   { color: #4338ca; }
+  &__arrow { color: #4f46e5; }
+
+  &__count {
+    display: inline-block;
+    margin-left: 4px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 0 6px;
+    vertical-align: middle;
+  }
+}
+
 // Auth Buttons
 .auth-buttons {
   .btn {

@@ -1,0 +1,105 @@
+<div class="modal-overlay" *ngIf="visible" (click)="fermer.emit()">
+  <div class="modal-box modal-lg" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="titre">
+    <div class="modal-header">
+      <h3>{{ titre }}</h3>
+      <button class="modal-close" type="button" (click)="fermer.emit()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="chargement" *ngIf="chargement"><div class="spinner"></div> Calcul de l'impact…</div>
+
+      <ng-container *ngIf="!chargement && rapport">
+        <p class="intro" *ngIf="!lectureSeule && !aucunImpact">Voici ce qui changera si vous confirmez :</p>
+
+        <div class="resume">
+          <span class="badge-org bleu"><i class="ti ti-user-check"></i> {{ rapport.resume.nb_changements_manager }} N+1 modifié(s)</span>
+          <span class="badge-org gris" *ngIf="rapport.resume.nb_changements_direction"><i class="ti ti-building"></i> {{ rapport.resume.nb_changements_direction }} changement(s) de rattachement</span>
+          <span class="badge-org ambre" *ngIf="rapport.resume.nb_demandes_transferees"><i class="ti ti-file-text"></i> {{ rapport.resume.nb_demandes_transferees }} demande(s) en attente transférée(s)</span>
+          <span class="badge-org rouge" *ngIf="rapport.resume.nb_blocages"><i class="ti ti-alert-triangle"></i> {{ rapport.resume.nb_blocages }} exception(s)</span>
+        </div>
+
+        <div class="vide" *ngIf="aucunImpact">
+          <i class="ti ti-circle-check"></i>
+          <span>Aucun impact sur les rattachements ni sur les N+1.</span>
+        </div>
+
+        <div class="section" *ngIf="rapport.entites.length">
+          <div class="section-titre">Entités</div>
+          <div class="ligne-entite" *ngFor="let e of rapport.entites">
+            <strong>{{ e.entite.nom }}</strong>
+            <span *ngIf="e.responsable_avant?.id !== e.responsable_apres?.id">
+              responsable : {{ e.responsable_avant?.nom || 'aucun' }} <i class="ti ti-arrow-right"></i> <b>{{ e.responsable_apres?.nom || 'aucun' }}</b>
+            </span>
+            <span *ngIf="e.parent_avant?.id !== e.parent_apres?.id">
+              rattachée à : {{ e.parent_avant?.nom || 'racine' }} <i class="ti ti-arrow-right"></i> <b>{{ e.parent_apres?.nom || 'racine' }}</b>
+            </span>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="rapport.changements.length">
+          <div class="section-titre">Collaborateurs</div>
+          <div class="table-wrap">
+            <table class="table-rapport">
+              <thead>
+                <tr>
+                  <th>Collaborateur</th>
+                  <th>Rattachement</th>
+                  <th>N+1</th>
+                  <th>Mode</th>
+                  <th class="num">Demandes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of rapport.changements">
+                  <td>
+                    {{ c.user.nom }}
+                    <span class="badge-org ambre" *ngIf="c.reaffectation_forcee" title="N+1 manuel réaffecté d'office : à vérifier">à vérifier</span>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="c.direction_avant?.id !== c.direction_apres?.id; else memeDirection">
+                      <span class="avant">{{ c.direction_avant?.nom || '—' }}</span>
+                      <i class="ti ti-arrow-right"></i>
+                      <b>{{ c.direction_apres?.nom || 'aucune' }}</b>
+                    </ng-container>
+                    <ng-template #memeDirection><span class="avant">{{ c.direction_apres?.nom || '—' }}</span></ng-template>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="c.manager_change; else memeManager">
+                      <span class="avant">{{ c.manager_avant?.nom || 'aucun' }}</span>
+                      <i class="ti ti-arrow-right"></i>
+                      <b>{{ c.manager_apres?.nom || 'aucun (RH)' }}</b>
+                    </ng-container>
+                    <ng-template #memeManager><span class="avant">{{ c.manager_apres?.nom || '—' }}</span></ng-template>
+                  </td>
+                  <td>
+                    <span *ngIf="c.mode_avant !== c.mode_apres">{{ modeLibelle(c.mode_avant) }} <i class="ti ti-arrow-right"></i> </span>
+                    <span class="badge-org" [ngClass]="c.mode_apres === 'manuel' ? 'ambre' : 'vert'">{{ modeLibelle(c.mode_apres) }}</span>
+                  </td>
+                  <td class="num">{{ c.demandes_en_attente || '' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="rapport.blocages.length">
+          <div class="section-titre rouge">Exceptions (non appliquées)</div>
+          <div class="blocage" *ngFor="let b of rapport.blocages">
+            <i class="ti ti-alert-triangle"></i>
+            <span><b>{{ b.user?.nom }}</b> : {{ b.message }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="modal-error" *ngIf="erreur">{{ erreur }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-o" (click)="fermer.emit()">{{ lectureSeule ? 'Fermer' : 'Annuler' }}</button>
+      <button type="button" class="btn-p" *ngIf="!lectureSeule" [disabled]="chargement || enCours || !rapport" (click)="confirmer.emit()">
+        <span class="spinner-sm" *ngIf="enCours"></span>
+        {{ libelleConfirmer }}
+      </button>
+    </div>
+  </div>
+</div>

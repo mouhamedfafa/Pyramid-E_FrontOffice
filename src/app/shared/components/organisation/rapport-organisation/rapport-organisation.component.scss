@@ -1,0 +1,72 @@
+@use '../organisation' as org;
+
+@include org.boutons;
+@include org.modale;
+@include org.badges;
+@include org.spinner;
+
+.intro { font-size: 13px; color: org.$texte-2; margin: 0 0 10px; }
+.resume { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+
+.vide {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 8px;
+  background: org.$vert-clair;
+  color: org.$vert;
+  font-size: 13px;
+}
+
+.section { margin-top: 14px; }
+.section-titre {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: org.$texte-2;
+  margin-bottom: 6px;
+  &.rouge { color: org.$rouge; }
+}
+
+.ligne-entite {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 0.5px solid org.$bordure;
+  color: org.$texte;
+}
+
+.table-wrap { overflow-x: auto; }
+.table-rapport {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  th {
+    text-align: left;
+    font-weight: 500;
+    color: org.$texte-2;
+    padding: 6px 8px;
+    border-bottom: 0.5px solid org.$bordure;
+    white-space: nowrap;
+  }
+  td { padding: 7px 8px; border-bottom: 0.5px solid org.$bordure; color: org.$texte; vertical-align: middle; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .avant { color: org.$texte-2; }
+  i { font-size: 11px; color: org.$texte-2; margin: 0 2px; }
+}
+
+.blocage {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12px;
+  padding: 7px 10px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: org.$rouge-clair;
+  color: org.$rouge;
+}

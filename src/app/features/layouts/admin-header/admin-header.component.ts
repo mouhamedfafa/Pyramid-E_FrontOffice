@@ -13,6 +13,8 @@ import { HasPermissionDirective } from '../../../directive/has-permission-direct
 import { AdminrhThemeService } from '../../adminrh/common/adminrh-theme.service';
 import { InstructorThemeService } from '../../instructor/common/instructor-theme.service';
 import { StudentThemeService } from '../../student/common/student-theme.service';
+import { ManagerService } from '../../../shared/service/manager/manager.service';
+import { ManagerStatut } from '../../../shared/models/manager.models';
 
 @Component({
     selector: 'app-admin-header',
@@ -50,6 +52,8 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
   headerThemeClass = '';
   private themeSub?: Subscription;
   private navSub?: Subscription;
+  private managerSub?: Subscription;
+  managerStatut: ManagerStatut | null = null;
 
    constructor(
      private common: CommonService,
@@ -61,6 +65,7 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
      private adminrhTheme: AdminrhThemeService,
      private instructorTheme: InstructorThemeService,
      private studentTheme: StudentThemeService,
+     private managerService: ManagerService,
    ) {
      this.common.base.subscribe((res: string) => {
        this.base = res;
@@ -124,11 +129,15 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => this.updateHeaderTheme(e.urlAfterRedirects || e.url));
+    // Statut partagé avec les sidebars (mis à jour par elles et par le guard)
+    this.managerSub = this.managerService.statut$.subscribe(s => this.managerStatut = s);
+    if (this.isLoggedIn) this.managerService.getStatut().subscribe();
   }
 
   ngOnDestroy(): void {
     this.themeSub?.unsubscribe();
     this.navSub?.unsubscribe();
+    this.managerSub?.unsubscribe();
   }
 
   private updateHeaderTheme(url: string): void {

@@ -1,4 +1,5 @@
 
+import { CircuitDemandeComponent } from '../../../shared/components/circuit-demande/circuit-demande.component';
 import { Component, OnInit } from '@angular/core';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -22,7 +23,7 @@ interface StatutFilter {
 @Component({
   selector: 'app-adminrh-demande-session',
   standalone: true,
-  imports: [RouterLink, FormsModule, CommonModule, MatSortModule, CustomPaginationComponent],
+  imports: [RouterLink, FormsModule, CommonModule, MatSortModule, CustomPaginationComponent, CircuitDemandeComponent],
    templateUrl: './adminrh-demande-session.component.html',
   styleUrl: './adminrh-demande-session.component.scss'
 })
@@ -62,7 +63,8 @@ export class AdminrhDemandeSessionComponent implements OnInit {
   // Filtres de statut
   public statutFilters: StatutFilter[] = [
     { value: 'tous', label: 'Tous les statuts', count: 0, color: 'secondary' },
-    { value: 'en_attente', label: 'En attente', count: 0, color: 'warning' },
+    { value: 'en_attente_manager', label: 'En attente manager', count: 0, color: 'info' },
+    { value: 'en_attente', label: 'En attente RH', count: 0, color: 'warning' },
     { value: 'validee', label: 'Validées', count: 0, color: 'success' },
     { value: 'refusee', label: 'Refusées', count: 0, color: 'danger' },
     { value: 'annulee', label: 'Annulées', count: 0, color: 'secondary' }
@@ -124,6 +126,7 @@ export class AdminrhDemandeSessionComponent implements OnInit {
 
           this.stats = {
             total:      sessionDemandes.length,
+            en_attente_manager: sessionDemandes.filter(d => d.statut === 'en_attente_manager').length,
             en_attente: sessionDemandes.filter(d => d.statut === 'en_attente').length,
             validees:   sessionDemandes.filter(d => d.statut === 'validee').length,
             refusees:   sessionDemandes.filter(d => d.statut === 'refusee').length,
@@ -162,6 +165,7 @@ export class AdminrhDemandeSessionComponent implements OnInit {
   private updateStatutFilters(): void {
     const statsMap: Record<string, string> = {
       'tous':       'total',
+      'en_attente_manager': 'en_attente_manager',
       'en_attente': 'en_attente',
       'validee':    'validees',
       'refusee':    'refusees',
@@ -418,6 +422,7 @@ export class AdminrhDemandeSessionComponent implements OnInit {
 
   getStatutClass(statut: string): string {
     const statutMap: Record<string, string> = {
+      'en_attente_manager': 'badge bg-info',
       'en_attente': 'badge bg-warning',
       'validee': 'badge bg-success',
       'refusee': 'badge bg-danger',
@@ -464,7 +469,7 @@ export class AdminrhDemandeSessionComponent implements OnInit {
   }
 
   canCancel(demande: DemandeFormation): boolean {
-    return ['en_attente', 'validee'].includes(demande.statut);
+    return ['en_attente_manager', 'en_attente', 'validee'].includes(demande.statut);
   }
 
   trackByDemandeId(index: number, demande: DemandeFormation): number {
@@ -511,6 +516,10 @@ export class AdminrhDemandeSessionComponent implements OnInit {
 
   get demandesEnAttente(): number {
     return this.stats.en_attente || 0;
+  }
+
+  get demandesEnAttenteManager(): number {
+    return this.stats.en_attente_manager || 0;
   }
 
   get demandesValidees(): number {

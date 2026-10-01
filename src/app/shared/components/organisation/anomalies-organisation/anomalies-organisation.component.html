@@ -1,0 +1,68 @@
+<div class="anomalies">
+  <div class="entete">
+    <div>
+      <div class="titre">Contrôle de l'organisation</div>
+      <div class="sous-titre" *ngIf="anomalies">
+        <ng-container *ngIf="anomalies.total; else toutVaBien">{{ anomalies.total }} point(s) à examiner</ng-container>
+        <ng-template #toutVaBien>Aucune anomalie détectée</ng-template>
+      </div>
+    </div>
+    <div class="actions" *ngIf="peutGerer">
+      <label class="case" title="Les collaborateurs en N+1 manuel dont le N+1 correspond déjà à la structure passent en automatique">
+        <input type="checkbox" [(ngModel)]="basculerAuto" /> Inclure les manuels conformes
+      </label>
+      <button type="button" class="btn-o btn-sm" (click)="previsualiserSynchronisation()">
+        <i class="ti ti-refresh"></i> Synchroniser les N+1
+      </button>
+    </div>
+  </div>
+
+  <div class="chargement" *ngIf="chargement"><div class="spinner"></div></div>
+  <div class="modal-error" *ngIf="erreur">{{ erreur }}</div>
+
+  <div class="liste" *ngIf="anomalies && !chargement">
+    <ng-container *ngFor="let c of categories">
+      <div class="cat" *ngIf="compteur(c.cle)" [class.ouverte]="ouverte === c.cle">
+        <button type="button" class="cat-tete" (click)="basculer(c.cle)" [attr.aria-expanded]="ouverte === c.cle">
+          <span class="badge-org" [ngClass]="c.couleur"><i class="ti" [ngClass]="c.icone"></i> {{ compteur(c.cle) }}</span>
+          <span class="cat-libelle">{{ c.libelle }}</span>
+          <i class="ti ti-chevron-down chevron"></i>
+        </button>
+        <div class="cat-corps" *ngIf="ouverte === c.cle">
+          <p class="aide">{{ c.aide }}</p>
+
+          <ng-container *ngIf="c.cle === 'entites_sans_responsable'; else listeUtilisateurs">
+            <button type="button" class="ligne" *ngFor="let e of anomalies.entites_sans_responsable" (click)="entiteSelectionnee.emit(e.id)">
+              <i class="ti ti-building"></i> <span class="nom">{{ e.nom }}</span>
+            </button>
+          </ng-container>
+
+          <ng-template #listeUtilisateurs>
+            <button type="button" class="ligne" *ngFor="let u of lignes(c.cle)" (click)="utilisateurSelectionne.emit(u.id)">
+              <span class="nom">{{ u.nom }}</span>
+              <span class="meta">{{ u.direction?.nom || 'sans direction' }}</span>
+              <span class="meta" *ngIf="u.manager_attendu !== undefined">
+                {{ u.manager?.nom || 'aucun' }} <i class="ti ti-arrow-right"></i> {{ u.manager_attendu?.nom || 'aucun' }}
+              </span>
+              <span class="meta" *ngIf="u.manager_attendu === undefined && u.manager">N+1 : {{ u.manager.nom }}</span>
+            </button>
+            <p class="aide" *ngIf="lignes(c.cle).length < compteur(c.cle)">… et {{ compteur(c.cle) - lignes(c.cle).length }} autre(s)</p>
+          </ng-template>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<app-rapport-organisation
+  [visible]="modaleVisible"
+  [titre]="compteRendu ? 'Synchronisation effectuée' : 'Synchroniser les N+1 avec la structure'"
+  [rapport]="rapport"
+  [chargement]="calcul"
+  [enCours]="enCours"
+  [erreur]="erreurSync"
+  [lectureSeule]="compteRendu"
+  libelleConfirmer="Appliquer la synchronisation"
+  (confirmer)="confirmerSynchronisation()"
+  (fermer)="modaleVisible = false">
+</app-rapport-organisation>

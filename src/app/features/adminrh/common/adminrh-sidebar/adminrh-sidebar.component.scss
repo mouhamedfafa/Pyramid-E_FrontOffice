@@ -468,4 +468,11 @@ $radius: 8px;
     margin-bottom: 2px;
     &:hover { background: rgba(139,92,246,.12); color: #a78bfa; border-color: rgba(139,92,246,.4); }
   }
+
+  &.sb-manager-switch {
+    color: rgba(129,140,248,.85);
+    border: 1px solid rgba(129,140,248,.25);
+    margin-bottom: 2px;
+    &:hover { background: rgba(129,140,248,.12); color: #a5b4fc; border-color: rgba(129,140,248,.45); }
+  }
 }

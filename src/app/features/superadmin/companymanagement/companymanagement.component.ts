@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { ClientCompanyService } from '../../../shared/service/client/client-company.service';
 import { CompanyAddComponent } from '../company-add/company-add.component';
 import { FormationService } from '../../../shared/service/formation/formation.service';
+import { OrganisationService, ResumeOrganisation } from '../../../shared/service/organisation/organisation.service';
 
 @Component({
   selector: 'app-companymanagement',
@@ -57,9 +58,11 @@ export class CompanyManagementComponent {
     private router: Router,
     private pagination: PaginationService,
     private clientCompanyService: ClientCompanyService,
-    private formationService: FormationService
+    private formationService: FormationService,
+    private organisationService: OrganisationService
   ) {
     this.getCompanyList();
+    this.chargerResumeOrganisation();
     this.pagination.tablePageSize.subscribe((res: tablePageSize) => {
       if (this.router.url == '/superadmin/company-management' || this.router.url.includes('superadmin-companymanagement')) {
         this.getTableData({ skip: res.skip, limit: res.limit });
@@ -181,6 +184,21 @@ private getCompanyList() {
   // Rechargement des données
   refreshData() {
     this.getCompanyList();
+    this.chargerResumeOrganisation();
+  }
+
+  // ── Complétude de l'organisation (un seul appel agrégé pour toutes les entreprises) ──
+  resumeOrganisation: Record<number, ResumeOrganisation> = {};
+
+  private chargerResumeOrganisation(): void {
+    this.organisationService.resume().subscribe({
+      next: (res) => (this.resumeOrganisation = res.resume || {}),
+      error: () => (this.resumeOrganisation = {}),
+    });
+  }
+
+  niveauOrganisation(taux: number): 'ok' | 'moyen' | 'faible' {
+    return taux >= 90 ? 'ok' : taux >= 50 ? 'moyen' : 'faible';
   }
 
   public searchData(value: string): void {

@@ -1,0 +1,195 @@
+<div class="mgr-page">
+
+  <div class="mgr-page-head">
+    <div>
+      <h2><i class="isax isax-people"></i>Mon équipe</h2>
+      <p>Vos collaborateurs directs et indirects (N-1, N-2…)</p>
+    </div>
+    <div class="mgr-chips">
+      <button type="button" class="mgr-chip" [class.active]="vue === 'liste'" (click)="setVue('liste')">
+        <i class="isax isax-row-vertical"></i>Liste
+      </button>
+      <button type="button" class="mgr-chip" [class.active]="vue === 'arbre'" (click)="setVue('arbre')">
+        <i class="isax isax-hierarchy"></i>Organigramme
+      </button>
+      <button type="button" class="mgr-chip" [class.active]="vue === 'graphique'" (click)="setVue('graphique')">
+        <i class="isax isax-diagram"></i>Graphique
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════ VUE GRAPHIQUE (lecture seule) ════════════════ -->
+  <div *ngIf="vue === 'graphique'">
+    <app-organigramme
+      source="manager"
+      [vue]="vueGraphique"
+      [afficherBascule]="estResponsableEntite"
+      [editable]="false"
+      (vueChange)="vueGraphique = $event">
+    </app-organigramme>
+    <p class="text-muted small mt-2 mb-0" *ngIf="estResponsableEntite">
+      « Structure » affiche les entités dont vous êtes responsable, avec leurs effectifs.
+    </p>
+  </div>
+
+  <div *ngIf="error" class="mgr-alert"><i class="isax isax-warning-2"></i>{{ error }}</div>
+
+  <!-- ════════════════ VUE LISTE ════════════════ -->
+  <div class="mgr-card" *ngIf="vue === 'liste'">
+    <div class="mgr-toolbar mb-3">
+      <div class="mgr-search">
+        <i class="isax isax-search-normal-1"></i>
+        <input type="search" placeholder="Rechercher (nom, email, matricule, fonction)…"
+               [ngModel]="search" (ngModelChange)="onSearch($event)">
+      </div>
+
+      <div class="mgr-chips" *ngIf="niveaux.length > 1">
+        <button type="button" class="mgr-chip" [class.active]="niveauFiltre === null" (click)="setNiveau(null)">Tous</button>
+        <button type="button" class="mgr-chip" *ngFor="let n of niveaux"
+                [class.active]="niveauFiltre === n" (click)="setNiveau(n)">{{ libelleNiveau(n) }}</button>
+      </div>
+
+      <select class="mgr-select" [ngModel]="statutFiltre" (ngModelChange)="setStatut($event)">
+        <option value="">Tous les statuts</option>
+        <option value="actif">Actifs</option>
+        <option value="inactif">Inactifs</option>
+      </select>
+    </div>
+
+    <ng-container *ngIf="loading">
+      <div class="mgr-skeleton" *ngFor="let i of [1,2,3,4,5]"></div>
+    </ng-container>
+
+    <div class="mgr-table-wrap" *ngIf="!loading">
+      <table class="mgr-table">
+        <thead>
+          <tr>
+            <th>Collaborateur</th>
+            <th>Niveau</th>
+            <th>Manager direct</th>
+            <th>Direction</th>
+            <th>Formations</th>
+            <th>Progression</th>
+            <th>Statut</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of collaborateurs; trackBy: trackById">
+            <td>
+              <div class="mgr-user">
+                <div class="mgr-user__av">{{ initiales(c) }}</div>
+                <div>
+                  <div class="mgr-user__name">{{ nomComplet(c) }}</div>
+                  <div class="mgr-user__sub">{{ c.fonction || c.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="mgr-badge mgr-badge--niveau">{{ libelleNiveau(c.niveau) }}</span>
+              <span class="eq-sub-count" *ngIf="c.collaborateurs_count" title="Manage lui-même des collaborateurs">
+                <i class="isax isax-hierarchy"></i>{{ c.collaborateurs_count }}
+              </span>
+            </td>
+            <td class="eq-meta">{{ c.niveau === 1 ? 'Moi' : nomComplet(c.manager) }}</td>
+            <td class="eq-meta">{{ c.direction || '—' }}</td>
+            <td class="eq-meta">{{ c.formations_en_cours }} en cours · {{ c.formations_terminees }}/{{ c.formations_total }}</td>
+            <td>
+              <div class="mgr-progress" [ngClass]="classeProgression(c.progression_moyenne)">
+                <div class="mgr-progress__bar"><div class="mgr-progress__fill" [style.width.%]="c.progression_moyenne"></div></div>
+                <span class="mgr-progress__val">{{ c.progression_moyenne }}%</span>
+              </div>
+            </td>
+            <td>
+              <span class="mgr-badge" [ngClass]="c.statut === 1 ? 'mgr-badge--actif' : 'mgr-badge--inactif'">
+                {{ c.statut === 1 ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <a [routerLink]="[routes.managerCollaborateur, c.id]" class="mgr-btn mgr-btn--sm"><i class="isax isax-eye"></i>Voir</a>
+            </td>
+          </tr>
+          <tr *ngIf="!collaborateurs.length">
+            <td colspan="8"><div class="mgr-empty"><i class="isax isax-people"></i>Aucun collaborateur ne correspond à ces critères.</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mgr-pager" *ngIf="!loading && lastPage > 1">
+      <span>{{ total }} collaborateur{{ total > 1 ? 's' : '' }} · page {{ page }}/{{ lastPage }}</span>
+      <div class="d-flex gap-2">
+        <button type="button" class="mgr-btn mgr-btn--sm" [disabled]="page <= 1" (click)="allerPage(page - 1)">
+          <i class="isax isax-arrow-left-2"></i>Précédent
+        </button>
+        <button type="button" class="mgr-btn mgr-btn--sm" [disabled]="page >= lastPage" (click)="allerPage(page + 1)">
+          Suivant<i class="isax isax-arrow-right-3"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ VUE ORGANIGRAMME ════════════════ -->
+  <div class="mgr-card" *ngIf="vue === 'arbre'">
+    <div class="mgr-card__title">
+      <span><i class="isax isax-hierarchy"></i>Organigramme</span>
+      <span class="d-flex gap-2">
+        <button type="button" class="mgr-btn mgr-btn--sm" (click)="toutDeplier()"><i class="isax isax-maximize-4"></i>Tout déplier</button>
+        <button type="button" class="mgr-btn mgr-btn--sm" (click)="toutReplier()"><i class="isax isax-minus-square"></i>Tout replier</button>
+      </span>
+    </div>
+
+    <ng-container *ngIf="loadingArbre">
+      <div class="mgr-skeleton" *ngFor="let i of [1,2,3]"></div>
+    </ng-container>
+
+    <div class="eq-tree" *ngIf="!loadingArbre && racine">
+      <div class="eq-node eq-node--root">
+        <div class="mgr-user">
+          <div class="mgr-user__av eq-av-root">{{ initiales(racine) }}</div>
+          <div>
+            <div class="mgr-user__name">{{ racine.name }} <span class="mgr-badge mgr-badge--niveau ms-1">Moi</span></div>
+            <div class="mgr-user__sub">{{ racine.fonction || 'Manager' }}</div>
+          </div>
+        </div>
+      </div>
+      <ng-container *ngTemplateOutlet="branche; context: { $implicit: racine.enfants }"></ng-container>
+    </div>
+  </div>
+
+  <ng-template #branche let-noeuds>
+    <ul class="eq-branch">
+      <li *ngFor="let n of noeuds; trackBy: trackById">
+        <div class="eq-node">
+          <button type="button" class="eq-toggle" *ngIf="n.enfants.length" (click)="toggleNoeud(n.id)"
+                  [attr.aria-label]="estReplie(n.id) ? 'Déplier' : 'Replier'">
+            <i class="isax" [ngClass]="estReplie(n.id) ? 'isax-add-square' : 'isax-minus-square'"></i>
+          </button>
+          <span class="eq-toggle-spacer" *ngIf="!n.enfants.length"></span>
+
+          <div class="mgr-user flex-grow-1">
+            <div class="mgr-user__av">{{ initiales(n) }}</div>
+            <div class="min-w-0">
+              <div class="mgr-user__name">
+                {{ nomComplet(n) }}
+                <span class="mgr-badge mgr-badge--niveau ms-1">{{ libelleNiveau(n.niveau) }}</span>
+                <span class="mgr-badge mgr-badge--inactif ms-1" *ngIf="n.statut !== 1">Inactif</span>
+              </div>
+              <div class="mgr-user__sub">{{ n.fonction || '—' }}<span *ngIf="n.enfants.length"> · {{ n.enfants.length }} N-1</span></div>
+            </div>
+          </div>
+
+          <div class="mgr-progress eq-node-progress" [ngClass]="classeProgression(n.progression_moyenne ?? 0)">
+            <div class="mgr-progress__bar"><div class="mgr-progress__fill" [style.width.%]="n.progression_moyenne ?? 0"></div></div>
+            <span class="mgr-progress__val">{{ n.progression_moyenne ?? 0 }}%</span>
+          </div>
+          <a [routerLink]="[routes.managerCollaborateur, n.id]" class="mgr-btn mgr-btn--sm"><i class="isax isax-eye"></i></a>
+        </div>
+        <ng-container *ngIf="n.enfants.length && !estReplie(n.id)">
+          <ng-container *ngTemplateOutlet="branche; context: { $implicit: n.enfants }"></ng-container>
+        </ng-container>
+      </li>
+    </ul>
+  </ng-template>
+
+</div>

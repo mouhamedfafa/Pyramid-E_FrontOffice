@@ -1,4 +1,15 @@
 
+export interface UserManagerRef {
+  id: number;
+  name: string;
+  prenom?: string;
+  nom?: string;
+  email?: string;
+  fonction?: string;
+  matricule?: string;
+  statut?: number;
+}
+
 export interface User {
   id: number;
   nom: string;
@@ -37,6 +48,14 @@ export interface User {
       };
     };
   };
+  // Hiérarchie N+1 (indépendante du rôle)
+  manager_id?: number | null;
+  /** auto : N+1 dérivé de la direction (responsable d'entité) ; manuel : exception choisie. */
+  manager_mode?: 'auto' | 'manuel';
+  manager?: UserManagerRef | null;
+  collaborateurs?: UserManagerRef[];
+  collaborateurs_count?: number;
+  is_manager?: boolean;
   failed_login_attempts?: number;
   locked_until?: string | null;
   created_at?: string | Date;

@@ -7,6 +7,8 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../shared/service/authentification/auth.service';
 import { StudentThemeService, StudentTheme } from '../student-theme.service';
+import { ManagerService } from '../../../../shared/service/manager/manager.service';
+import { ManagerStatut } from '../../../../shared/models/manager.models';
 
 @Component({
   selector: 'app-student-sidebar',
@@ -35,12 +37,15 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
   }
 
   private navSub?: Subscription;
+  private managerSub?: Subscription;
+  managerStatut: ManagerStatut | null = null;
 
   constructor(
     private common: CommonService,
     private router: Router,
     private authService: AuthService,
     private themeService: StudentThemeService,
+    private managerService: ManagerService,
   ) {
     this.common.base.subscribe((b: string) => (this.base = b));
     this.common.page.subscribe((p: string) => (this.page = p));
@@ -63,9 +68,14 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
     this.sidebarTheme = this.themeService.theme$.value;
     this.currentUrl = this.router.url;
     this.autoOpenGroups();
+    this.managerSub = this.managerService.statut$.subscribe(s => this.managerStatut = s);
+    this.managerService.getStatut(true).subscribe();
   }
 
-  ngOnDestroy(): void { this.navSub?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.navSub?.unsubscribe();
+    this.managerSub?.unsubscribe();
+  }
 
   private autoOpenGroups(): void {
     if (this.isFormationsActive())  this.openGroups['formations']  = true;

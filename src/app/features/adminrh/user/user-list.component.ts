@@ -45,6 +45,39 @@ export class UserListComponent implements OnInit {
   selectedStatutFilter = '';
   showRoleDropdown     = false;
   showStatutDropdown   = false;
+  // '' = tous, 'none' = sans manager, sinon id du manager
+  selectedManagerFilter = '';
+  showManagerDropdown   = false;
+
+  /** Utilisateurs qui sont N+1 d'au moins une personne de la liste. */
+  get availableManagers(): { id: number; label: string }[] {
+    const ids = new Set(this.tableDataCopy.map(u => u.manager_id).filter((id): id is number => !!id));
+    return this.tableDataCopy
+      .filter(u => ids.has(u.id))
+      .map(u => ({ id: u.id, label: this.getDisplayName(u) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  get managerFilterLabel(): string {
+    if (this.selectedManagerFilter === 'none') return 'Sans manager';
+    return this.availableManagers.find(m => '' + m.id === this.selectedManagerFilter)?.label ?? '';
+  }
+
+  // Direction (entité et toutes ses sous-entités) et contrôles d'organisation
+  selectedDirectionFilter: number | null = null;
+  showDirectionDropdown = false;
+  directionsFiltre: { id: number; nom: string; niveau: number; sousArbre: Set<number> }[] = [];
+  // '' = tous, 'sans_direction', 'manuel' (N+1 défini manuellement)
+  selectedOrgFilter: '' | 'sans_direction' | 'manuel' = '';
+  showOrgDropdown = false;
+
+  get directionFilterLabel(): string {
+    return this.directionsFiltre.find(d => d.id === this.selectedDirectionFilter)?.nom ?? '';
+  }
+
+  get orgFilterLabel(): string {
+    return this.selectedOrgFilter === 'sans_direction' ? 'Sans direction' : this.selectedOrgFilter === 'manuel' ? 'N+1 manuel' : '';
+  }
 
   // ── KPIs topbar ──────────────────────────────
   get rolesCount(): number      { return this.availableRoles.length; }
@@ -113,6 +146,7 @@ export class UserListComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getUser();
     this.getUserList();
+    this.chargerDirectionsFiltre();
     if (this.route.snapshot.queryParamMap.get('action') === 'create') {
       this.openNew();
     }
@@ -122,6 +156,36 @@ export class UserListComponent implements OnInit {
   onDocumentClick(): void {
     this.showRoleDropdown   = false;
     this.showStatutDropdown = false;
+    this.showManagerDropdown = false;
+    this.showDirectionDropdown = false;
+    this.showOrgDropdown = false;
+  }
+
+  /** Arbre des entités à plat, chaque entrée portant les ids de son sous-arbre. */
+  private chargerDirectionsFiltre(): void {
+    this.directionService.getArborescence().subscribe({
+      next: (res) => {
+        const aplat = DirectionService.aplatir(res.arborescence || []);
+        this.directionsFiltre = aplat.map((d, i) => {
+          const sousArbre = new Set<number>([d.id]);
+          for (let j = i + 1; j < aplat.length && aplat[j].niveau > d.niveau; j++) sousArbre.add(aplat[j].id);
+          return { id: d.id, nom: d.nom, niveau: d.niveau, sousArbre };
+        });
+      },
+      error: () => (this.directionsFiltre = []),
+    });
+  }
+
+  setDirectionFilter(id: number | null): void {
+    this.selectedDirectionFilter = id;
+    this.showDirectionDropdown = false;
+    this.applyFilters();
+  }
+
+  setOrgFilter(valeur: '' | 'sans_direction' | 'manuel'): void {
+    this.selectedOrgFilter = valeur;
+    this.showOrgDropdown = false;
+    this.applyFilters();
   }
 
   // ════════════════════════════════════════════
@@ -179,6 +243,12 @@ export class UserListComponent implements OnInit {
     this.applyFilters();
   }
 
+  setManagerFilter(value: string): void {
+    this.selectedManagerFilter = value;
+    this.showManagerDropdown   = false;
+    this.applyFilters();
+  }
+
   searchData(value: string): void {
     this.searchDataValue = value;
     this.applyFilters();
@@ -205,6 +275,24 @@ export class UserListComponent implements OnInit {
 
     if (this.selectedRoleFilter) {
       data = data.filter(u => this.getRoleName(u) === this.selectedRoleFilter);
+    }
+
+    if (this.selectedManagerFilter === 'none') {
+      data = data.filter(u => !u.manager_id);
+    } else if (this.selectedManagerFilter) {
+      const managerId = +this.selectedManagerFilter;
+      data = data.filter(u => u.manager_id === managerId);
+    }
+
+    if (this.selectedDirectionFilter) {
+      const sousArbre = this.directionsFiltre.find(d => d.id === this.selectedDirectionFilter)?.sousArbre ?? new Set<number>();
+      data = data.filter(u => !!u.direction_id && sousArbre.has(u.direction_id));
+    }
+
+    if (this.selectedOrgFilter === 'sans_direction') {
+      data = data.filter(u => !u.direction_id);
+    } else if (this.selectedOrgFilter === 'manuel') {
+      data = data.filter(u => u.manager_mode === 'manuel');
     }
 
     if (this.selectedStatutFilter !== '') {
@@ -344,13 +432,15 @@ export class UserListComponent implements OnInit {
   exportUsers(): void {
     const data = this.tableDataCopy;
     if (!data.length) { alert('Aucune donnée à exporter'); return; }
-    const headers = ['Matricule', 'Nom', 'Prénom', 'Email', 'Direction', 'Rôle', 'Entreprise', 'Statut'];
+    const headers = ['Matricule', 'Nom', 'Prénom', 'Email', 'Direction', 'Matricule manager', 'Manager', 'Rôle', 'Entreprise', 'Statut'];
     const rows = data.map(u => [
       u.matricule || '',
       u.nom || '',
       u.prenom || '',
       u.email || '',
       this.getDirectionPath(u),
+      u.manager?.matricule || '',
+      u.manager ? this.getDisplayName(u.manager as unknown as User) : '',
       this.getRoleName(u),
       (u as any).entreprise?.nom || '',
       u.statut === 1 ? 'Actif' : 'Inactif',
@@ -568,17 +658,13 @@ export class UserListComponent implements OnInit {
   private loadMassInviteDirections(): void {
     this.directionService.getArborescence().subscribe({
       next: (res) => {
-        this.massInviteDirections = [];
-        const arbo = res.arborescence || [];
-        for (const dir of arbo) {
-          this.massInviteDirections.push({ id: dir.id, label: dir.nom });
-          for (const dept of (dir.enfants || [])) {
-            this.massInviteDirections.push({ id: dept.id, label: `${dir.nom} → ${dept.nom}` });
-            for (const equipe of (dept.enfants || [])) {
-              this.massInviteDirections.push({ id: equipe.id, label: `${dir.nom} → ${dept.nom} → ${equipe.nom}` });
-            }
-          }
-        }
+        // Profondeur illimitée : libellé = chemin complet « Direction → Département → … »
+        const chemin: string[] = [];
+        this.massInviteDirections = DirectionService.aplatir(res.arborescence || []).map(d => {
+          chemin.length = d.niveau;
+          chemin.push(d.nom);
+          return { id: d.id, label: chemin.join(' → ') };
+        });
       }
     });
   }

@@ -1,0 +1,211 @@
+<div class="mgr-page">
+
+  <div class="mgr-page-head">
+    <div>
+      <h2><i class="isax isax-task-square"></i>Demandes de formation</h2>
+      <p>Circuit de validation : collaborateur → manager (N+1 ou N+2) → RH</p>
+    </div>
+  </div>
+
+  <div *ngIf="succes" class="mgr-alert mgr-alert--ok">
+    <i class="isax isax-tick-circle"></i>{{ succes }}
+    <button type="button" (click)="succes = ''" aria-label="Fermer">×</button>
+  </div>
+  <div *ngIf="error" class="mgr-alert">
+    <i class="isax isax-warning-2"></i>{{ error }}
+    <button type="button" (click)="error = ''" aria-label="Fermer">×</button>
+  </div>
+
+  <div class="mgr-card">
+    <!-- Onglets -->
+    <div class="mgr-toolbar mb-3">
+      <div class="mgr-chips">
+        <button type="button" class="mgr-chip" [class.active]="onglet === 'a_traiter'" (click)="setOnglet('a_traiter')">
+          <i class="isax isax-clock"></i>À traiter par moi
+          <span class="count" *ngIf="compteurs?.a_traiter">{{ compteurs?.a_traiter }}</span>
+        </button>
+        <button type="button" class="mgr-chip" [class.active]="onglet === 'equipe'" (click)="setOnglet('equipe')">
+          <i class="isax isax-people"></i>Toute l'équipe
+          <span class="count count--muted">{{ compteurs?.total ?? 0 }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="mgr-toolbar mb-3">
+      <div class="mgr-search">
+        <i class="isax isax-search-normal-1"></i>
+        <input type="search" placeholder="Rechercher un collaborateur…" [(ngModel)]="search" (ngModelChange)="onSearch()">
+      </div>
+      <select class="mgr-select" *ngIf="onglet === 'equipe'" [(ngModel)]="statutFiltre" (ngModelChange)="charger()">
+        <option value="">Tous les statuts</option>
+        <option value="en_attente_manager">En attente manager ({{ compteurs?.en_attente_manager ?? 0 }})</option>
+        <option value="en_attente">En attente RH ({{ compteurs?.en_attente_rh ?? 0 }})</option>
+        <option value="validee">Validées ({{ compteurs?.validees ?? 0 }})</option>
+        <option value="refusee">Refusées ({{ compteurs?.refusees ?? 0 }})</option>
+        <option value="annulee">Annulées</option>
+      </select>
+      <select class="mgr-select" [(ngModel)]="typeFiltre" (ngModelChange)="charger()">
+        <option value="">Tous les types</option>
+        <option value="formation">Formations</option>
+        <option value="catalogue">Catalogues</option>
+        <option value="parcours">Parcours</option>
+        <option value="session">Sessions</option>
+      </select>
+      <select class="mgr-select" [(ngModel)]="niveauFiltre" (ngModelChange)="charger()">
+        <option [ngValue]="null">Tous niveaux</option>
+        <option [ngValue]="1">N-1</option>
+        <option [ngValue]="2">N-2</option>
+        <option *ngIf="onglet === 'equipe'" [ngValue]="3">N-3</option>
+      </select>
+    </div>
+
+    <div *ngIf="onglet === 'a_traiter'" class="mgr-alert mgr-alert--info mb-3">
+      <i class="isax isax-info-circle"></i>
+      Vous pouvez valider les demandes de vos N-1 et N-2. Une fois approuvée, la demande est transmise aux RH pour décision finale.
+    </div>
+
+    <ng-container *ngIf="loading">
+      <div class="mgr-skeleton" *ngFor="let i of [1,2,3,4]"></div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading">
+      <div *ngIf="!demandes.length" class="mgr-empty">
+        <i class="isax" [ngClass]="onglet === 'a_traiter' ? 'isax-tick-circle' : 'isax-folder-open'"></i>
+        {{ onglet === 'a_traiter' ? 'Aucune demande en attente de votre avis.' : 'Aucune demande ne correspond à ces critères.' }}
+      </div>
+
+      <div class="dm-item" *ngFor="let d of demandes; trackBy: trackById" [class.dm-item--open]="ouverte === d.id"
+           [class.dm-item--action]="d.peut_decider">
+        <div class="dm-row" (click)="toggle(d.id)">
+          <div class="mgr-user dm-user">
+            <div class="mgr-user__av">{{ initiales(d.employe) }}</div>
+            <div class="min-w-0">
+              <div class="mgr-user__name">{{ nomComplet(d.employe) }}
+                <span class="mgr-badge mgr-badge--niveau ms-1">{{ libelleNiveau(d.niveau) }}</span>
+              </div>
+              <div class="mgr-user__sub">{{ d.employe?.fonction || d.employe?.email }}</div>
+            </div>
+          </div>
+
+          <div class="dm-titre">
+            <div class="dm-titre__main"><i class="isax" [ngClass]="iconeTypeDemande(d.type_demande)"></i>{{ d.titre }}</div>
+            <div class="dm-titre__sub">
+              {{ libelleTypeDemande(d.type_demande) }} · soumise le {{ d.created_at | date:'dd/MM/yyyy' }}
+              <span *ngIf="d.priorite === 'urgente' || d.priorite === 'haute'" class="mgr-badge ms-1"
+                    [ngClass]="'mgr-badge--' + d.priorite">{{ d.priorite_display }}</span>
+            </div>
+          </div>
+
+          <span class="mgr-badge dm-statut" [ngClass]="classeStatutDemande(d.statut)">{{ d.statut_display }}</span>
+
+          <div class="dm-actions" (click)="$event.stopPropagation()">
+            <ng-container *ngIf="d.peut_decider">
+              <button type="button" class="mgr-btn mgr-btn--success mgr-btn--sm" (click)="ouvrir('valider', d)">
+                <i class="isax isax-tick-circle"></i>Approuver
+              </button>
+              <button type="button" class="mgr-btn mgr-btn--danger mgr-btn--sm" (click)="ouvrir('refuser', d)">
+                <i class="isax isax-close-circle"></i>Refuser
+              </button>
+            </ng-container>
+            <i class="isax dm-chevron" [ngClass]="ouverte === d.id ? 'isax-arrow-up-2' : 'isax-arrow-down-1'" (click)="toggle(d.id)"></i>
+          </div>
+        </div>
+
+        <!-- Détail -->
+        <div class="dm-detail" *ngIf="ouverte === d.id">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="dm-field"><label>Motif de la demande</label><p>{{ d.motif_demande || '—' }}</p></div>
+              <div class="dm-field" *ngIf="d.objectifs_personnels"><label>Objectifs personnels</label><p>{{ d.objectifs_personnels }}</p></div>
+              <div class="dm-field" *ngIf="d.commentaire_employe"><label>Commentaire du collaborateur</label><p>{{ d.commentaire_employe }}</p></div>
+              <div class="dm-field" *ngIf="d.date_souhaitee_debut"><label>Début souhaité</label><p>{{ d.date_souhaitee_debut | date:'dd/MM/yyyy' }}</p></div>
+              <div class="dm-field" *ngIf="d.session_formation">
+                <label>Session</label>
+                <p>{{ d.session_formation.titre }} — {{ d.session_formation.date_debut | date:'dd/MM/yyyy' }}<span *ngIf="d.session_formation.lieu">, {{ d.session_formation.lieu }}</span></p>
+              </div>
+            </div>
+
+            <!-- Timeline du circuit -->
+            <div class="col-md-6">
+              <label class="dm-timeline-label">Circuit de validation</label>
+              <ol class="dm-timeline">
+                <li class="done">
+                  <span class="dot"></span>
+                  <div><strong>Soumise</strong><small>{{ d.created_at | date:'dd/MM/yyyy HH:mm' }}</small></div>
+                </li>
+                <li [class.done]="d.decision_manager && d.decision_manager.motif_refus === null"
+                    [class.ko]="d.decision_manager?.motif_refus"
+                    [class.current]="d.statut === 'en_attente_manager'">
+                  <span class="dot"></span>
+                  <div>
+                    <strong>Manager</strong>
+                    <ng-container *ngIf="d.decision_manager; else attenteManager">
+                      <small>{{ d.decision_manager.motif_refus ? 'Refusée' : 'Approuvée' }} par {{ d.decision_manager.manager?.name }}
+                        (N+{{ d.decision_manager.niveau }}) le {{ d.decision_manager.date | date:'dd/MM/yyyy' }}</small>
+                      <small *ngIf="d.decision_manager.motif_refus" class="dm-quote">« {{ d.decision_manager.motif_refus }} »</small>
+                      <small *ngIf="d.decision_manager.commentaire" class="dm-quote">« {{ d.decision_manager.commentaire }} »</small>
+                    </ng-container>
+                    <ng-template #attenteManager>
+                      <small>{{ d.statut === 'en_attente_manager' ? 'En attente (N+1 ou N+2)' : 'Sans étape manager' }}</small>
+                    </ng-template>
+                  </div>
+                </li>
+                <li [class.done]="d.statut === 'validee'" [class.ko]="d.statut === 'refusee' && !d.decision_manager?.motif_refus"
+                    [class.current]="d.statut === 'en_attente'">
+                  <span class="dot"></span>
+                  <div>
+                    <strong>RH</strong>
+                    <small *ngIf="d.statut === 'validee'">Validée le {{ d.date_validation | date:'dd/MM/yyyy' }}</small>
+                    <small *ngIf="d.statut === 'refusee' && !d.decision_manager?.motif_refus">Refusée — {{ d.motif_refus }}</small>
+                    <small *ngIf="d.statut === 'en_attente'">En attente de décision RH</small>
+                    <small *ngIf="d.statut === 'en_attente_manager'">—</small>
+                    <small *ngIf="d.statut === 'annulee'">Demande annulée</small>
+                  </div>
+                </li>
+              </ol>
+              <a [routerLink]="[routes.managerCollaborateur, d.user_id]" class="mgr-btn mgr-btn--sm mt-2">
+                <i class="isax isax-user"></i>Voir la fiche du collaborateur
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<!-- ════════════════ MODALE DE DÉCISION ════════════════ -->
+<div class="mgr-modal-backdrop" *ngIf="action && cible" (click)="fermer()">
+  <div class="mgr-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="mgr-modal__head">
+      <h5>{{ action === 'valider' ? 'Approuver la demande' : 'Refuser la demande' }}</h5>
+      <button type="button" (click)="fermer()" aria-label="Fermer">×</button>
+    </div>
+    <div class="mgr-modal__body">
+      <p class="mb-3">
+        <strong>{{ nomComplet(cible.employe) }}</strong> — {{ libelleTypeDemande(cible.type_demande) }} « {{ cible.titre }} »
+      </p>
+      <p *ngIf="action === 'valider'" class="dm-hint">La demande sera transmise au service RH pour décision finale.</p>
+
+      <ng-container *ngIf="action === 'refuser'">
+        <label for="motif">Motif du refus <span class="text-danger">*</span></label>
+        <textarea id="motif" [(ngModel)]="motif" placeholder="Expliquez au collaborateur pourquoi sa demande n'est pas retenue…" maxlength="1000"></textarea>
+      </ng-container>
+
+      <label for="commentaire" class="mt-3">Commentaire {{ action === 'valider' ? 'pour les RH' : '' }} (optionnel)</label>
+      <textarea id="commentaire" [(ngModel)]="commentaire" maxlength="1000"
+                [placeholder]="action === 'valider' ? 'Ex. : formation prioritaire pour le projet X' : ''"></textarea>
+
+      <div *ngIf="erreurModale" class="mgr-alert mt-3"><i class="isax isax-warning-2"></i>{{ erreurModale }}</div>
+    </div>
+    <div class="mgr-modal__foot">
+      <button type="button" class="mgr-btn" (click)="fermer()" [disabled]="enCours">Annuler</button>
+      <button type="button" class="mgr-btn" [ngClass]="action === 'valider' ? 'mgr-btn--success' : 'mgr-btn--danger'"
+              (click)="confirmer()" [disabled]="enCours">
+        <span *ngIf="enCours" class="spinner-border spinner-border-sm"></span>
+        {{ action === 'valider' ? 'Approuver et transmettre aux RH' : 'Confirmer le refus' }}
+      </button>
+    </div>
+  </div>
+</div>

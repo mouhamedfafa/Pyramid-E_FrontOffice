@@ -13,6 +13,8 @@ import { UserService } from '../../../../shared/service/user/user.service';
 import { CertificatService } from '../../../../shared/service/certificat/certificat.service';
 import { TicketService } from '../../../../shared/service/ticket/ticket.service';
 import { HasPermissionDirective } from '../../../../directive/has-permission-directive.directive';
+import { ManagerService } from '../../../../shared/service/manager/manager.service';
+import { ManagerStatut } from '../../../../shared/models/manager.models';
 
 @Component({
     selector: 'app-adminrh-sidebar',
@@ -22,6 +24,8 @@ import { HasPermissionDirective } from '../../../../directive/has-permission-dir
 })
 export class AdminrhSidebarComponent implements OnInit, OnDestroy {
   private refreshSub?: Subscription;
+  private managerSub?: Subscription;
+  managerStatut: ManagerStatut | null = null;
   public routes = routes;
   public base = '';
   public page = '';
@@ -93,6 +97,7 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
     private sondageService: SondageService,
     private router: Router,
     private themeService: AdminrhThemeService,
+    private managerService: ManagerService,
   ) {
     this.common.base.subscribe((base: string) => { this.base = base; });
     this.common.page.subscribe((page: string) => { this.page = page; });
@@ -108,6 +113,8 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
     this.sidebarTheme = this.themeService.theme$.value;
     this.currentUser = this.authService.getUser();
     this.loadBadgeCounts();
+    this.managerSub = this.managerService.statut$.subscribe(s => this.managerStatut = s);
+    this.managerService.getStatut(true).subscribe();
     if (this.router.url.includes('demande')) {
       this.openGroups['demandes'] = true;
     }
@@ -125,6 +132,7 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.refreshSub?.unsubscribe();
+    this.managerSub?.unsubscribe();
   }
 
   loadSessionsBadge(): void {

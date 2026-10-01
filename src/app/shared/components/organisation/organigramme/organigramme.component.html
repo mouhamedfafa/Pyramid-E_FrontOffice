@@ -1,0 +1,144 @@
+<div class="org">
+  <div class="barre">
+    <div class="bascule" *ngIf="afficherBascule" role="tablist" aria-label="Vue de l'organigramme">
+      <button type="button" role="tab" [class.on]="vue === 'structure'" [attr.aria-selected]="vue === 'structure'" (click)="changerVue('structure')">
+        <i class="ti ti-sitemap"></i> Structure
+      </button>
+      <button type="button" role="tab" [class.on]="vue === 'personnes'" [attr.aria-selected]="vue === 'personnes'" (click)="changerVue('personnes')">
+        <i class="ti ti-users"></i> Personnes
+      </button>
+    </div>
+
+    <div class="recherche">
+      <i class="ti ti-search"></i>
+      <input type="text" [(ngModel)]="recherche" (keyup.enter)="rechercher()" (change)="rechercher()"
+             [attr.list]="'org-suggestions-' + vue" placeholder="Rechercher et centrer…" aria-label="Rechercher dans l'organigramme" />
+      <datalist [id]="'org-suggestions-' + vue">
+        <option *ngFor="let n of suggestions" [value]="n.libelle"></option>
+      </datalist>
+    </div>
+
+    <div class="outils">
+      <button type="button" class="outil" title="Tout déplier" (click)="toutDeplier()"><i class="ti ti-arrows-maximize"></i></button>
+      <button type="button" class="outil" title="Tout replier" (click)="toutReplier()"><i class="ti ti-arrows-minimize"></i></button>
+      <button type="button" class="outil" title="Ajuster à l'écran" (click)="ajuster()"><i class="ti ti-focus-centered"></i></button>
+      <button type="button" class="outil" title="Zoom avant" (click)="zoomAvant()"><i class="ti ti-zoom-in"></i></button>
+      <button type="button" class="outil" title="Zoom arrière" (click)="zoomArriere()"><i class="ti ti-zoom-out"></i></button>
+      <button type="button" class="outil" title="Exporter en image" (click)="exporter()"><i class="ti ti-photo-down"></i></button>
+    </div>
+  </div>
+
+  <div class="aide-edition" *ngIf="editable && noeuds.length">
+    <i class="ti ti-hand-move"></i>
+    Glissez un {{ vue === 'structure' ? 'bloc sur une autre entité pour le déplacer' : 'collaborateur sur une autre personne pour changer son N+1' }},
+    ou cliquez sur un bloc pour agir. Chaque changement est prévisualisé avant application.
+  </div>
+
+  <div class="zone" [style.height.px]="hauteur">
+    <div class="chargement" *ngIf="chargement"><div class="spinner"></div> Chargement de l'organigramme…</div>
+    <div class="modal-error" *ngIf="erreur">{{ erreur }}</div>
+    <div class="vide" *ngIf="!chargement && !erreur && !noeuds.length">
+      <i class="ti ti-sitemap"></i>
+      <p>{{ vue === 'structure' ? 'Aucune entité à afficher.' : 'Aucune personne à afficher.' }}</p>
+    </div>
+
+    <div #conteneur class="graphique" [class.masque]="chargement || !noeuds.length"></div>
+
+    <!-- Panneau latéral -->
+    <aside class="panneau" *ngIf="selection">
+      <div class="panneau-tete">
+        <div>
+          <div class="panneau-type">{{ libelleType(selection.type) }}</div>
+          <div class="panneau-titre">{{ selection.libelle }}</div>
+          <div class="panneau-sous" *ngIf="selection.sous_titre && selection.type === 'personne'">{{ selection.sous_titre }}</div>
+        </div>
+        <button type="button" class="modal-close" (click)="fermerPanneau()" aria-label="Fermer le panneau"><i class="ti ti-x"></i></button>
+      </div>
+
+      <div class="panneau-corps">
+        <div class="alertes" *ngIf="selection.alertes.length">
+          <span class="badge-org ambre" *ngFor="let a of selection.alertes"><i class="ti ti-alert-triangle"></i> {{ libelleAlerte(a) }}</span>
+        </div>
+
+        <!-- Personne -->
+        <ng-container *ngIf="selection.type === 'personne'">
+          <dl class="infos">
+            <dt>Direction</dt><dd>{{ selection.direction?.nom || 'Aucune' }}</dd>
+            <dt>N+1</dt>
+            <dd>
+              {{ selection.manager_id ? nomPersonne(selection.manager_id) : 'Aucun' }}
+              <span class="badge-org" [ngClass]="selection.manager_mode === 'manuel' ? 'ambre' : 'vert'">
+                {{ selection.manager_mode === 'manuel' ? 'Manuel' : 'Automatique' }}
+              </span>
+            </dd>
+            <dt>Collaborateurs</dt><dd>{{ selection.nb_collaborateurs || 0 }} N-1 direct(s)</dd>
+            <dt *ngIf="selection.matricule">Matricule</dt><dd *ngIf="selection.matricule">{{ selection.matricule }}</dd>
+          </dl>
+
+          <ng-container *ngIf="editable">
+            <div class="action">
+              <label for="org-direction">Changer de direction</label>
+              <app-selecteur-direction inputId="org-direction" [entrepriseId]="entrepriseId" [(ngModel)]="nouvelleDirectionId"></app-selecteur-direction>
+              <button type="button" class="btn-o btn-sm" [disabled]="nouvelleDirectionId === (selection.direction?.id ?? null)" (click)="changerDirection()">Prévisualiser</button>
+            </div>
+
+            <div class="action">
+              <label for="org-manager">Définir un N+1 manuel</label>
+              <select id="org-manager" class="form-input" [(ngModel)]="nouveauManagerId">
+                <option [ngValue]="null">Aucun N+1</option>
+                <ng-container *ngFor="let p of personnes">
+                  <option *ngIf="p.id !== selection.user_id" [ngValue]="p.id">{{ p.nom }}{{ p.direction ? ' · ' + p.direction : '' }}</option>
+                </ng-container>
+              </select>
+              <button type="button" class="btn-o btn-sm" (click)="changerManager()">Prévisualiser</button>
+            </div>
+
+            <button type="button" class="btn-o btn-sm" *ngIf="selection.manager_mode === 'manuel'" (click)="repasserAuto()">
+              <i class="ti ti-refresh"></i> Revenir au N+1 automatique
+            </button>
+          </ng-container>
+        </ng-container>
+
+        <!-- Entité -->
+        <ng-container *ngIf="selection.type !== 'personne'">
+          <dl class="infos">
+            <dt>Responsable</dt><dd>{{ selection.responsable?.nom || 'Aucun' }}</dd>
+            <dt>Membres</dt><dd>{{ selection.effectif || 0 }} directs · {{ selection.effectif_total || 0 }} au total</dd>
+            <dt>Statut</dt><dd>{{ selection.est_active === false ? 'Inactive' : 'Active' }}</dd>
+          </dl>
+
+          <ng-container *ngIf="editable">
+            <div class="action">
+              <label for="org-responsable">Responsable</label>
+              <select id="org-responsable" class="form-input" [(ngModel)]="nouveauResponsableId">
+                <option [ngValue]="null">Aucun responsable</option>
+                <option *ngFor="let p of personnes" [ngValue]="p.id">{{ p.nom }}{{ p.direction ? ' · ' + p.direction : '' }}</option>
+              </select>
+              <button type="button" class="btn-o btn-sm" [disabled]="nouveauResponsableId === (selection.responsable?.id ?? null)" (click)="changerResponsable()">Prévisualiser</button>
+            </div>
+
+            <div class="action">
+              <label for="org-parent">Rattacher sous</label>
+              <app-selecteur-direction inputId="org-parent" [entrepriseId]="entrepriseId" [exclureId]="selection.entite_id ?? null"
+                                       placeholder="— Racine de l'entreprise —" [(ngModel)]="nouveauParentId"></app-selecteur-direction>
+              <button type="button" class="btn-o btn-sm" (click)="deplacerEntite()">Prévisualiser</button>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<app-rapport-organisation
+  [visible]="modaleVisible"
+  [titre]="compteRendu ? 'Changement appliqué' : titreModale"
+  [rapport]="rapport"
+  [chargement]="calcul"
+  [enCours]="enCours"
+  [erreur]="erreurModale"
+  [lectureSeule]="compteRendu"
+  libelleConfirmer="Appliquer"
+  (confirmer)="confirmer()"
+  (fermer)="fermerModale()">
+</app-rapport-organisation>

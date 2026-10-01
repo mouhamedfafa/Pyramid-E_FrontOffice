@@ -69,6 +69,46 @@
                             </select>
                         </div>
 
+                        <!-- Organisation : direction et N+1 (dans l'entreprise choisie) -->
+                        <ng-container *ngIf="entrepriseChoisie">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="sa-direction">Direction / entité</label>
+                                <app-selecteur-direction inputId="sa-direction" formControlName="direction_id"
+                                                         [entrepriseId]="entrepriseChoisie" placeholder="— Aucune direction —">
+                                </app-selecteur-direction>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Manager (N+1)</label>
+                                <div class="btn-group btn-group-sm w-100 mb-2" role="radiogroup" aria-label="Mode de définition du N+1">
+                                    <button type="button" class="btn" role="radio" [attr.aria-checked]="modeManager === 'auto'"
+                                            [class.btn-primary]="modeManager === 'auto'" [class.btn-outline-primary]="modeManager !== 'auto'"
+                                            (click)="choisirModeManager('auto')">Automatique</button>
+                                    <button type="button" class="btn" role="radio" [attr.aria-checked]="modeManager === 'manuel'"
+                                            [class.btn-primary]="modeManager === 'manuel'" [class.btn-outline-primary]="modeManager !== 'manuel'"
+                                            (click)="choisirModeManager('manuel')">Manuel</button>
+                                </div>
+
+                                <ng-container *ngIf="modeManager === 'auto'">
+                                    <div class="small" *ngIf="managerCalcule"><i class="isax isax-user-tick text-success me-1"></i><strong>{{ managerCalcule.nom }}</strong> <span class="text-muted">(responsable de l'entité ou du niveau au-dessus)</span></div>
+                                    <div class="small text-muted" *ngIf="calculManager">Calcul du N+1…</div>
+                                    <div class="small text-muted" *ngIf="!calculManager && !managerCalcule">
+                                        {{ userForm.get('direction_id')?.value ? 'Aucun responsable au-dessus : les demandes iront aux RH.' : 'Choisissez une direction : le N+1 sera son responsable.' }}
+                                    </div>
+                                </ng-container>
+
+                                <ng-container *ngIf="modeManager === 'manuel'">
+                                    <select class="form-select" formControlName="manager_id" aria-label="N+1">
+                                        <option [ngValue]="null">Aucun N+1</option>
+                                        <option *ngFor="let p of personnesEntreprise" [ngValue]="p.id">{{ p.nom }}{{ p.fonction ? ' · ' + p.fonction : '' }}</option>
+                                    </select>
+                                    <div class="alert alert-warning py-1 px-2 mt-2 mb-0 small" *ngIf="managerHorsStructure">
+                                        Hors de la ligne hiérarchique de la direction (la structure donnerait {{ managerCalcule?.nom }}).
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </ng-container>
+
                         <!-- Toggle modifier le mot de passe (mode édition) -->
                         <div class="col-md-12 mb-2" *ngIf="isEditMode">
                             <button type="button" class="btn btn-outline-secondary btn-sm"

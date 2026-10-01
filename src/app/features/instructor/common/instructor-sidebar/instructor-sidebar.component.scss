@@ -316,6 +316,23 @@ $radius:   8px;
     &:hover { background: rgba(16,185,129,.12); color: #34d399; border-color: rgba(16,185,129,.4); }
   }
 
+  &.sb-manager-switch {
+    color: rgba(129,140,248,.85);
+    border: 1px solid rgba(129,140,248,.25);
+    margin-bottom: 2px;
+    &:hover { background: rgba(129,140,248,.12); color: #a5b4fc; border-color: rgba(129,140,248,.45); }
+  }
+
+  .sb-manager-count {
+    margin-left: auto;
+    background: #dc2626;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 0 7px;
+  }
+
   &.sb-trainer-switch {
     color: rgba(139,92,246,.75);
     border: 1px solid rgba(139,92,246,.2);

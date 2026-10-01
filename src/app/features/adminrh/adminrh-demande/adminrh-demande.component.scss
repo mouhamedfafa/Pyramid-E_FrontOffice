@@ -481,6 +481,7 @@ $radius-xl: 16px;
   white-space: nowrap;
 
   &-pending  { background: $amber-bg;  color: $amber; }
+  &-manager  { background: #eef2ff;    color: #4338ca; }
   &-approved { background: $green-bg;  color: $green; }
   &-rejected { background: $red-bg;    color: $red; }
   &-cancelled { background: $gray-100; color: $gray-600; }

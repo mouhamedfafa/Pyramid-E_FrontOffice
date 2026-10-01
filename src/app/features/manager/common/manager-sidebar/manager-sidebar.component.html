@@ -1,0 +1,119 @@
+<div class="sb-shell">
+
+  <!-- ── LOGO ── -->
+  <div class="sb-logo">
+    <div class="sb-logo-mark"><i class="isax isax-hierarchy"></i></div>
+    <div>
+      <div class="sb-logo-text">Pyramide LMS</div>
+      <span class="sb-logo-badge">Espace Manager</span>
+    </div>
+  </div>
+
+  <!-- ── PROFIL ── -->
+  <div class="sb-profile">
+    <div class="sb-av">{{ getInitials() }}</div>
+    <div class="sb-profile-info">
+      <div class="sb-pname">{{ getDisplayName() }}</div>
+      <div class="sb-prole">{{ currentUser?.fonction || 'Manager' }}</div>
+    </div>
+  </div>
+
+  <!-- ── MINI-STATS ── -->
+  <div class="sb-ministats">
+    <div class="sb-ministat">
+      <div class="sb-ministat-val">{{ statut?.nb_collaborateurs_directs ?? 0 }}</div>
+      <div class="sb-ministat-lbl">DIRECTS</div>
+    </div>
+    <div class="sb-ministat-div"></div>
+    <div class="sb-ministat">
+      <div class="sb-ministat-val">{{ statut?.nb_collaborateurs_total ?? 0 }}</div>
+      <div class="sb-ministat-lbl">ÉQUIPE</div>
+    </div>
+    <div class="sb-ministat-div"></div>
+    <div class="sb-ministat" [class.sb-ministat--warn]="(statut?.demandes_a_traiter ?? 0) > 0">
+      <div class="sb-ministat-val">{{ statut?.demandes_a_traiter ?? 0 }}</div>
+      <div class="sb-ministat-lbl">À TRAITER</div>
+    </div>
+  </div>
+
+  <!-- ── NAV ── -->
+  <div class="sb-scroll">
+    <div class="sb-section">
+      <div class="sb-section-label">Vue d'ensemble</div>
+      <a [routerLink]="routes.manager_dashboard" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-grid-3"></i>
+        <span class="sb-item-label">Tableau de bord</span>
+      </a>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Mon équipe</div>
+      <a [routerLink]="routes.managerEquipe" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-people"></i>
+        <span class="sb-item-label">Collaborateurs</span>
+        <span class="sb-badge">{{ statut?.nb_collaborateurs_total ?? 0 }}</span>
+      </a>
+      <a [routerLink]="routes.managerDemandes" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-task-square"></i>
+        <span class="sb-item-label">Demandes de formation</span>
+        <span *ngIf="(statut?.demandes_a_traiter ?? 0) > 0" class="sb-badge sb-badge--red">{{ statut?.demandes_a_traiter }}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── WIDGET ALERTE DEMANDES ── -->
+  <div class="sb-widget-alert" *ngIf="(statut?.demandes_a_traiter ?? 0) > 0">
+    <div class="sb-widget-alert-title">
+      <i class="isax isax-warning-2"></i>
+      {{ statut?.demandes_a_traiter }} demande{{ (statut?.demandes_a_traiter ?? 0) > 1 ? 's' : '' }} en attente de votre avis
+    </div>
+    <a [routerLink]="routes.managerDemandes" class="sb-widget-alert-link">Traiter maintenant →</a>
+  </div>
+
+  <!-- ── CHANGER D'ESPACE ── -->
+  <div class="sb-spaces">
+    <div class="sb-section-label">Changer d'espace</div>
+
+    <!-- Espace d'origine (RH, formateur, Super Admin ou employé) -->
+    <a [routerLink]="retourRoute" class="sb-space sb-space--home">
+      <span class="sb-space__icon"><i class="isax" [ngClass]="origine.icon"></i></span>
+      <span class="sb-space__text">
+        <span class="sb-space__label">{{ origine.label }}</span>
+        <span class="sb-space__sub">{{ origine.sub }}</span>
+      </span>
+      <i class="isax isax-arrow-right-3 sb-space__arrow"></i>
+    </a>
+
+    <ng-container *ngIf="proposerModeEmploye">
+      <a *appHasPermission="'acceder-mode-employe'" [routerLink]="routes.students_Dashboard" class="sb-space sb-space--employe">
+        <span class="sb-space__icon"><i class="isax isax-user-octagon"></i></span>
+        <span class="sb-space__text">
+          <span class="sb-space__label">Mode employé</span>
+          <span class="sb-space__sub">Vos formations et demandes</span>
+        </span>
+        <i class="isax isax-arrow-right-3 sb-space__arrow"></i>
+      </a>
+    </ng-container>
+
+    <ng-container *ngIf="proposerModeFormateur">
+      <a *appHasPermission="'acceder-mode-formateur'" [routerLink]="routes.instructor_dashboard" class="sb-space sb-space--formateur">
+        <span class="sb-space__icon"><i class="isax isax-teacher"></i></span>
+        <span class="sb-space__text">
+          <span class="sb-space__label">Mode formateur</span>
+          <span class="sb-space__sub">Créer et gérer des formations</span>
+        </span>
+        <i class="isax isax-arrow-right-3 sb-space__arrow"></i>
+      </a>
+    </ng-container>
+  </div>
+
+  <!-- ── BOTTOM ── -->
+  <div class="sb-bottom">
+    <a href="javascript:void(0);" (click)="logout()" class="sb-bottom-item logout">
+      <i class="isax isax-logout"></i> Déconnexion
+    </a>
+  </div>
+
+</div>

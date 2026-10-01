@@ -1,0 +1,303 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// ESPACE MANAGER — composants visuels partagés (cartes, tableaux, badges, modales)
+// Importé via @use dans chaque page de features/manager
+// ═══════════════════════════════════════════════════════════════════════════════
+
+$mgr-accent:       #4F46E5;
+$mgr-accent-dark:  #4338CA;
+$mgr-accent-light: #EEF2FF;
+$mgr-accent-border:#C7D2FE;
+$text-dark:        #1a1a2e;
+$text-muted:       #6b7280;
+$border:           #e5e7eb;
+$radius:           12px;
+
+.mgr-page { display: flex; flex-direction: column; gap: 20px; }
+
+// ── En-tête de page ──────────────────────────────────
+.mgr-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h1, h2 { font-size: 20px; font-weight: 700; color: $text-dark; margin: 0; display: flex; align-items: center; gap: 8px; i { color: $mgr-accent; } }
+  p  { font-size: 13px; color: $text-muted; margin: 2px 0 0; }
+}
+
+// ── Cartes ───────────────────────────────────────────
+.mgr-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 18px 20px;
+
+  &__title {
+    font-size: 14px;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    i { color: $mgr-accent; margin-right: 6px; }
+    a { font-size: 12px; font-weight: 600; color: $mgr-accent; text-decoration: none; &:hover { text-decoration: underline; } }
+  }
+}
+
+// ── KPIs ─────────────────────────────────────────────
+.mgr-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.mgr-kpi {
+  background: #fff;
+  border: 1px solid $border;
+  border-top: 3px solid $mgr-accent;
+  border-radius: 10px;
+  padding: 14px 16px;
+
+  &__val { font-size: 24px; font-weight: 700; color: $text-dark; line-height: 1.1; }
+  &__lbl { font-size: 11px; color: $text-muted; margin-top: 4px; display: flex; align-items: center; gap: 5px; i { font-size: 13px; } }
+
+  &--warn   { border-top-color: #f59e0b; background: #fff8ee; }
+  &--danger { border-top-color: #dc2626; }
+  &--ok     { border-top-color: #059669; }
+}
+
+// ── Barre de progression ─────────────────────────────
+.mgr-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 110px;
+
+  &__bar  { flex: 1; height: 6px; background: #eef0f4; border-radius: 6px; overflow: hidden; }
+  &__fill { height: 100%; background: $mgr-accent; border-radius: 6px; transition: width .3s; }
+  &__val  { font-size: 12px; font-weight: 600; color: $text-dark; min-width: 36px; text-align: right; }
+
+  &--low  .mgr-progress__fill { background: #f59e0b; }
+  &--high .mgr-progress__fill { background: #059669; }
+}
+
+// ── Badges ───────────────────────────────────────────
+.mgr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  background: #f3f4f6;
+  color: #374151;
+
+  i { font-size: 12px; }
+
+  &--niveau   { background: $mgr-accent-light; color: $mgr-accent-dark; border: 1px solid $mgr-accent-border; }
+  &--manager  { background: #fef3c7; color: #92400e; }
+  &--rh       { background: #e0f2fe; color: #075985; }
+  &--validee  { background: #d1fae5; color: #065f46; }
+  &--refusee  { background: #fee2e2; color: #991b1b; }
+  &--annulee  { background: #f3f4f6; color: #6b7280; }
+  &--actif    { background: #d1fae5; color: #065f46; }
+  &--inactif  { background: #f3f4f6; color: #6b7280; }
+  &--urgente  { background: #fee2e2; color: #991b1b; }
+  &--haute    { background: #ffedd5; color: #9a3412; }
+}
+
+// ── Avatar ───────────────────────────────────────────
+.mgr-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+
+  &__av {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: $mgr-accent-light; color: $mgr-accent; border: 1px solid $mgr-accent-border;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  &__name  { font-size: 13px; font-weight: 600; color: $text-dark; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__sub   { font-size: 11px; color: $text-muted; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+// ── Toolbar / filtres ────────────────────────────────
+.mgr-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mgr-search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+
+  i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: $text-muted; font-size: 15px; }
+  input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    font-size: 13px;
+    &:focus { outline: none; border-color: $mgr-accent; box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+  }
+}
+
+.mgr-select {
+  padding: 8px 12px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  &:focus { outline: none; border-color: $mgr-accent; }
+}
+
+.mgr-chips {
+  display: inline-flex;
+  gap: 4px;
+  background: #f3f4f6;
+  padding: 3px;
+  border-radius: 9px;
+}
+
+.mgr-chip {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-muted;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &.active { background: #fff; color: $mgr-accent-dark; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .count { font-size: 10px; background: $mgr-accent; color: #fff; border-radius: 10px; padding: 0 6px; }
+  .count--muted { background: #d1d5db; color: #374151; }
+}
+
+// ── Tableau ──────────────────────────────────────────
+.mgr-table-wrap { overflow-x: auto; }
+
+.mgr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 10px 12px;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #f1f2f4;
+    vertical-align: middle;
+    color: #374151;
+  }
+  tbody tr:hover { background: #fafbff; }
+}
+
+// ── Boutons ──────────────────────────────────────────
+.mgr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid $border;
+  background: #fff;
+  color: $text-dark;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .15s;
+  white-space: nowrap;
+
+  i { font-size: 15px; }
+  &:hover:not(:disabled) { border-color: $mgr-accent; color: $mgr-accent; }
+  &:disabled { opacity: .55; cursor: not-allowed; }
+
+  &--primary { background: $mgr-accent; border-color: $mgr-accent; color: #fff; &:hover:not(:disabled) { background: $mgr-accent-dark; color: #fff; } }
+  &--success { background: #059669; border-color: #059669; color: #fff; &:hover:not(:disabled) { background: #047857; border-color: #047857; color: #fff; } }
+  &--danger  { background: #fff; border-color: #fca5a5; color: #b91c1c; &:hover:not(:disabled) { background: #fee2e2; border-color: #dc2626; color: #991b1b; } }
+  &--sm      { font-size: 12px; padding: 5px 10px; i { font-size: 13px; } }
+}
+
+// ── États ────────────────────────────────────────────
+.mgr-empty {
+  text-align: center;
+  padding: 36px 16px;
+  color: $text-muted;
+  font-size: 13px;
+  i { font-size: 34px; display: block; margin-bottom: 8px; color: #c7cbd4; }
+}
+
+.mgr-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fee2e2;
+  color: #991b1b;
+
+  &--ok   { background: #d1fae5; color: #065f46; }
+  &--info { background: $mgr-accent-light; color: $mgr-accent-dark; }
+  button { margin-left: auto; background: none; border: none; color: inherit; cursor: pointer; font-size: 16px; }
+}
+
+.mgr-skeleton {
+  height: 44px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e9eaee 37%, #f3f4f6 63%);
+  background-size: 400% 100%;
+  animation: mgr-shimmer 1.4s ease infinite;
+  margin-bottom: 8px;
+}
+@keyframes mgr-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+// ── Modale ───────────────────────────────────────────
+.mgr-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(17,24,39,.45); z-index: 1050;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.mgr-modal {
+  background: #fff; border-radius: 14px; width: 100%; max-width: 520px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.2); overflow: hidden;
+
+  &__head { padding: 16px 20px; border-bottom: 1px solid $border; display: flex; align-items: center; justify-content: space-between;
+    h5 { margin: 0; font-size: 16px; font-weight: 700; color: $text-dark; }
+    button { background: none; border: none; font-size: 20px; color: $text-muted; cursor: pointer; } }
+  &__body { padding: 18px 20px; font-size: 13px; color: #374151;
+    label { font-size: 12px; font-weight: 600; color: $text-dark; margin-bottom: 6px; display: block; }
+    textarea { width: 100%; min-height: 90px; border: 1px solid $border; border-radius: 8px; padding: 10px; font-size: 13px; resize: vertical;
+      &:focus { outline: none; border-color: $mgr-accent; } } }
+  &__foot { padding: 14px 20px; border-top: 1px solid $border; display: flex; justify-content: flex-end; gap: 8px; }
+}
+
+// ── Pagination ───────────────────────────────────────
+.mgr-pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding-top: 12px; font-size: 12px; color: $text-muted;
+}

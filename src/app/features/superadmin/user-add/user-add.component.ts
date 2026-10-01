@@ -6,11 +6,13 @@ import { Client, Company } from '../../../shared/models/client-company.models';
 import { UserService } from '../../../shared/service/user/user.service';
 import { ClientCompanyService } from '../../../shared/service/client/client-company.service';
 import { sortRoles } from '../../../shared/utils/role-sort.utils';
+import { NoeudOrganigramme, OrganisationService, Ref } from '../../../shared/service/organisation/organisation.service';
+import { SelecteurDirectionComponent } from '../../../shared/components/organisation/selecteur-direction/selecteur-direction.component';
 
 @Component({
   selector: 'app-user-add',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SelecteurDirectionComponent],
   templateUrl: './user-add.component.html',
   styleUrl: './user-add.component.scss'
 })
@@ -29,11 +31,66 @@ export class UserAddComponent implements OnInit, OnChanges {
   roles: any[] = [];
   showPasswordFields = false;
 
+  // Organisation : direction, N+1 automatique (selon la direction) ou manuel
+  managerCalcule: Ref | null = null;
+  calculManager = false;
+  personnesEntreprise: { id: number; nom: string; fonction: string | null }[] = [];
+
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
-    private clientCompanyService: ClientCompanyService
+    private clientCompanyService: ClientCompanyService,
+    private organisationService: OrganisationService
   ) {}
+
+  get entrepriseChoisie(): number | null {
+    return Number(this.userForm?.get('entreprise_id')?.value) || null;
+  }
+
+  get modeManager(): 'auto' | 'manuel' {
+    return this.userForm?.get('manager_mode')?.value === 'manuel' ? 'manuel' : 'auto';
+  }
+
+  get managerHorsStructure(): boolean {
+    const choisi = Number(this.userForm?.get('manager_id')?.value) || null;
+    return this.modeManager === 'manuel' && !!this.managerCalcule && !!choisi && choisi !== this.managerCalcule.id;
+  }
+
+  /** Collaborateurs de l'entreprise choisie (candidats N+1 en mode manuel). */
+  private chargerPersonnes(): void {
+    const entrepriseId = this.entrepriseChoisie;
+    this.personnesEntreprise = [];
+    if (!entrepriseId) return;
+    this.organisationService.organigramme(entrepriseId, 'personnes').subscribe({
+      next: (res) => {
+        this.personnesEntreprise = (res.noeuds || [])
+          .filter((n: NoeudOrganigramme) => n.type === 'personne' && n.user_id && n.user_id !== this.userData?.id)
+          .map((n: NoeudOrganigramme) => ({ id: n.user_id!, nom: n.libelle || '', fonction: n.sous_titre ?? null }))
+          .sort((a, b) => a.nom.localeCompare(b.nom));
+      },
+    });
+  }
+
+  calculerManager(): void {
+    const entrepriseId = this.entrepriseChoisie;
+    const directionId = this.userForm?.get('direction_id')?.value || null;
+    if (!entrepriseId || !directionId) {
+      this.managerCalcule = null;
+      return;
+    }
+    this.calculManager = true;
+    this.organisationService.managerAttendu(entrepriseId, directionId, this.userData?.id).subscribe({
+      next: (res) => { this.managerCalcule = res.manager; this.calculManager = false; },
+      error: () => { this.managerCalcule = null; this.calculManager = false; },
+    });
+  }
+
+  choisirModeManager(mode: 'auto' | 'manuel'): void {
+    this.userForm.patchValue({ manager_mode: mode });
+    if (mode === 'manuel' && !this.userForm.get('manager_id')?.value && this.managerCalcule) {
+      this.userForm.patchValue({ manager_id: this.managerCalcule.id });
+    }
+  }
 
   ngOnInit() {
     this.initForm();
@@ -103,15 +160,24 @@ export class UserAddComponent implements OnInit, OnChanges {
       email:                ['', [Validators.required, Validators.email]],
       numero:               [''],
       matricule:            [''],
-      direction:            [''],
+      direction_id:         [null as number | null],
       fonction:             [''],
       role_id:              ['', Validators.required],
       entreprise_id:        [''],
+      manager_mode:         ['auto'],
+      manager_id:           [null as number | null],
       statut:               [1, Validators.required],
       password:             ['', pwValidators],
       password_confirmation:['', pwValidators],
     });
     this.userForm.addValidators(this.passwordMatchValidator);
+    this.userForm.get('direction_id')!.valueChanges.subscribe(() => this.calculerManager());
+    this.userForm.get('entreprise_id')!.valueChanges.subscribe(() => {
+      // Changement d'entreprise : la direction et le N+1 ne sont plus valables
+      this.userForm.patchValue({ direction_id: null, manager_id: null }, { emitEvent: false });
+      this.managerCalcule = null;
+      this.chargerPersonnes();
+    });
   }
 
   private passwordMatchValidator(control: { get: (k: string) => any }) {
@@ -159,16 +225,21 @@ export class UserAddComponent implements OnInit, OnChanges {
       email:        this.userData.email        || '',
       numero:       this.userData.numero       || '',
       matricule:    this.userData.matricule    || '',
-      direction:    this.userData.direction    || '',
       fonction:     this.userData.fonction     || '',
       role_id:      rawRoleId ? String(rawRoleId) : '',
       entreprise_id:this.userData.entreprise_id || '',
+      manager_mode: this.userData.manager_mode ?? (this.userData.manager_id ? 'manuel' : 'auto'),
+      manager_id:   this.userData.manager_id ?? null,
       statut:       this.userData.statut,
-    });
+    }, { emitEvent: false });
+    this.userForm.patchValue({ direction_id: this.userData.direction_id ?? null });
+    this.chargerPersonnes();
   }
 
   resetForm() {
-    this.userForm.reset({ statut: 1 });
+    this.userForm.reset({ statut: 1, manager_mode: 'auto', manager_id: null, direction_id: null }, { emitEvent: false });
+    this.managerCalcule = null;
+    this.personnesEntreprise = [];
   }
 
   saveUser() {
@@ -199,6 +270,16 @@ export class UserAddComponent implements OnInit, OnChanges {
     if (formData.statut !== undefined) formData.statut = parseInt(formData.statut);
     if (formData.entreprise_id) formData.entreprise_id = parseInt(formData.entreprise_id);
     else delete formData.entreprise_id;
+    // Organisation : sans entreprise, ni direction ni N+1
+    if (!formData.entreprise_id) {
+      delete formData.direction_id;
+      delete formData.manager_id;
+      delete formData.manager_mode;
+    } else {
+      formData.direction_id = formData.direction_id ? Number(formData.direction_id) : null;
+      if (formData.manager_mode === 'auto') delete formData.manager_id;
+      else formData.manager_id = formData.manager_id ? Number(formData.manager_id) : null;
+    }
     formData.created_by = 1;
 
     if (this.isEditMode && this.userData) {

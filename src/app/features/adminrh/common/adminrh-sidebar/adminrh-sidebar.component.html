@@ -29,6 +29,11 @@
     <a *appHasPermission="'acceder-mode-formateur'" [routerLink]="routes.instructor_dashboard" class="sb-bottom-item sb-trainer-switch">
       <i class="isax isax-teacher"></i> Mode formateur
     </a>
+    <!-- Hiérarchie : visible pour tout utilisateur ayant au moins un N-1 -->
+    <a *ngIf="managerStatut?.is_manager" [routerLink]="routes.manager_dashboard" class="sb-bottom-item sb-manager-switch">
+      <i class="isax isax-hierarchy"></i> Mode manager
+      <span *ngIf="(managerStatut?.demandes_a_traiter ?? 0) > 0" class="sb-badge sb-badge--red sb-badge--sm ms-auto">{{ managerStatut?.demandes_a_traiter }}</span>
+    </a>
   </div>
 
   <!-- ── MINI-STATS ── -->
@@ -81,6 +86,11 @@
       <a [routerLink]="routes.adminrhDirection" routerLinkActive="active" class="sb-item">
         <i class="isax isax-buildings-2"></i>
         <span class="sb-item-label">Directions</span>
+      </a>
+
+      <a [routerLink]="routes.adminrhOrganigramme" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-hierarchy"></i>
+        <span class="sb-item-label">Organigramme</span>
       </a>
 
       <!-- Demandes avec sous-items -->

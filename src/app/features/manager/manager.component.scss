@@ -1,0 +1,115 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// MANAGER HEADER — même structure que l'en-tête Admin RH, accent indigo
+// ═══════════════════════════════════════════════════════════════════════════════
+
+$accent:        #4F46E5;
+$accent-dark:   #4338CA;
+$accent-light:  #EEF2FF;
+$accent-border: #C7D2FE;
+$text-dark:     #1a1a2e;
+$text-muted:    #6b7280;
+$radius:        14px;
+
+.mgr-content { padding: 21px 0 !important; }
+
+.mgr-header {
+  background: #fff;
+  border-radius: $radius;
+  border: 1px solid #e5e7eb;
+  padding: 20px 24px 0;
+  margin-bottom: 24px;
+}
+
+.mgr-header-top-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: $text-muted;
+  margin-bottom: 16px;
+}
+
+.mgr-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.mgr-identity { display: flex; align-items: center; gap: 14px; }
+
+.mgr-av {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: $accent-light; color: $accent; border: 2px solid $accent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; flex-shrink: 0;
+}
+
+.mgr-name { font-size: 17px; font-weight: 700; color: $text-dark; margin: 0 0 3px; }
+
+.mgr-fonction {
+  font-size: 12px; color: $text-muted; margin: 0 0 6px;
+  display: flex; align-items: center; gap: 5px;
+  i { font-size: 13px; color: $accent; }
+}
+
+.mgr-role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; padding: 2px 12px; border-radius: 20px;
+  background: $accent-light; color: $accent-dark; border: 1px solid $accent-border; font-weight: 500;
+}
+
+.mgr-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.mgr-hbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 8px;
+  text-decoration: none; transition: all .15s;
+  i { font-size: 15px; }
+
+  &.mgr-hbtn-outline {
+    background: #fff; color: $text-dark; border: 1px solid #d1d5db;
+    &:hover { border-color: $accent; color: $accent; }
+  }
+  &.mgr-hbtn-primary {
+    background: $accent; color: #fff; border: 1px solid $accent;
+    &:hover { background: $accent-dark; border-color: $accent-dark; }
+  }
+}
+
+.mgr-hbtn-count {
+  background: #fff; color: $accent-dark; border-radius: 10px;
+  font-size: 11px; font-weight: 700; padding: 0 7px; margin-left: 2px;
+}
+
+.mgr-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 0 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.mgr-stat {
+  background: #f8fafc;
+  border: 1px solid #e9ecef;
+  border-top: 3px solid $accent;
+  border-radius: 10px;
+  padding: 14px 16px;
+
+  &--warn { background: #fff8ee; border-color: #f5c77e; border-top-color: #f59e0b; }
+}
+
+.mgr-stat-val { font-size: 26px; font-weight: 700; color: $text-dark; line-height: 1.1; }
+
+.mgr-stat-lbl {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: $text-muted; margin-top: 5px;
+  i { font-size: 13px; }
+}
+
+@media (max-width: 767px) {
+  .mgr-stats-row { grid-template-columns: 1fr; }
+  .mgr-header { padding: 16px 16px 0; }
+}

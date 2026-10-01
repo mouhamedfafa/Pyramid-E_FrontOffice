@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { ManagerService } from '../../../../shared/service/manager/manager.service';
+import { ManagerStatut } from '../../../../shared/models/manager.models';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonService } from '../../../../shared/service/common/common.service';
@@ -18,8 +21,10 @@ interface ProgressBar { name: string; pct: number; }
   styleUrl: './instructor-sidebar.component.scss',
   imports: [CommonModule, RouterLink, RouterLinkActive, HasPermissionDirective]
 })
-export class InstructorSidebarComponent implements OnInit {
+export class InstructorSidebarComponent implements OnInit, OnDestroy {
   public routes = routes;
+  managerStatut: ManagerStatut | null = null;
+  private managerSub?: Subscription;
   public base = '';
   public page = '';
   public last = '';
@@ -48,6 +53,7 @@ export class InstructorSidebarComponent implements OnInit {
     private sessionService: SessionFormationService,
     private sondageService: SondageService,
     private themeService: InstructorThemeService,
+    private managerService: ManagerService,
   ) {
     this.common.base.subscribe((v: string) => this.base = v);
     this.common.page.subscribe((v: string) => this.page = v);
@@ -64,10 +70,16 @@ export class InstructorSidebarComponent implements OnInit {
     this.currentUser = this.authService.getUser();
     this.loadStats();
     this.loadSessionsAVenir();
+    this.managerSub = this.managerService.statut$.subscribe(s => this.managerStatut = s);
+    this.managerService.getStatut(true).subscribe();
     this.sondageService.getMesSondagesRecus().subscribe({
       next: (res: any) => { this.sondagesRecusCount = res?.total ?? (res?.sondages?.length ?? 0); },
       error: () => {}
     });
+  }
+
+  ngOnDestroy(): void {
+    this.managerSub?.unsubscribe();
   }
 
   private loadStats(): void {

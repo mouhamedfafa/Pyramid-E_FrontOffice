@@ -37,8 +37,69 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
 
+  <!-- Onglets -->
+  <ul class="nav nav-tabs mb-4" *ngIf="!loading && company" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" role="tab" [class.active]="onglet === 'infos'" [attr.aria-selected]="onglet === 'infos'" (click)="onglet = 'infos'">
+        <i class="isax isax-document me-1"></i>Informations
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" role="tab" [class.active]="onglet === 'organisation'" [attr.aria-selected]="onglet === 'organisation'" (click)="onglet = 'organisation'">
+        <i class="isax isax-hierarchy me-1"></i>Organisation
+      </button>
+    </li>
+  </ul>
+
+  <!-- Onglet Organisation : structure, organigramme, contrôle -->
+  <div *ngIf="!loading && company && onglet === 'organisation'" class="organisation">
+    <div class="row g-3 mb-3">
+      <div class="col-lg-5">
+        <app-completude-organisation [entrepriseId]="company.id"></app-completude-organisation>
+      </div>
+      <div class="col-lg-7">
+        <app-anomalies-organisation
+          [entrepriseId]="company.id"
+          [rafraichir]="rafraichirOrganisation"
+          (entiteSelectionnee)="ouvrirEntite($event)"
+          (changement)="rafraichirOrganisation = rafraichirOrganisation + 1">
+        </app-anomalies-organisation>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+    <div class="btn-group" role="group" aria-label="Vue organisation">
+      <button type="button" class="btn btn-sm" [class.btn-primary]="vueOrganisation === 'structure'" [class.btn-outline-primary]="vueOrganisation !== 'structure'" (click)="vueOrganisation = 'structure'">
+        <i class="isax isax-buildings-2 me-1"></i>Directions
+      </button>
+      <button type="button" class="btn btn-sm" [class.btn-primary]="vueOrganisation === 'organigramme'" [class.btn-outline-primary]="vueOrganisation !== 'organigramme'" (click)="vueOrganisation = 'organigramme'">
+        <i class="isax isax-hierarchy me-1"></i>Organigramme
+      </button>
+    </div>
+    <app-import-export-organisation
+      [entrepriseId]="company.id"
+      [entrepriseNom]="company.nom"
+      (changement)="rafraichirOrganisation = rafraichirOrganisation + 1">
+    </app-import-export-organisation>
+    </div>
+
+    <app-structure-organisation *ngIf="vueOrganisation === 'structure'"
+      [entrepriseId]="company.id"
+      [entiteAOuvrir]="entiteAOuvrir"
+      [rafraichir]="rafraichirOrganisation"
+      (changement)="rafraichirOrganisation = rafraichirOrganisation + 1">
+    </app-structure-organisation>
+
+    <app-organigramme *ngIf="vueOrganisation === 'organigramme'"
+      [entrepriseId]="company.id"
+      [editable]="true"
+      [rafraichir]="rafraichirOrganisation"
+      (changement)="rafraichirOrganisation = rafraichirOrganisation + 1">
+    </app-organigramme>
+  </div>
+
   <!-- Contenu principal -->
-  <div *ngIf="!loading && company" class="row g-4">
+  <div *ngIf="!loading && company && onglet === 'infos'" class="row g-4">
     <!-- Sidebar gauche - Informations principales -->
     <div class="col-xl-4 col-lg-5">
       <!-- Profil de l'entreprise -->

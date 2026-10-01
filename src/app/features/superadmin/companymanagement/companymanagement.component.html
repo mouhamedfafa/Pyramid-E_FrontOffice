@@ -64,6 +64,11 @@
             <span class="cm-list__name">{{ company.nom }}</span>
             <span class="cm-list__sub">{{ company.secteur_activite }}</span>
           </div>
+          <span class="cm-org" *ngIf="resumeOrganisation[company.id] as org"
+                [attr.data-niveau]="niveauOrganisation(org.taux_completude)"
+                [title]="'Organisation : ' + org.taux_completude + '% des collaborateurs ont une direction et un N+1'">
+            {{ org.taux_completude }}%
+          </span>
           <span class="cm-list__dot" [attr.data-status]="company.statut"></span>
         </li>
 
@@ -122,6 +127,10 @@
                class="cm-btn cm-btn--ghost">
               <i class="isax isax-eye me-1"></i>Détails
             </a>
+            <a [routerLink]="['/superadmin/superadmin-company-details', selectedCompany.id]" [queryParams]="{ onglet: 'organisation' }"
+               class="cm-btn cm-btn--ghost">
+              <i class="isax isax-hierarchy me-1"></i>Organisation
+            </a>
             <button type="button" *ngIf="selectedCompany.statut === 'active'"
                     class="cm-btn cm-btn--ghost cm-btn--warn"
                     (click)="archiveCompany(selectedCompany)">
@@ -147,6 +156,18 @@
 
         <!-- ── KPI ROW ── -->
         <div class="cm-kpi-row">
+          <!-- Complétude de l'organisation (direction + N+1) -->
+          <a class="cm-kpi-card cm-kpi-card--link" *ngIf="resumeOrganisation[selectedCompany.id] as org"
+             [routerLink]="['/superadmin/superadmin-company-details', selectedCompany.id]" [queryParams]="{ onglet: 'organisation' }">
+            <div class="cm-kpi-card__icon cm-kpi-card__icon--blue"><i class="isax isax-hierarchy"></i></div>
+            <div class="cm-kpi-card__body">
+              <span class="cm-kpi-card__value"><span>{{ org.taux_completude }}%</span></span>
+              <span class="cm-kpi-card__label">
+                Organisation · {{ org.nb_entites }} entité(s){{ org.entites_sans_responsable ? ', ' + org.entites_sans_responsable + ' sans responsable' : '' }}
+                <i class="isax isax-arrow-right-3 ms-1"></i>
+              </span>
+            </div>
+          </a>
           <!-- Effectif déclaré -->
           <div class="cm-kpi-card">
             <div class="cm-kpi-card__icon cm-kpi-card__icon--blue"><i class="isax isax-building-3"></i></div>

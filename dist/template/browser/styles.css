@@ -104221,6 +104221,16 @@ textarea:focus {
 .categories-item-six:hover .view-icon {
   background: #D4AF37;
 }
+.login-left-logo img,
+.login-right-logo img,
+.auth-logo,
+.fp-logo,
+.sp-logo {
+  height: 80px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
 .hide-dropdown {
   display: none;
 }

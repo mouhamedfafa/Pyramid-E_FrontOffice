@@ -154,12 +154,30 @@ export interface FormationsApiResponse {
 // DEMANDES DE FORMATION
 // =============================================
 
+export type StatutDemande = 'en_attente_manager' | 'en_attente' | 'validee' | 'refusee' | 'annulee';
+
+/** Avis du manager (N+1 ou N+2) sur une demande — null tant qu'aucun manager n'a décidé. */
+export interface DecisionManager {
+  manager: { id: number; name: string; email?: string } | null;
+  niveau: 1 | 2 | null;
+  date: string | null;
+  commentaire: string | null;
+  motif_refus: string | null;
+}
+
 export interface DemandeFormation {
   id: number;
   formation_id: number;
   user_id: number;
   session_formation_id?: number | null;
-  statut: 'en_attente' | 'validee' | 'refusee' | 'annulee';
+  statut: StatutDemande;
+  decision_manager?: DecisionManager | null;
+  // Présents sur /mes-demandes-formation (toArray du modèle)
+  decideur_manager?: { id: number; name: string; prenom?: string; nom?: string } | null;
+  niveau_decideur?: number | null;
+  date_decision_manager?: string | null;
+  commentaire_manager?: string | null;
+  motif_refus_manager?: string | null;
   priorite?: 'basse' | 'normale' | 'haute' | 'urgente';
   motif_demande?: string;
   objectifs_personnels?: string;
@@ -275,6 +293,7 @@ export interface DemandeFormationResponse {
   demande?: DemandeFormation;
   statistiques?: {
     total: number;
+    en_attente_manager?: number;
     en_attente: number;
     validees: number;
     refusees: number;

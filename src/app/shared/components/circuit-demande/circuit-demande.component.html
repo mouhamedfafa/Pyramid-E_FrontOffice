@@ -1,0 +1,53 @@
+<!-- ════════ VARIANTE COMPACTE : avis du manager (RH) ════════ -->
+<ng-container *ngIf="variante === 'compact'">
+  <div *ngIf="enAttenteManager" class="cd-avis cd-avis--attente">
+    <i class="isax isax-clock"></i>
+    <span>En attente de l'avis du manager (N+1 ou N+2) — pas encore transmise aux RH</span>
+  </div>
+
+  <div *ngIf="!enAttenteManager && avis" class="cd-avis" [ngClass]="refuseeParManager ? 'cd-avis--ko' : 'cd-avis--ok'">
+    <i class="isax" [ngClass]="refuseeParManager ? 'isax-close-circle' : 'isax-like-1'"></i>
+    <div>
+      <strong>Avis du manager :</strong>
+      {{ refuseeParManager ? 'refusée' : 'approuvée' }} par {{ avis.nom || 'le manager' }}
+      <span *ngIf="avis.niveau">(N+{{ avis.niveau }})</span>
+      <span *ngIf="avis.date"> le {{ avis.date | date:'dd/MM/yyyy' }}</span>
+      <div *ngIf="avis.motifRefus" class="cd-avis__quote">« {{ avis.motifRefus }} »</div>
+      <div *ngIf="avis.commentaire" class="cd-avis__quote">« {{ avis.commentaire }} »</div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ════════ VARIANTE FRISE : circuit complet (employé) ════════ -->
+<ol *ngIf="variante === 'timeline'" class="cd-timeline">
+  <li class="done">
+    <span class="dot"></span>
+    <div><strong>Soumise</strong><small>{{ demande?.created_at | date:'dd/MM/yyyy' }}</small></div>
+  </li>
+
+  <li [ngClass]="etatManager">
+    <span class="dot"></span>
+    <div>
+      <strong>Manager</strong>
+      <small *ngIf="etatManager === 'current'">En attente de votre manager</small>
+      <small *ngIf="etatManager === 'skip'">Aucune validation manager requise</small>
+      <ng-container *ngIf="avis && etatManager !== 'current'">
+        <small>{{ refuseeParManager ? 'Refusée' : 'Approuvée' }} par {{ avis.nom || 'votre manager' }}<span *ngIf="avis.date"> le {{ avis.date | date:'dd/MM/yyyy' }}</span></small>
+        <small *ngIf="avis.motifRefus" class="cd-quote">« {{ avis.motifRefus }} »</small>
+        <small *ngIf="avis.commentaire" class="cd-quote">« {{ avis.commentaire }} »</small>
+      </ng-container>
+    </div>
+  </li>
+
+  <li [ngClass]="etatRh">
+    <span class="dot"></span>
+    <div>
+      <strong>RH</strong>
+      <small *ngIf="etatRh === 'done'">Validée<span *ngIf="demande?.date_validation"> le {{ demande?.date_validation | date:'dd/MM/yyyy' }}</span></small>
+      <small *ngIf="etatRh === 'ko'">Refusée<span *ngIf="demande?.motif_refus"> — {{ demande?.motif_refus }}</span></small>
+      <small *ngIf="etatRh === 'current'">En cours d'examen</small>
+      <small *ngIf="etatRh === 'annulee'">Demande annulée</small>
+      <small *ngIf="etatRh === 'todo'">{{ refuseeParManager ? 'Non transmise' : 'À venir' }}</small>
+    </div>
+  </li>
+</ol>

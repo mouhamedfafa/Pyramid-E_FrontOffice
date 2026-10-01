@@ -3,6 +3,7 @@ import { UserListComponent } from './features/superadmin/user/user-list.componen
 import { PermissionGuard } from './guards/permission-guard.guard';
 import { authGuard } from './guards/auth.guard';
 import { layoutGuard } from './guards/layout.guard';
+import { managerGuard } from './guards/manager.guard';
 export const routes: Routes = [
     { path:'',
       redirectTo:'index',
@@ -221,6 +222,7 @@ export const routes: Routes = [
                 {path:'adminrh-statements',loadComponent:()=>import ('./features/adminrh/adminrh-statements/adminrh-statements.component').then((m)=>m.AdminrhStatementsComponent)},
 
                 {path:'adminrh-direction',loadComponent:()=>import ('./features/adminrh/adminrh-direction/adminrh-direction.component').then((m)=>m.AdminrhDirectionComponent)},
+                {path:'adminrh-organigramme',loadComponent:()=>import ('./features/adminrh/adminrh-organigramme/adminrh-organigramme.component').then((m)=>m.AdminrhOrganigrammeComponent)},
                 {path:'adminrh-course',loadComponent:()=>import ('./features/adminrh/adminrh-course/adminrh-course.component').then((m)=>m.AdminrhCourseComponent)},
                 {path:'adminrh-course-grid',loadComponent:()=>import ('./features/adminrh/adminrh-course-grid/adminrh-course-grid.component').then((m)=>m.AdminrhCourseGridComponent)},
                 {path:'adminrh-session',loadComponent:()=>import ('./features/adminrh/adminrh-session/adminrh-session.component').then((m)=>m.AdminrhSessionComponent)},
@@ -353,6 +355,16 @@ export const routes: Routes = [
         },
     ]
 },
+        // ── ESPACE MANAGER — accessible à tout utilisateur ayant au moins un N-1 ──
+        {path : 'manager',loadComponent:()=>import ('./features/manager/manager.component').then((m)=>m.ManagerComponent), canActivate: [layoutGuard, managerGuard],
+            children:[
+                {path:'',redirectTo:'manager-dashboard',pathMatch:'full'},
+                {path:'manager-dashboard',loadComponent:()=>import ('./features/manager/manager-dashboard/manager-dashboard.component').then((m)=>m.ManagerDashboardComponent)},
+                {path:'manager-equipe',loadComponent:()=>import ('./features/manager/manager-equipe/manager-equipe.component').then((m)=>m.ManagerEquipeComponent)},
+                {path:'manager-collaborateur/:id',loadComponent:()=>import ('./features/manager/manager-collaborateur-details/manager-collaborateur-details.component').then((m)=>m.ManagerCollaborateurDetailsComponent)},
+                {path:'manager-demandes',loadComponent:()=>import ('./features/manager/manager-demandes/manager-demandes.component').then((m)=>m.ManagerDemandesComponent)},
+            ]
+        },
 
 
     ]

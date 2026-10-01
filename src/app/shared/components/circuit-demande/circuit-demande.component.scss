@@ -1,0 +1,73 @@
+:host { display: block; }
+
+// ── Compact ──
+.cd-avis {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+
+  i { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+
+  &--attente { background: #fef3c7; color: #92400e; }
+  &--ok      { background: #ecfdf5; color: #065f46; }
+  &--ko      { background: #fef2f2; color: #991b1b; }
+
+  &__quote { font-style: italic; opacity: .9; }
+}
+
+// ── Frise ──
+.cd-timeline {
+  list-style: none;
+  display: flex;
+  gap: 0;
+  padding: 0;
+  margin: 10px 0 0;
+
+  li {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 10px;
+    min-width: 0;
+
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 16px;
+      right: 0;
+      height: 2px;
+      background: #e5e7eb;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #d1d5db;
+      position: relative;
+      z-index: 1;
+    }
+
+    strong { display: block; font-size: 12px; color: #1a1a2e; }
+    small  { display: block; font-size: 11px; color: #6b7280; overflow-wrap: anywhere; }
+
+    &.done    .dot { background: #059669; box-shadow: 0 0 0 1px #059669; }
+    &.done:not(:last-child)::after { background: #6ee7b7; }
+    &.ko      .dot { background: #dc2626; box-shadow: 0 0 0 1px #dc2626; }
+    &.current .dot { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.25); }
+    &.skip    .dot { background: #fff; border-style: dashed; }
+    &.annulee .dot { background: #9ca3af; box-shadow: 0 0 0 1px #9ca3af; }
+  }
+}
+
+.cd-quote { font-style: italic; }

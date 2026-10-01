@@ -1,4 +1,5 @@
 import { Component, OnInit }        from '@angular/core';
+import { CircuitDemandeComponent } from '../../../shared/components/circuit-demande/circuit-demande.component';
 import { CommonModule }             from '@angular/common';
 import { Router, RouterModule }     from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -19,7 +20,7 @@ interface Toast {
   selector: 'app-student-demande',
     templateUrl: './student-demande.component.html',
   styleUrl: './student-demande.component.scss',
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, CustomPaginationComponent]
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, CustomPaginationComponent, CircuitDemandeComponent]
 })
 export class StudentDemandeComponent implements OnInit {
 
@@ -87,7 +88,7 @@ export class StudentDemandeComponent implements OnInit {
 
   // ── STATS ────────────────────────────────────────
   get totalDemandes():  number { return this.allDemandes.length; }
-  get totalEnAttente(): number { return this.allDemandes.filter(d => d.statut === 'en_attente').length; }
+  get totalEnAttente(): number { return this.allDemandes.filter(d => d.statut === 'en_attente' || d.statut === 'en_attente_manager').length; }
   get totalValidees():  number { return this.allDemandes.filter(d => d.statut === 'validee').length; }
   get totalRefusees():  number { return this.allDemandes.filter(d => d.statut === 'refusee').length; }
   get totalAnnulees():  number { return this.allDemandes.filter(d => d.statut === 'annulee').length; }
@@ -127,7 +128,7 @@ export class StudentDemandeComponent implements OnInit {
   // ── FILTRES + PAGINATION ─────────────────────────
   getTableData(skip: number, limit: number): void {
     let filtered = [...this.allDemandes];
-    if (this.selectedStatus)  filtered = filtered.filter(d => d.statut === this.selectedStatus);
+    if (this.selectedStatus)  filtered = filtered.filter(d => d.statut === this.selectedStatus || (this.selectedStatus === 'en_attente' && d.statut === 'en_attente_manager'));
     if (this.searchDataValue) {
       const s = this.searchDataValue.toLowerCase();
       filtered = filtered.filter(d =>
@@ -375,6 +376,6 @@ export class StudentDemandeComponent implements OnInit {
   }
 
   getStatutClass(statut: string): string {
-    return ({ en_attente: 'statut-attente', validee: 'statut-validee', refusee: 'statut-refusee', annulee: 'statut-annulee' } as any)[statut] ?? '';
+    return ({ en_attente_manager: 'statut-attente', en_attente: 'statut-attente', validee: 'statut-validee', refusee: 'statut-refusee', annulee: 'statut-annulee' } as any)[statut] ?? '';
   }
 }

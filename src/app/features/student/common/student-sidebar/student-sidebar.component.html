@@ -11,6 +11,19 @@
     </a>
   </div>
 
+  <!-- Accès espace Manager : tout utilisateur ayant au moins un N-1, quel que soit son rôle -->
+  <div *ngIf="managerStatut?.is_manager" class="mgr-switch-banner">
+    <div class="mgr-switch-banner__label">
+      <i class="isax isax-hierarchy"></i>
+      <span>Mon &eacute;quipe</span>
+      <span *ngIf="(managerStatut?.demandes_a_traiter ?? 0) > 0" class="mgr-switch-banner__count"
+            [title]="managerStatut?.demandes_a_traiter + ' demande(s) à valider'">{{ managerStatut?.demandes_a_traiter }}</span>
+    </div>
+    <a [routerLink]="routes.manager_dashboard" class="mgr-switch-banner__btn">
+      Mode manager <i class="isax isax-arrow-right-3"></i>
+    </a>
+  </div>
+
   <!-- Toggle Collapse -->
   <div class="sidebar-toggle" (click)="isCollapsed = !isCollapsed">
     <i class="isax" [ngClass]="isCollapsed ? 'isax-arrow-right-2' : 'isax-arrow-left-2'"></i>

@@ -27,6 +27,10 @@
       <a [routerLink]="routes.superadmin_dashboard" routerLinkActive="active" class="sb-item">
         <i class="isax isax-grid-3"></i><span class="sb-item-label">Tableau de bord</span>
       </a>
+      <!-- Hiérarchie : visible pour tout utilisateur ayant au moins un N-1 -->
+      <a *ngIf="managerStatut?.is_manager" [routerLink]="routes.manager_dashboard" class="sb-item">
+        <i class="isax isax-hierarchy"></i><span class="sb-item-label">Mode manager</span>
+      </a>
       <!-- <a [routerLink]="routes.superadminAnnouncements" routerLinkActive="active" class="sb-item">
         <i class="isax isax-volume-high"></i><span class="sb-item-label">Annonces</span>
       </a> -->

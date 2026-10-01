@@ -1,0 +1,272 @@
+<div class="toast-zone" *ngIf="succes || erreur" aria-live="polite">
+  <div class="toast ok" *ngIf="succes"><i class="ti ti-check"></i> {{ succes }}</div>
+  <div class="toast ko" *ngIf="erreur"><i class="ti ti-alert-circle"></i> {{ erreur }} <button type="button" (click)="erreur = ''" aria-label="Fermer">×</button></div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="ki ki-g"><i class="ti ti-building"></i></div><div><div class="kpi-v">{{ stats.directions }}</div><div class="kpi-l">Directions</div></div></div>
+  <div class="kpi"><div class="ki ki-b"><i class="ti ti-layout-columns"></i></div><div><div class="kpi-v">{{ stats.departements }}</div><div class="kpi-l">Départements</div></div></div>
+  <div class="kpi"><div class="ki ki-a"><i class="ti ti-users-group"></i></div><div><div class="kpi-v">{{ stats.equipes }}</div><div class="kpi-l">Équipes</div></div></div>
+  <div class="kpi"><div class="ki ki-p"><i class="ti ti-users"></i></div><div><div class="kpi-v">{{ stats.employes }}</div><div class="kpi-l">Collaborateurs rattachés</div></div></div>
+  <div class="kpi" [class.alerte]="stats.sansResponsable"><div class="ki ki-r"><i class="ti ti-user-question"></i></div><div><div class="kpi-v">{{ stats.sansResponsable }}</div><div class="kpi-l">Entités sans responsable</div></div></div>
+</div>
+
+<div class="chargement" *ngIf="chargement && !arborescence.length"><div class="spinner"></div> Chargement de la structure…</div>
+
+<div class="disposition" *ngIf="!chargement || arborescence.length">
+  <!-- ARBRE -->
+  <div class="col-arbre">
+    <div class="arbre-tete">
+      <span class="arbre-titre">Structure</span>
+      <div class="filtre">
+        <i class="ti ti-search"></i>
+        <input type="text" [(ngModel)]="filtre" placeholder="Filtrer…" aria-label="Filtrer les entités" />
+      </div>
+      <button type="button" class="btn-p btn-sm" *ngIf="peutGerer" (click)="ouvrirCreation('direction')" title="Nouvelle direction">
+        <i class="ti ti-plus"></i>
+      </button>
+    </div>
+
+    <div class="arbre" role="tree">
+      <ng-container *ngTemplateOutlet="branche; context: { $implicit: arbreAffiche, niveau: 0 }"></ng-container>
+
+      <div class="vide" *ngIf="!arbreAffiche.length">
+        <i class="ti ti-building-community"></i>
+        <p>{{ filtre ? 'Aucune entité ne correspond.' : 'Aucune entité pour le moment.' }}</p>
+        <button type="button" class="btn-p btn-sm" *ngIf="peutGerer && !filtre" (click)="ouvrirCreation('direction')">
+          <i class="ti ti-plus"></i> Créer la première direction
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #branche let-liste let-niveau="niveau">
+    <ng-container *ngFor="let d of liste">
+      <div class="noeud" role="treeitem" [attr.aria-expanded]="d.enfants?.length ? estDeplie(d) : null"
+           [class.actif]="selectionId === d.id" [class.inactif]="!d.est_active"
+           [style.padding-left.px]="10 + niveau * 16" (click)="ouvrir(d.id)">
+        <button type="button" class="deplier" *ngIf="d.enfants?.length; else espace" (click)="basculer(d, $event)"
+                [attr.aria-label]="estDeplie(d) ? 'Replier' : 'Déplier'">
+          <i class="ti ti-chevron-right" [class.ouvert]="estDeplie(d)"></i>
+        </button>
+        <ng-template #espace><span class="deplier-vide"></span></ng-template>
+        <i class="ti type-icone" [ngClass]="[icone(d.type), 'type-' + d.type]"></i>
+        <span class="noeud-nom">{{ d.nom }}</span>
+        <i class="ti ti-user-question sans-resp" *ngIf="!d.responsable_id && d.est_active" title="Sans responsable"></i>
+        <span class="noeud-compte" title="Membres directs / total">{{ d.employes_count || 0 }}<span *ngIf="d.effectif_total !== d.employes_count">/{{ d.effectif_total }}</span></span>
+      </div>
+      <ng-container *ngIf="d.enfants?.length && estDeplie(d)">
+        <ng-container *ngTemplateOutlet="branche; context: { $implicit: d.enfants, niveau: niveau + 1 }"></ng-container>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+
+  <!-- FICHE -->
+  <div class="col-fiche">
+    <div class="vide" *ngIf="!detail && !detailChargement">
+      <i class="ti ti-click"></i>
+      <p>Sélectionnez une entité dans l'arbre.</p>
+    </div>
+    <div class="chargement" *ngIf="detailChargement"><div class="spinner"></div></div>
+
+    <ng-container *ngIf="detail && !detailChargement">
+      <div class="fiche-tete">
+        <div class="fiche-icone"><i class="ti" [ngClass]="icone(detail.type)"></i></div>
+        <div class="fiche-infos">
+          <div class="fiche-nom">
+            {{ detail.nom }}
+            <span class="badge-org gris" *ngIf="detail.code" title="Code de l'entité (import / export)">{{ detail.code }}</span>
+            <span class="badge-org gris" *ngIf="!detail.est_active">Inactive</span>
+          </div>
+          <div class="fil">
+            <ng-container *ngFor="let a of detail.fil_ariane; let dernier = last">
+              <button type="button" class="fil-lien" [class.courant]="dernier" (click)="!dernier && ouvrir(a.id)">{{ a.nom }}</button>
+              <i class="ti ti-chevron-right" *ngIf="!dernier"></i>
+            </ng-container>
+          </div>
+        </div>
+        <div class="fiche-actions" *ngIf="peutGerer">
+          <button type="button" class="btn-o btn-sm" (click)="ouvrirEdition()"><i class="ti ti-edit"></i> Modifier</button>
+          <button type="button" class="btn-p btn-sm" (click)="ouvrirAffectation()"><i class="ti ti-user-plus"></i> Affecter</button>
+          <button type="button" class="btn-o btn-sm" (click)="ouvrirCreation(typeEnfantParDefaut(detail.type), detail.id)"><i class="ti ti-plus"></i> Sous-entité</button>
+          <button type="button" class="btn-o btn-sm danger" (click)="supprimer()" title="Supprimer"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+
+      <div class="fiche-stats">
+        <div class="stat">
+          <div class="stat-v">{{ detail.responsable ? (detail.responsable.prenom + ' ' + detail.responsable.nom) : 'Aucun' }}</div>
+          <div class="stat-l">Responsable</div>
+        </div>
+        <div class="stat"><div class="stat-v">{{ detail.employes_count || 0 }}</div><div class="stat-l">Membres directs</div></div>
+        <div class="stat"><div class="stat-v">{{ detail.effectif_total || 0 }}</div><div class="stat-l">Total (sous-entités incluses)</div></div>
+        <div class="stat"><div class="stat-v">{{ libelleType(detail.type) }}</div><div class="stat-l">Type</div></div>
+      </div>
+
+      <div class="info-resp" *ngIf="!detail.responsable">
+        <i class="ti ti-info-circle"></i>
+        Sans responsable, les membres de cette entité ont pour N+1 le responsable de l'entité parente.
+      </div>
+
+      <div class="onglets" role="tablist">
+        <button type="button" role="tab" [class.on]="onglet === 'membres'" (click)="onglet = 'membres'"><i class="ti ti-users"></i> Membres ({{ detail.employes?.length || 0 }})</button>
+        <button type="button" role="tab" [class.on]="onglet === 'structure'" (click)="onglet = 'structure'"><i class="ti ti-sitemap"></i> Sous-entités ({{ detail.enfants?.length || 0 }})</button>
+      </div>
+
+      <div class="onglet-corps" *ngIf="onglet === 'membres'">
+        <div class="table-wrap" *ngIf="detail.employes?.length; else aucunMembre">
+          <table class="table-membres">
+            <thead><tr><th>Collaborateur</th><th>Fonction</th><th>N+1</th><th *ngIf="peutGerer"></th></tr></thead>
+            <tbody>
+              <tr *ngFor="let m of detail.employes">
+                <td>
+                  <div class="membre">
+                    <div class="avatar">{{ initiales(m) }}</div>
+                    <div>
+                      <div class="membre-nom">{{ m.prenom }} {{ m.nom }} <span class="badge-org vert" *ngIf="estResponsable(m)">Responsable</span></div>
+                      <div class="membre-sous">{{ m.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ m.fonction || '—' }}</td>
+                <td>
+                  {{ nomManager(m) }}
+                  <span class="badge-org ambre" *ngIf="m.manager_mode === 'manuel'" title="N+1 défini manuellement">manuel</span>
+                </td>
+                <td *ngIf="peutGerer" class="td-actions">
+                  <button type="button" class="icone-btn" *ngIf="!estResponsable(m)" (click)="retirer(m)" title="Retirer de l'entité" [attr.aria-label]="'Retirer ' + m.prenom + ' ' + m.nom">
+                    <i class="ti ti-x"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #aucunMembre>
+          <div class="vide petit">
+            <i class="ti ti-users"></i>
+            <p>Aucun membre rattaché.</p>
+            <button type="button" class="btn-p btn-sm" *ngIf="peutGerer" (click)="ouvrirAffectation()"><i class="ti ti-user-plus"></i> Affecter des collaborateurs</button>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="onglet-corps" *ngIf="onglet === 'structure'">
+        <div class="cartes">
+          <button type="button" class="carte" *ngFor="let e of detail.enfants" (click)="ouvrir(e.id)">
+            <i class="ti type-icone" [ngClass]="[icone(e.type), 'type-' + e.type]"></i>
+            <span class="carte-infos">
+              <span class="carte-nom">{{ e.nom }}</span>
+              <span class="carte-sous">{{ libelleType(e.type) }} · {{ $any(e).employes_count || 0 }} membre(s)</span>
+            </span>
+            <i class="ti ti-chevron-right"></i>
+          </button>
+          <button type="button" class="carte ajout" *ngIf="peutGerer" (click)="ouvrirCreation(typeEnfantParDefaut(detail.type), detail.id)">
+            <i class="ti ti-plus"></i> Ajouter une sous-entité
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<!-- MODALE ENTITÉ -->
+<div class="modal-overlay" *ngIf="modaleEntite" (click)="modaleEntite = false">
+  <div class="modal-box" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3>{{ modeEntite === 'creation' ? 'Nouvelle entité' : 'Modifier l\'entité' }}</h3>
+      <button type="button" class="modal-close" (click)="modaleEntite = false" aria-label="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <form [formGroup]="formulaire" (ngSubmit)="enregistrerEntite()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="ent-nom">Nom *</label>
+          <input id="ent-nom" type="text" formControlName="nom" class="form-input" placeholder="Ex. Direction des systèmes d'information" />
+        </div>
+        <div class="form-group">
+          <label for="ent-type">Type *</label>
+          <select id="ent-type" formControlName="type" class="form-input">
+            <option value="direction">Direction</option>
+            <option value="sous_direction">Département / Sous-direction</option>
+            <option value="departement">Équipe</option>
+          </select>
+          <div class="form-aide">Une entité ne peut pas contenir une entité de niveau supérieur (ex. une équipe ne contient pas de direction).</div>
+        </div>
+        <div class="form-group">
+          <label for="ent-parent">Rattachée à</label>
+          <app-selecteur-direction inputId="ent-parent" formControlName="parent_id" [arborescence]="arborescence"
+                                   [exclureId]="modeEntite === 'edition' ? (detail?.id ?? null) : null"
+                                   placeholder="— Racine de l'entreprise —"></app-selecteur-direction>
+        </div>
+        <div class="form-group">
+          <label for="ent-resp">Responsable</label>
+          <select id="ent-resp" formControlName="responsable_id" class="form-input">
+            <option [ngValue]="null">Aucun responsable</option>
+            <option *ngFor="let p of personnes" [ngValue]="p.id">{{ p.nom }}{{ p.fonction ? ' · ' + p.fonction : '' }}</option>
+          </select>
+          <div class="form-aide">Le responsable devient le N+1 des membres de l'entité (mode automatique) et y est rattaché.</div>
+        </div>
+        <div class="form-group">
+          <label for="ent-code">Code</label>
+          <input id="ent-code" type="text" formControlName="code" class="form-input" placeholder="Ex. DSI" />
+          <div class="form-aide">Identifiant unique de l'entité dans l'entreprise (utilisé par l'import / export). Généré à partir du nom s'il est laissé vide.</div>
+        </div>
+        <div class="form-group">
+          <label for="ent-desc">Description</label>
+          <textarea id="ent-desc" formControlName="description" class="form-input" rows="2"></textarea>
+        </div>
+        <div class="modal-error" *ngIf="erreurEntite">{{ erreurEntite }}</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-o" (click)="modaleEntite = false">Annuler</button>
+        <button type="submit" class="btn-p" [disabled]="formulaire.invalid || enregistrement">
+          <span class="spinner-sm" *ngIf="enregistrement"></span>
+          {{ modeEntite === 'creation' ? 'Créer' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODALE AFFECTATION -->
+<div class="modal-overlay" *ngIf="modaleAffecter" (click)="modaleAffecter = false">
+  <div class="modal-box modal-lg" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3>Affecter à « {{ detail?.nom }} »</h3>
+      <button type="button" class="modal-close" (click)="modaleAffecter = false" aria-label="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="filtre large">
+        <i class="ti ti-search"></i>
+        <input type="text" [(ngModel)]="rechercheEmploye" placeholder="Rechercher un collaborateur, une fonction, une direction…" aria-label="Rechercher un collaborateur" />
+      </div>
+      <div class="liste-employes">
+        <button type="button" class="employe" *ngFor="let p of employesDisponibles" [class.choisi]="employesChoisis.has(p.id)" (click)="basculerEmploye(p.id)">
+          <i class="ti" [ngClass]="employesChoisis.has(p.id) ? 'ti-square-check' : 'ti-square'"></i>
+          <span class="employe-nom">{{ p.nom }}</span>
+          <span class="employe-sous">{{ p.fonction || '' }}</span>
+          <span class="badge-org gris">{{ p.direction?.nom || 'sans direction' }}</span>
+        </button>
+        <div class="vide petit" *ngIf="!employesDisponibles.length"><p>Aucun collaborateur disponible.</p></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="compte">{{ employesChoisis.size }} sélectionné(s)</span>
+      <button type="button" class="btn-o" (click)="modaleAffecter = false">Annuler</button>
+      <button type="button" class="btn-p" [disabled]="!employesChoisis.size" (click)="previsualiserAffectation()">Prévisualiser l'impact</button>
+    </div>
+  </div>
+</div>
+
+<app-rapport-organisation
+  [visible]="rapportVisible"
+  [titre]="rapportCompteRendu ? 'Changement appliqué' : rapportTitre"
+  [rapport]="rapport"
+  [chargement]="rapportCalcul"
+  [enCours]="rapportEnCours"
+  [erreur]="rapportErreur"
+  [lectureSeule]="rapportCompteRendu"
+  libelleConfirmer="Appliquer"
+  (confirmer)="confirmerRapport()"
+  (fermer)="fermerRapport()">
+</app-rapport-organisation>

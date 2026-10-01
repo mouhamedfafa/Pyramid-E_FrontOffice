@@ -11,6 +11,7 @@
 // }
 
 
+import { CircuitDemandeComponent } from '../../../shared/components/circuit-demande/circuit-demande.component';
 import { Component, OnInit } from '@angular/core';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -36,7 +37,7 @@ interface StatutFilter {
 @Component({
    selector: 'app-adminrh-demande-parcours',
   standalone: true,
-  imports: [RouterLink, FormsModule, CommonModule, MatSortModule, CustomPaginationComponent],
+  imports: [RouterLink, FormsModule, CommonModule, MatSortModule, CustomPaginationComponent, CircuitDemandeComponent],
  templateUrl: './adminrh-demande-parcours.component.html',
   styleUrl: './adminrh-demande-parcours.component.scss'
 })
@@ -76,7 +77,8 @@ export class AdminrhDemandeParcoursComponent implements OnInit {
   // Filtres de statut
   public statutFilters: StatutFilter[] = [
     { value: 'tous', label: 'Tous les statuts', count: 0, color: 'secondary' },
-    { value: 'en_attente', label: 'En attente', count: 0, color: 'warning' },
+    { value: 'en_attente_manager', label: 'En attente manager', count: 0, color: 'info' },
+    { value: 'en_attente', label: 'En attente RH', count: 0, color: 'warning' },
     { value: 'validee', label: 'Validées', count: 0, color: 'success' },
     { value: 'refusee', label: 'Refusées', count: 0, color: 'danger' },
     { value: 'annulee', label: 'Annulées', count: 0, color: 'secondary' }
@@ -140,6 +142,7 @@ private loadDemandes(): void {
 
           this.stats = {
             total:      parcoursDemandes.length,
+            en_attente_manager: parcoursDemandes.filter(d => d.statut === 'en_attente_manager').length,
             en_attente: parcoursDemandes.filter(d => d.statut === 'en_attente').length,
             validees:   parcoursDemandes.filter(d => d.statut === 'validee').length,
             refusees:   parcoursDemandes.filter(d => d.statut === 'refusee').length,
@@ -171,6 +174,7 @@ private loadDemandes(): void {
   private updateStatutFilters(): void {
     const statsMap: Record<string, string> = {
       'tous':       'total',
+      'en_attente_manager': 'en_attente_manager',
       'en_attente': 'en_attente',
       'validee':    'validees',
       'refusee':    'refusees',
@@ -434,6 +438,7 @@ private loadDemandes(): void {
 
   getStatutClass(statut: string): string {
     const statutMap: Record<string, string> = {
+      'en_attente_manager': 'badge bg-info',
       'en_attente': 'badge bg-warning',
       'validee': 'badge bg-success',
       'refusee': 'badge bg-danger',
@@ -487,7 +492,7 @@ private loadDemandes(): void {
   }
 
   canCancel(demande: DemandeFormation): boolean {
-    return ['en_attente', 'validee'].includes(demande.statut);
+    return ['en_attente_manager', 'en_attente', 'validee'].includes(demande.statut);
   }
 
   trackByDemandeId(index: number, demande: DemandeFormation): number {
@@ -534,6 +539,10 @@ private loadDemandes(): void {
 
   get demandesEnAttente(): number {
     return this.stats.en_attente || 0;
+  }
+
+  get demandesEnAttenteManager(): number {
+    return this.stats.en_attente_manager || 0;
   }
 
   get demandesValidees(): number {

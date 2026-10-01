@@ -43,13 +43,10 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Direction</label>
-                            <select class="form-select" formControlName="direction_id">
-                                <option [ngValue]="null">— Aucune direction —</option>
-                                <option *ngFor="let d of directionOptions" [ngValue]="d.id">
-                                    {{ d.label }}
-                                </option>
-                            </select>
+                            <label class="form-label" for="ua-direction">Direction / entité</label>
+                            <app-selecteur-direction inputId="ua-direction" formControlName="direction_id"
+                                                     [entrepriseId]="entrepriseCible" placeholder="— Aucune direction —">
+                            </app-selecteur-direction>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -82,6 +79,70 @@
                                 <option value="">Aucune</option>
                                 <option *ngFor="let company of companies" [value]="company.id">{{company.nom}}</option>
                             </select>
+                        </div>
+
+                        <!-- Manager (N+1) — hiérarchie indépendante du rôle -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Manager (N+1)</label>
+
+                            <div class="ua-mode" role="radiogroup" aria-label="Mode de définition du N+1">
+                                <button type="button" role="radio" [attr.aria-checked]="modeManager === 'auto'" [class.on]="modeManager === 'auto'" (click)="choisirModeManager('auto')">
+                                    <i class="isax isax-hierarchy"></i> Automatique (selon la direction)
+                                </button>
+                                <button type="button" role="radio" [attr.aria-checked]="modeManager === 'manuel'" [class.on]="modeManager === 'manuel'" (click)="choisirModeManager('manuel')">
+                                    <i class="isax isax-user-edit"></i> Manuel
+                                </button>
+                            </div>
+
+                            <ng-container *ngIf="modeManager === 'auto'">
+                                <div class="ua-manager-chip ua-calcule" *ngIf="managerCalcule">
+                                    <i class="isax isax-user-tick"></i>
+                                    <span><strong>{{ managerCalcule.nom }}</strong> <small>· responsable de l'entité (ou du niveau au-dessus)</small></span>
+                                </div>
+                                <small class="text-muted d-block" *ngIf="calculManager">Calcul du N+1…</small>
+                                <small class="text-muted d-block" *ngIf="!calculManager && !managerCalcule">
+                                    {{ userForm.get('direction_id')?.value ? 'Aucun responsable au-dessus de cette entité : les demandes iront directement aux RH.' : 'Choisissez une direction : le N+1 sera son responsable.' }}
+                                </small>
+                            </ng-container>
+
+                            <ng-container *ngIf="modeManager === 'manuel'">
+                            <div *ngIf="managerSelectionne" class="ua-manager-chip">
+                                <i class="isax isax-user-tick"></i>
+                                <span>
+                                    <strong>{{ nomUtilisateur(managerSelectionne) }}</strong>
+                                    <small *ngIf="managerSelectionne.fonction"> · {{ managerSelectionne.fonction }}</small>
+                                    <small *ngIf="managerSelectionne.matricule"> · {{ managerSelectionne.matricule }}</small>
+                                </span>
+                                <button type="button" class="btn-close btn-close-sm ms-auto" (click)="retirerManager()" aria-label="Retirer le manager"></button>
+                            </div>
+
+                            <div *ngIf="!managerSelectionne" class="ua-manager-search">
+                                <input type="text" class="form-control" placeholder="Rechercher par nom, matricule ou email…"
+                                       [(ngModel)]="managerSearch" [ngModelOptions]="{standalone: true}"
+                                       (focus)="managerDropdownOpen = true" (blur)="fermerDropdownManager()">
+                                <div class="ua-manager-dropdown" *ngIf="managerDropdownOpen">
+                                    <button type="button" class="ua-manager-option" *ngFor="let u of managerCandidats" (mousedown)="choisirManager(u)">
+                                        <strong>{{ nomUtilisateur(u) }}</strong>
+                                        <small>{{ u.fonction || u.email }}<span *ngIf="u.matricule"> · {{ u.matricule }}</span></small>
+                                    </button>
+                                    <div class="ua-manager-empty" *ngIf="!managerCandidats.length">Aucun utilisateur éligible</div>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mt-1">Même entreprise uniquement. Un subordonné ne peut pas devenir manager (cycle).</small>
+                            <div class="alert alert-warning py-1 px-2 mt-2 mb-0 small" *ngIf="managerHorsStructure">
+                                <i class="isax isax-warning-2 me-1"></i>
+                                Ce N+1 est hors de la ligne hiérarchique de la direction (la structure donnerait {{ managerCalcule?.nom }}). Exception assumée : il ne sera pas recalculé automatiquement.
+                            </div>
+                            </ng-container>
+                        </div>
+
+                        <div class="col-md-12 mb-3" *ngIf="isEditMode && collaborateursDirects.length">
+                            <label class="form-label">Collaborateurs directs (N-1)</label>
+                            <div class="ua-n1-list">
+                                <span class="ua-n1" *ngFor="let c of collaborateursDirects">
+                                    <i class="isax isax-user"></i>{{ nomUtilisateur(c) }}
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Toggle modifier le mot de passe (mode édition) -->

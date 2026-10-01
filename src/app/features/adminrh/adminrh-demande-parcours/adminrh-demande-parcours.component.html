@@ -66,7 +66,12 @@
       <button type="button" class="filter-chip"
               [class.active]="selectedStatutFilter === 'en_attente'"
               (click)="onStatutFilterChange(selectedStatutFilter === 'en_attente' ? 'tous' : 'en_attente')">
-        <i class="isax isax-clock"></i> En attente
+        <i class="isax isax-clock"></i> En attente RH
+      </button>
+      <button type="button" class="filter-chip"
+              [class.active]="selectedStatutFilter === 'en_attente_manager'"
+              (click)="onStatutFilterChange(selectedStatutFilter === 'en_attente_manager' ? 'tous' : 'en_attente_manager')">
+        <i class="isax isax-hierarchy"></i> En attente manager
       </button>
       <button type="button" class="filter-chip"
               [class.active]="selectedStatutFilter === 'validee'"
@@ -132,12 +137,15 @@
           <div *ngIf="d.motif_demande" class="d-msg" [title]="d.motif_demande">
             "{{ d.motif_demande }}"
           </div>
+
+          <app-circuit-demande [demande]="d" variante="compact"></app-circuit-demande>
         </div>
 
         <!-- Right: badges + actions -->
         <div class="d-right">
           <div class="d-badges">
             <span class="sb"
+              [class.sb-manager]="d.statut === 'en_attente_manager'"
               [class.sb-pending]="d.statut === 'en_attente'"
               [class.sb-approved]="d.statut === 'validee'"
               [class.sb-rejected]="d.statut === 'refusee'"
