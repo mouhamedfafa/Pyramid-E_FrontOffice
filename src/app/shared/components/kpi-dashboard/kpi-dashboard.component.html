@@ -1,0 +1,318 @@
+<div class="kpi-dash">
+
+  <!-- ── EN-TÊTE ── -->
+  <div class="topbar">
+    <div class="tb-icon" [style.background]="payload.meta.bg">{{ payload.meta.icon }}</div>
+    <div>
+      <div class="tb-title">{{ payload.meta.title }}</div>
+      <div class="tb-sub">{{ payload.meta.subtitle }}</div>
+    </div>
+    <div class="tb-right">
+      <span class="tb-updated">Mise à jour · à l'instant</span>
+      @if (payload.filters.periodAvailable) {
+        <select class="fsel tb-sel" title="Période des indicateurs exprimés par semaine / mois / trimestre" (change)="choisirPeriode($event)">
+          @for (p of periodes; track p.id) {
+            <option [value]="p.id" [selected]="payload.filters.period === p.id">{{ p.label }}</option>
+          }
+        </select>
+      }
+      <div class="bell" title="Alertes de seuil" (click)="basculerAlertes($event)">
+        🚩 <span class="bn" [class.none]="!nbAlertes">{{ nbAlertes }}</span>
+      </div>
+    </div>
+
+    <!-- ── PANNEAU D'ALERTES ── -->
+    @if (alertesOuvertes) {
+      <div class="apanel" (click)="$event.stopPropagation()">
+        <div class="ap-h">🚩 Alertes de seuil — {{ payload.meta.title }}<span (click)="alertesOuvertes = false">Fermer ✕</span></div>
+        @if (!nbAlertes) {
+          <div class="aempty">Aucun indicateur hors seuil.</div>
+        }
+        @if (payload.alerts.own.length) {
+          <div class="ap-g">Mes indicateurs — je suis titulaire ({{ payload.alerts.own.length }})</div>
+          @for (a of payload.alerts.own; track $index) {
+            <ng-container *ngTemplateOutlet="alerte; context: { $implicit: a }"></ng-container>
+          }
+        }
+        @if (payload.alerts.watched.length) {
+          <div class="ap-g">Indicateurs suivis — titulaire : un autre profil ({{ payload.alerts.watched.length }})</div>
+          @for (a of payload.alerts.watched; track $index) {
+            <ng-container *ngTemplateOutlet="alerte; context: { $implicit: a }"></ng-container>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <ng-template #alerte let-a>
+    <div class="aitem">
+      <span class="adot" [style.background]="couleur(a.level)"></span>
+      <div>
+        <div class="atitle">{{ a.label }}</div>
+        <div class="asub">Valeur <b>{{ a.text }}</b> · seuil {{ a.thrLabel }} ·
+          <b [style.color]="couleur(a.level)">{{ a.level === 2 ? 'critique' : 'hors seuil' }}</b></div>
+        <div class="asub">Titulaire : <b>{{ a.titulaire }}</b></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="content">
+
+    <!-- ── BANDEAU D'ALERTES ── -->
+    @if (nbAlertes) {
+      <div class="flag-banner" [class.crit]="alerteCritique" (click)="basculerAlertes($event)">
+        🚩
+        <span>
+          <b>{{ payload.alerts.own.length }}</b> indicateur{{ payload.alerts.own.length > 1 ? 's' : '' }} hors seuil dont vous êtes titulaire
+          @if (payload.alerts.watched.length) {
+            · <b>{{ payload.alerts.watched.length }}</b> suivi{{ payload.alerts.watched.length > 1 ? 's' : '' }} (titulaire : un autre profil)
+          }
+        </span>
+        <u>Voir le détail</u>
+      </div>
+    }
+
+    @if (payload.nudges.length) {
+      <div class="nudge-box">
+        <div class="nh">⚠ Actions requises</div>
+        @for (n of payload.nudges; track $index) {
+          <div class="nudge-row"><span>⚠</span><span>{{ n }}</span></div>
+        }
+      </div>
+    }
+
+    @for (n of payload.notices; track $index) {
+      <div class="lock-note">🔒 {{ n }}</div>
+    }
+
+    <!-- ── FILTRES ── -->
+    @if (payload.filters.views.length > 1 || payload.filters.people.length) {
+      <div class="fbar">
+        @if (payload.filters.views.length > 1) {
+          <span class="flbl">Vue</span>
+          <div class="seg">
+            @for (v of payload.filters.views; track v.id) {
+              <button type="button" [class.active]="payload.filters.view === v.id" (click)="viewChange.emit(v.id)">{{ v.label }}</button>
+            }
+          </div>
+        }
+        @if (payload.filters.people.length) {
+          <span class="flbl">Filtrer</span>
+          <select class="fsel" [value]="payload.filters.person" (change)="choisirPersonne($event)">
+            <option value="all">Tous (vue agrégée)</option>
+            @for (p of payload.filters.people; track p.id) {
+              <option [value]="p.id" [selected]="payload.filters.person === p.id">{{ p.label }}</option>
+            }
+          </select>
+        }
+        @if (payload.filters.compareAvailable) {
+          <label class="fchk">
+            <input type="checkbox" [checked]="payload.filters.compare" (change)="basculerComparaison($event)">
+            {{ payload.filters.compareLabel || 'Comparer les performances individuelles' }}
+          </label>
+        }
+      </div>
+    }
+    @if (payload.filters.person !== 'all' && payload.filters.personLabel) {
+      <div class="scope-note">Filtre actif : <b>{{ payload.filters.personLabel }}</b>
+        <a (click)="personChange.emit('all')">Réinitialiser</a></div>
+    }
+
+    <!-- ── CARTES PRINCIPALES ── -->
+    @if (payload.hero.length) {
+      <div class="hero-grid" [ngClass]="heroClasse(payload.hero.length)">
+        @for (k of payload.hero; track k.id) {
+          @let l = niveau(k);
+          <div class="hcard" [ngClass]="l ? 'flagged lv' + l : ''">
+            <div class="hcard-accent" [style.background]="payload.meta.accent"></div>
+            <div class="hlbl">{{ k.label }}
+              @if (k.info) { <span class="hinfo" [title]="k.info">i</span> }
+            </div>
+
+            <div class="hwrap">
+              @if (k.widget; as w) {
+                @switch (w.type) {
+                  @case ('gauge') {
+                    @let g = jauge($any(w).value, $any(w).max);
+                    <svg [attr.width]="g.size" [attr.height]="g.h" [attr.viewBox]="'0 0 ' + g.size + ' ' + g.h">
+                      <path [attr.d]="g.d" stroke="#EDF1F5" stroke-width="11" fill="none" stroke-linecap="round" />
+                      <path [attr.d]="g.d" [attr.stroke]="couleurWidget(k, true)" stroke-width="11" fill="none" stroke-linecap="round" [attr.stroke-dasharray]="g.dash" />
+                      <text [attr.x]="g.cx" [attr.y]="g.cy - 6" text-anchor="middle" class="gauge-val">{{ nombre($any(w).value) }}{{ $any(w).unit === '%' ? '%' : '' }}</text>
+                      @if ($any(w).unit !== '%') {
+                        <text [attr.x]="g.cx" [attr.y]="g.cy + 10" text-anchor="middle" class="gauge-unit">{{ $any(w).unit }}</text>
+                      }
+                    </svg>
+                  }
+                  @case ('ring') {
+                    @let a = anneau($any(w).value, $any(w).max);
+                    <svg [attr.width]="a.size" [attr.height]="a.size" [attr.viewBox]="'0 0 ' + a.size + ' ' + a.size">
+                      <circle [attr.cx]="a.c" [attr.cy]="a.c" [attr.r]="a.r" stroke="#EDF1F5" stroke-width="10" fill="none" />
+                      <circle [attr.cx]="a.c" [attr.cy]="a.c" [attr.r]="a.r" [attr.stroke]="couleurWidget(k)" stroke-width="10" fill="none" stroke-linecap="round"
+                              [attr.stroke-dasharray]="a.dash" [attr.transform]="'rotate(-90 ' + a.c + ' ' + a.c + ')'" />
+                      <text [attr.x]="a.c" [attr.y]="a.c + 6" text-anchor="middle" class="ring-center">{{ nombre($any(w).value) }}{{ $any(w).unit }}</text>
+                    </svg>
+                  }
+                  @case ('bar') {
+                    <div class="bar-wrap">
+                      <div class="bar-top">
+                        <span class="bar-num">{{ nombre($any(w).value) }}{{ $any(w).unit }}</span>
+                        @if ($any(w).targetLabel) { <span class="bar-target">{{ $any(w).targetLabel }}</span> }
+                      </div>
+                      <div class="bar-track">
+                        <div class="bar-fill" [style.width.%]="pct($any(w).value, $any(w).max) * 100" [style.background]="couleurWidget(k)"></div>
+                      </div>
+                    </div>
+                  }
+                  @case ('counter') {
+                    <div class="trend-wrap">
+                      <div class="counter-num" [style.color]="l ? couleur(l) : null">{{ k.text }}</div>
+                      <div class="counter-unit">{{ $any(w).unit }}</div>
+                      @if ($any(w).delta !== null) {
+                        <span class="trend" [ngClass]="$any(w).delta >= 0 ? 'trend-up' : 'trend-down'">
+                          {{ $any(w).delta >= 0 ? '▲ +' : '▼ ' }}{{ nombre($any(w).delta) }}{{ $any(w).deltaUnit }}
+                        </span>
+                      }
+                    </div>
+                  }
+                  @case ('countdown') {
+                    <div>
+                      <div class="cd-num" [style.color]="couleur(l)">{{ $any(w).days }}</div>
+                      <div class="cd-lbl">jours · {{ $any(w).label }}</div>
+                    </div>
+                  }
+                  @case ('rank') {
+                    <div>
+                      <div class="rank-num" [class.masque]="rangMasque">#{{ $any(w).rank }} <span>/ {{ $any(w).total }}</span></div>
+                      <div class="rank-sub">Classement général (privé)</div>
+                      <button class="rank-toggle" (click)="rangMasque = !rangMasque">{{ rangMasque ? 'Afficher' : 'Masquer' }} mon classement</button>
+                    </div>
+                  }
+                }
+              } @else {
+                <div class="counter-num" [style.color]="l ? couleur(l) : null">{{ k.text }}</div>
+              }
+            </div>
+
+            <div class="hthr">
+              <span>Seuil : {{ seuil(k) }}</span>
+              @if (l) { <span class="fchip" [ngClass]="'lv' + l">🚩 {{ l === 2 ? 'Critique' : 'Hors seuil' }}</span> }
+            </div>
+            @if (k.titulaire) {
+              <div class="hthr hthr--tit"><span class="tit-chip">Suivi · titulaire : {{ k.titulaire.label }}</span></div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── BLOCS ── -->
+    @for (b of payload.blocks; track $index) {
+      @switch (b.type) {
+        @case ('table') {
+          @let t = asTable(b);
+          <div class="sect-lbl">{{ t.title }}</div>
+          <div class="cat-block cat-block--scroll">
+            <table class="nom-table">
+              <thead><tr>@for (c of t.columns; track $index) { <th>{{ c }}</th> }</tr></thead>
+              <tbody>
+                @for (r of t.rows; track $index) {
+                  <tr>
+                    @for (c of r; track $index) {
+                      <td>
+                        @if (c.t === 'bar') {
+                          <div class="mini-bar-cell">
+                            <div class="mini-track"><div class="mini-fill" [style.width.%]="pct(+c.v, c.max || 100) * 100" [style.background]="couleur(c.level ?? 0)"></div></div>
+                            {{ nombre(+c.v) }}{{ c.suffix }}
+                          </div>
+                        } @else { {{ c.v }} }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        @case ('quotes') {
+          @let q = asQuotes(b);
+          <div class="sect-lbl">{{ q.title }}</div>
+          <div class="cat-block cat-block--pad">
+            @for (item of q.items; track $index) { <div class="quote">{{ item }}</div> }
+          </div>
+        }
+        @case ('compare-table') {
+          @let c = asCompare(b);
+          <div class="sect-lbl">{{ c.title }}</div>
+          <div class="cat-block">
+            <div class="cmp-wrap">
+              <table class="cmp-tbl">
+                <thead>
+                  <tr>
+                    <th>{{ c.header }}</th>
+                    @for (col of c.columns; track col.id) { <th (click)="trier(col.id)">{{ col.label }}{{ fleche(col.id) }}</th> }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of lignesTriees(c).concat(lignesTotal(c)); track r.id) {
+                    <tr [class.sel]="r.selected" [class.tot]="r.total">
+                      <td>{{ r.label }}</td>
+                      @for (col of c.columns; track col.id) {
+                        @let cell = r.cells[col.id];
+                        <td [ngClass]="cell?.level ? 'cell-lv' + cell?.level : ''">{{ cell?.text }}{{ cell?.level ? ' 🚩' : '' }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="scope-note">{{ c.note }}</div>
+        }
+        @case ('chart-bugs') {
+          @let h = histogramme(b);
+          <div class="chart-card">
+            <div class="chart-title">{{ h.title }}</div>
+            <div class="chart-sub">{{ h.subtitle }}</div>
+            <svg [attr.viewBox]="'0 0 ' + h.w + ' 226'" role="img" [attr.aria-label]="h.title">
+              @for (y of h.grille; track $index) {
+                <line [attr.x1]="h.x0" [attr.x2]="h.w - 6" [attr.y1]="y" [attr.y2]="y" stroke="#EDF1F5" />
+              }
+              @for (g of h.groupes; track $index) {
+                <rect [attr.x]="g.cx - h.bw - 2" [attr.y]="h.base - g.h1" [attr.width]="h.bw" [attr.height]="g.h1" rx="3" fill="#2563EB" />
+                <text [attr.x]="g.cx - h.bw / 2 - 2" [attr.y]="h.base - g.h1 - 4" text-anchor="middle" font-size="9.5" fill="#475569">{{ g.reg }}</text>
+                <rect [attr.x]="g.cx + 2" [attr.y]="h.base - g.h2" [attr.width]="h.bw" [attr.height]="g.h2" rx="3" fill="#16A34A" />
+                <text [attr.x]="g.cx + h.bw / 2 + 2" [attr.y]="h.base - g.h2 - 4" text-anchor="middle" font-size="9.5" fill="#475569">{{ g.res }}</text>
+                <text [attr.x]="g.cx" [attr.y]="h.base + 16" text-anchor="middle" font-size="10" fill="#94A3B8">{{ g.label }}</text>
+              }
+            </svg>
+            <div class="legend"><span><i style="background:#2563EB"></i>Enregistrés</span><span><i style="background:#16A34A"></i>Résolus</span></div>
+            <div class="chart-note">{{ h.note }}</div>
+          </div>
+        }
+      }
+    }
+
+    <!-- ── SECTIONS ── -->
+    @for (s of payload.sections; track s.title) {
+      <div class="cat-block">
+        <div class="cat-head">{{ s.title }}</div>
+        @for (k of s.rows; track k.id) {
+          @let l = niveau(k);
+          <div class="cat-row" [ngClass]="l ? 'lv' + l : ''">
+            <span class="crow-lbl" [title]="k.info || ''">{{ k.label }}
+              @if (k.titulaire) { <span class="tit-chip">titulaire : {{ k.titulaire.label }}</span> }
+            </span>
+            <span class="crow-thr">Seuil {{ seuil(k) }}</span>
+            <span class="crow-val" [style.color]="l ? couleur(l) : null">{{ k.text }}</span>
+            <span class="crow-flag">{{ l ? '🚩' : '' }}</span>
+            <span class="freq-chip">{{ k.freq }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (!payload.hero.length && !payload.sections.length && !payload.blocks.length) {
+      <div class="empty">Aucun indicateur disponible pour le moment.</div>
+    }
+  </div>
+</div>

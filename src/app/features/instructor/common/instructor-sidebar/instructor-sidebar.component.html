@@ -60,6 +60,14 @@
       <i class="isax isax-grid-3 icon"></i>
       <span class="sb-item-label">Tableau de bord</span>
     </a>
+    <a *appHasPermission="'voir dashboard formateur'" [routerLink]="routes.dashboardFormateur" routerLinkActive="active" class="sb-item">
+      <i class="isax isax-chart-2 icon"></i>
+      <span class="sb-item-label">Indicateurs KPI</span>
+    </a>
+    <a *appHasPermission="'voir dashboard consultant'" [routerLink]="routes.dashboardConsultant" routerLinkActive="active" class="sb-item">
+      <i class="isax isax-chart-2 icon"></i>
+      <span class="sb-item-label">Suivi de mission</span>
+    </a>
     <!-- <a [routerLink]="routes.instructorProfile" routerLinkActive="active" class="sb-item">
       <i class="isax isax-chart-2 icon"></i>
       <span class="sb-item-label">Mes performances</span>
@@ -87,6 +95,10 @@
         <a href="/courses/instructor-course-add" target="_blank" class="sb-sub-item">
           <i class="isax isax-add-circle"></i>
           <span>Créer une formation</span>
+        </a>
+        <a *appHasPermission="'importer formations'" [routerLink]="routes.instructorImportFormations" routerLinkActive="active" class="sb-sub-item">
+          <i class="isax isax-document-upload"></i>
+          <span>Importer des formations</span>
         </a>
       </div>
     </div>
@@ -258,7 +270,7 @@
     </a> -->
     <!-- Retour espace AdminRH (visible uniquement si RH en mode formateur) -->
    
-    <a [routerLink]="routes.login" class="sb-bottom-item logout">
+    <a href="javascript:void(0);" (click)="logout()" class="sb-bottom-item logout">
       <i class="isax isax-logout"></i> Déconnexion
     </a>
   </div>

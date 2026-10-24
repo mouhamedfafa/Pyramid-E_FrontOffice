@@ -15,6 +15,10 @@ param(
 $ErrorActionPreference = "Stop"
 $dist = Join-Path $PSScriptRoot "dist/template/browser"
 
+# 0. Audit des dependances livrees au navigateur : pas de deploiement avec une faille haute/critique connue
+npm run audit:prod
+if ($LASTEXITCODE -ne 0) { throw "npm audit : vulnerabilites hautes/critiques dans les dependances de production" }
+
 if (-not $SkipBuild) {
   if (Test-Path $dist) { Remove-Item -Recurse -Force $dist }
   npx ng build --configuration $Configuration

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
@@ -133,6 +133,7 @@ export class AuthService {
               ...response?.user,
               permissions: response?.permissions || response?.user?.permissions || [],
               roles: response?.roles || response?.user?.roles || [],
+              role_type: response?.role_type ?? response?.user?.['role_type'] ?? null,
             };
             this.setUser(userWithPermissions);
           }
@@ -167,7 +168,12 @@ export class AuthService {
           const accessToken = response?.access_token || response?.token;
           if (accessToken) {
             this.setToken(accessToken);
-            this.setUser(response?.user);
+            this.setUser({
+              ...response?.user,
+              permissions: response?.permissions || response?.user?.permissions || [],
+              roles:       response?.roles       || response?.user?.roles       || [],
+              role_type:   response?.role_type ?? response?.user?.['role_type'] ?? null,
+            });
           }
         }),
         catchError(error => this.handleError(error))
@@ -213,6 +219,17 @@ register(data: any): Observable<any> {
   }
 
   logout(): void {
+    if (!this.getToken()) {
+      this.clearSession();
+      return;
+    }
+    // Révoque le jeton côté serveur ; la session locale est vidée même si l'appel échoue
+    this.http.post(`${environment.apiUrl}/logout`, {})
+      .pipe(finalize(() => this.clearSession()))
+      .subscribe({ error: () => {} });
+  }
+
+  private clearSession(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     this.router.navigate(['/auth/login']);

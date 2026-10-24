@@ -187,4 +187,8 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
       error: () => {}
     });
   }
+
+  logout(): void {
+    this.authService.logout();
+  }
 }

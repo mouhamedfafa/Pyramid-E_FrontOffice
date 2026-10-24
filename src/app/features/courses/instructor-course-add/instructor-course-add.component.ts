@@ -12,6 +12,8 @@ import { AuthService } from '../../../shared/service/authentification/auth.servi
 import { CategorieService, CategorieFormation, CategorieFormationRequest } from '../../../shared/service/categorie/categorie-service.service';
 import { QuizService } from '../../../shared/service/quiz/quiz.service';
 import { QuestionQuizService } from '../../../shared/service/quiz/question-quiz.service';
+import { VideothequePickerComponent } from '../../../shared/components/videotheque/videotheque-picker.component';
+import { VideoBibliotheque } from '../../../shared/service/videotheque/videotheque.service';
 
 
 
@@ -38,6 +40,9 @@ interface Section {
   obligatoire: boolean;
   visible: boolean;
   ordre: number;
+  /** uuid d'une vidéo de la vidéothèque (enregistré dans metadata.videotheque) */
+  videotheque?: string | null;
+  videothequeTitre?: string;
 }
 
 interface QuizQuestion {
@@ -73,7 +78,7 @@ interface LocalQuiz {
 
 @Component({
   selector: 'app-instructor-course-add',
- imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+ imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, VideothequePickerComponent],
   templateUrl: './instructor-course-add.component.html',
   styleUrl: './instructor-course-add.component.scss'
 })
@@ -122,7 +127,7 @@ export class InstructorCourseAddComponent implements OnInit {
   currentModuleIndex: number | null = null;
 
   // Section upload (modal)
-  sectionVideoMode: 'url' | 'upload' = 'url';
+  sectionVideoMode: 'url' | 'upload' | 'bibliotheque' = 'url';
   sectionUploadFile: File | null = null;
   sectionUploading = false;
   sectionUploadError = '';
@@ -590,7 +595,7 @@ export class InstructorCourseAddComponent implements OnInit {
     this.currentModuleIndex = moduleIndex;
     this.editingSectionIndex = sectionIndex;
     this.currentSection = { ...this.modules[moduleIndex].sections[sectionIndex] };
-    this.sectionVideoMode = 'url';
+    this.sectionVideoMode = this.currentSection.videotheque ? 'bibliotheque' : 'url';
     this.sectionUploadFile = null;
     this.sectionUploading = false;
     this.sectionUploadError = '';
@@ -644,6 +649,14 @@ export class InstructorCourseAddComponent implements OnInit {
     } else {
       doSave();
     }
+  }
+
+  /** Vidéo choisie dans la vidéothèque : remplace un éventuel lien / fichier. */
+  choisirVideoBibliotheque(v: VideoBibliotheque | null): void {
+    this.currentSection.videotheque = v?.uuid ?? null;
+    this.currentSection.videothequeTitre = v?.titre ?? '';
+    this.currentSection.ressources = '';
+    this.sectionUploadFile = null;
   }
 
   removeSection(moduleIndex: number, sectionIndex: number): void {
@@ -977,6 +990,7 @@ buildFormData(): any {
     ressources: section.ressources?.trim()
       ? [section.ressources.trim()]
       : [],
+    ...(section.type === 'video' && section.videotheque ? { metadata: { videotheque: section.videotheque } } : {}),
     obligatoire: Boolean(section.obligatoire),
     visible: Boolean(section.visible),
     ordre: section.ordre

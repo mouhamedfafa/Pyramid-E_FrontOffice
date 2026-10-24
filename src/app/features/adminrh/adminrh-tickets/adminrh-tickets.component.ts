@@ -52,9 +52,8 @@ export class AdminrhTicketsComponent implements OnInit {
 
   loadTickets(): void {
     this.loading = true;
-    // Admin RH voit uniquement les tickets de son entreprise
+    // Le périmètre (ses tickets + ceux des utilisateurs de son entreprise) est appliqué par le serveur
     const p: any = { page: this.currentPage, par_page: this.pageSize };
-    if (this.currentUser?.entreprise_id) p['entreprise_id'] = this.currentUser.entreprise_id;
     if (this.filterStatut) p['statut'] = this.filterStatut;
     if (this.searchQuery)  p['search'] = this.searchQuery;
 

@@ -1,3 +1,5 @@
+import type { KpiDashboardSlug } from '../../shared/service/dashboards/kpi-dashboard.service';
+
 export type LayoutType = 'superadmin' | 'adminrh' | 'formateur' | 'employe';
 
 export interface RoleRoutingConfig {
@@ -19,8 +21,9 @@ export const ROLE_ROUTING: RoleRoutingConfig[] = [
     layout: 'adminrh',
   },
   {
-    // Formateur, Consultant, Gestionnaire de compte
-    roleIds: [3, 6, 10, 13],
+    // Formateur, Consultant (Gestionnaire de compte, id 6, fait partie de l'équipe Pyramide LMS :
+    // type « admin » → espace superadmin, comme les autres rôles plateforme)
+    roleIds: [3, 10, 13],
     defaultRoute: '/instructor/instructor-course-grid',
     layout: 'formateur',
   },
@@ -29,6 +32,47 @@ export const ROLE_ROUTING: RoleRoutingConfig[] = [
     defaultRoute: '/student/student-dashboard',
     layout: 'employe',
   },
+];
+
+// Page d'accueil après connexion : le premier dashboard KPI auquel l'utilisateur a droit,
+// par ordre de priorité (un Responsable RH arrive sur son KPI RH, pas sur « Mes indicateurs »).
+// Le dashboard manager n'est retenu que si l'utilisateur a au moins un N-1 (managerGuard).
+export interface KpiRoute {
+  permission: string;
+  route: string;
+  manager?: boolean;
+}
+
+// Dashboards de l'équipe Pyramide LMS (domaine plateforme), servis dans l'espace /superadmin.
+// Une entrée = une route /superadmin/dashboard-<slug>, une permission « voir dashboard <slug> », un lien de menu.
+export interface KpiPlateforme {
+  slug: KpiDashboardSlug;
+  label: string;
+}
+
+export const KPI_PLATEFORME: KpiPlateforme[] = [
+  { slug: 'sa-ceo',               label: 'Indicateurs KPI — CEO' },
+  { slug: 'sa-cto',               label: 'Indicateurs KPI — CTO' },
+  { slug: 'sa-coo',               label: 'Indicateurs KPI — COO' },
+  { slug: 'customer-experience',  label: 'Indicateurs Customer Experience' },
+  { slug: 'head-sales',           label: 'Indicateurs Ventes' },
+  { slug: 'head-marketing',       label: 'Indicateurs Marketing' },
+  { slug: 'head-product',         label: 'Indicateurs Produit' },
+  { slug: 'gestionnaire-comptes', label: 'Mon portefeuille clients' },
+  { slug: 'qa',                   label: 'Indicateurs QA' },
+];
+
+export const kpiPlateformeRoute = (slug: string) => `/superadmin/dashboard-${slug}`;
+export const kpiPlateformePermission = (slug: string) => `voir dashboard ${slug}`;
+
+export const KPI_ROUTES: KpiRoute[] = [
+  ...KPI_PLATEFORME.map(k => ({ permission: kpiPlateformePermission(k.slug), route: kpiPlateformeRoute(k.slug) })),
+  { permission: 'voir dashboard admin-rh',       route: '/adminrh/dashboard-admin-rh' },
+  { permission: 'voir dashboard responsable-rh', route: '/adminrh/dashboard-responsable-rh' },
+  { permission: 'voir dashboard formateur',      route: '/instructor/dashboard-formateur' },
+  { permission: 'voir dashboard consultant',     route: '/instructor/dashboard-consultant' },
+  { permission: 'voir dashboard manager',        route: '/manager/dashboard-manager', manager: true },
+  { permission: 'voir dashboard employe',        route: '/student/dashboard-employe' },
 ];
 
 // Layouts autorisés par préfixe de route

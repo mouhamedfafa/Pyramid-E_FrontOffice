@@ -182,4 +182,8 @@ export class InstructorSidebarComponent implements OnInit, OnDestroy {
     const u = this.currentUser;
     return u?.fonction || u?.role?.name || 'Formateur';
   }
+
+  logout(): void {
+    this.authService.logout();
+  }
 }

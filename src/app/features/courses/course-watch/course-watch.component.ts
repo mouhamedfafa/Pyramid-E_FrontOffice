@@ -8,12 +8,13 @@ import { ProgressionService } from '../../../shared/service/progression/progress
 import { QuizService } from '../../../shared/service/quiz/quiz.service';
 import { routes } from '../../../shared/service/routes/routes';
 import { environment } from '../../../../environments/environment';
+import { VideoSecuriseeComponent } from '../../../shared/components/videotheque/video-securisee.component';
 
 const STORAGE_BASE = environment.apiUrl.replace(/\/api$/, '') + '/storage';
 
 @Component({
   selector: 'app-course-watch',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, VideoSecuriseeComponent],
   templateUrl: './course-watch.component.html',
   styleUrl: './course-watch.component.scss'
 })
@@ -93,6 +94,16 @@ export class CourseWatchComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /** uuid de la vidéo de la vidéothèque liée à la section (metadata.videotheque), sinon null. */
+  videothequeUuid(section: any): string | null {
+    const meta = typeof section?.metadata === 'string' ? this.parseJson(section.metadata) : section?.metadata;
+    return typeof meta?.videotheque === 'string' ? meta.videotheque : null;
+  }
+
+  private parseJson(valeur: string): any {
+    try { return JSON.parse(valeur); } catch { return null; }
   }
 
   // ─── Chargement ─────────────────────────────────────────────────────────────

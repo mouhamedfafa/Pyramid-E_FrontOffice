@@ -22,7 +22,7 @@ export const managerGuard: CanActivateFn = () => {
   return managerService.getStatut(true).pipe(
     map(statut => statut.is_manager
       ? true
-      : router.createUrlTree([redirectService.getDefaultRoute()])
+      : router.createUrlTree([redirectService.getDefaultRoute(false)])
     )
   );
 };

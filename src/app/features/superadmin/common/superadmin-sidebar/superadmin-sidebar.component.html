@@ -27,6 +27,11 @@
       <a [routerLink]="routes.superadmin_dashboard" routerLinkActive="active" class="sb-item">
         <i class="isax isax-grid-3"></i><span class="sb-item-label">Tableau de bord</span>
       </a>
+      @for (k of indicateurs; track k.slug) {
+        <a *appHasPermission="k.permission" [routerLink]="k.route" routerLinkActive="active" class="sb-item">
+          <i class="isax isax-chart-2"></i><span class="sb-item-label">{{ k.label }}</span>
+        </a>
+      }
       <!-- Hiérarchie : visible pour tout utilisateur ayant au moins un N-1 -->
       <a *ngIf="managerStatut?.is_manager" [routerLink]="routes.manager_dashboard" class="sb-item">
         <i class="isax isax-hierarchy"></i><span class="sb-item-label">Mode manager</span>

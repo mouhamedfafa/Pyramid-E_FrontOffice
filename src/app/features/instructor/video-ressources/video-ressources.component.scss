@@ -591,3 +591,47 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+// ==================== MA VIDÉOTHÈQUE ====================
+.vt {
+  .vt-total { font-size: 12px; color: #6B7C88; white-space: nowrap; }
+  .vt-btn {
+    display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 7px 14px; border-radius: 8px;
+    background: #1A7A4A; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    &:hover { background: #156A3F; }
+  }
+  .vt-aide { font-size: 12px; color: #6B7C88; margin: 8px 0 14px; }
+  .vt-alerte {
+    display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 12px; border-radius: 8px;
+    background: #FFF3D6; color: #8A5A00; font-size: 13px;
+    button { margin-left: auto; border: 0; background: none; color: inherit; cursor: pointer; }
+  }
+  .vt-envoi {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 8px;
+    border: 1px solid #E3E8EC; border-radius: 10px; background: #fff;
+    > i { font-size: 20px; color: #1A7A4A; }
+    > i.isax-danger { color: #C0392B; }
+  }
+  .vt-envoi-info { flex: 1; min-width: 0; }
+  .vt-envoi-nom { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  .vt-envoi-err { font-size: 12px; color: #C0392B; }
+  .vt-envoi-pct { font-size: 12px; color: #6B7C88; min-width: 40px; text-align: right; }
+  .vt-thumb { cursor: pointer; }
+  .vt-input {
+    width: 100%; border: 1px solid #E3E8EC; border-radius: 6px; padding: 5px 8px; font-size: 13px; margin-bottom: 6px;
+    font-family: inherit; resize: vertical;
+  }
+}
+
+.vt-modal {
+  position: fixed; inset: 0; z-index: 1050; background: rgba(15, 26, 33, .7);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.vt-modal-box { width: min(960px, 100%); background: #fff; border-radius: 14px; overflow: hidden; }
+.vt-modal-head {
+  display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+  > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  small { color: #6B7C88; font-size: 12px; }
+}
+.vt-modal-desc { padding: 12px 14px; margin: 0; font-size: 13px; white-space: pre-line; }

@@ -5,6 +5,18 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormationService } from '../../../shared/service/formation/formation.service';
 import { Formation, Module, Section } from '../../../shared/models/formation.models';
 import { environment } from '../../../../environments/environment';
+import {
+  VideothequeService, VideoBibliotheque, formatDuree, formatTaille,
+} from '../../../shared/service/videotheque/videotheque.service';
+import { VideoSecuriseeComponent } from '../../../shared/components/videotheque/video-securisee.component';
+import { HasPermissionDirective } from '../../../directive/has-permission-directive.directive';
+
+/** Vidéo en cours d'envoi vers la vidéothèque */
+interface EnvoiVideo {
+  nom: string;
+  pourcentage: number;
+  erreur?: string;
+}
 
 export interface Ressource {
   id: number;
@@ -26,7 +38,7 @@ export interface Ressource {
 @Component({
   selector: 'app-video-ressources',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, VideoSecuriseeComponent, HasPermissionDirective],
   templateUrl: './video-ressources.component.html',
   styleUrl: './video-ressources.component.scss',
 })
@@ -39,7 +51,20 @@ export class VideoRessourcesComponent implements OnInit {
   documents: Ressource[] = [];
   liens: Ressource[] = [];
 
-  activeTab: 'all' | 'videos' | 'docs' | 'links' | 'unused' = 'all';
+  activeTab: 'all' | 'videos' | 'docs' | 'links' | 'unused' | 'bibliotheque' = 'all';
+
+  // ── Vidéothèque (vidéos importées une fois, réutilisables dans les formations) ──
+  bibliotheque: VideoBibliotheque[] = [];
+  bibliothequeChargee = false;
+  bibliothequeErreur = false;
+  rechercheBibliotheque = '';
+  envois: EnvoiVideo[] = [];
+  videoOuverte: VideoBibliotheque | null = null;
+  edition: { uuid: string; titre: string; description: string } | null = null;
+  messageBibliotheque = '';
+  lienCopie = '';
+  readonly formatDuree = formatDuree;
+  readonly formatTaille = formatTaille;
   viewMode: 'grid' | 'list' = 'grid';
   searchQuery = '';
   filterType = '';
@@ -64,6 +89,7 @@ export class VideoRessourcesComponent implements OnInit {
   constructor(
     private formationService: FormationService,
     private sanitizer: DomSanitizer,
+    private videotheque: VideothequeService,
   ) {}
 
   ngOnInit(): void {
@@ -184,9 +210,116 @@ export class VideoRessourcesComponent implements OnInit {
     this.liens = filtered.filter(r => this.isLien(r));
   }
 
-  switchTab(tab: 'all' | 'videos' | 'docs' | 'links' | 'unused'): void {
+  switchTab(tab: 'all' | 'videos' | 'docs' | 'links' | 'unused' | 'bibliotheque'): void {
     this.activeTab = tab;
+    if (tab === 'bibliotheque') {
+      if (!this.bibliothequeChargee) this.chargerBibliotheque();
+      return;
+    }
     this.applyFilters();
+  }
+
+  // ==================== VIDÉOTHÈQUE ====================
+
+  chargerBibliotheque(): void {
+    this.bibliothequeErreur = false;
+    this.videotheque.lister().subscribe({
+      next: v => { this.bibliotheque = v; this.bibliothequeChargee = true; },
+      error: () => { this.bibliothequeErreur = true; this.bibliothequeChargee = true; },
+    });
+  }
+
+  get bibliothequeFiltree(): VideoBibliotheque[] {
+    const q = this.rechercheBibliotheque.trim().toLowerCase();
+    return q
+      ? this.bibliotheque.filter(v => v.titre.toLowerCase().includes(q) || v.code.toLowerCase().includes(q))
+      : this.bibliotheque;
+  }
+
+  get tailleBibliotheque(): string {
+    return formatTaille(this.bibliotheque.reduce((s, v) => s + v.taille, 0));
+  }
+
+  /** Envoi séquentiel des vidéos choisies ; le titre par défaut est le nom du fichier. */
+  importerVideos(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const fichiers = Array.from(input.files ?? []);
+    input.value = '';
+    this.messageBibliotheque = '';
+
+    const suivant = (i: number) => {
+      if (i >= fichiers.length) return;
+      const fichier = fichiers[i];
+      const envoi: EnvoiVideo = { nom: fichier.name, pourcentage: 0 };
+      this.envois.unshift(envoi);
+      const titre = fichier.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 191) || 'Vidéo';
+
+      this.videotheque.importer(fichier, titre).subscribe({
+        next: p => {
+          envoi.pourcentage = p.pourcentage;
+          if (p.video) {
+            this.bibliotheque.unshift(p.video);
+            this.envois = this.envois.filter(e => e !== envoi);
+          }
+        },
+        error: err => {
+          envoi.erreur = err?.error?.message || err?.error?.errors?.taille?.[0] || 'Échec de l\'envoi.';
+          suivant(i + 1);
+        },
+        complete: () => suivant(i + 1),
+      });
+    };
+    suivant(0);
+  }
+
+  titresFormations(v: VideoBibliotheque): string {
+    return v.formations.map(f => f.titre).join(', ');
+  }
+
+  retirerEnvoi(envoi: EnvoiVideo): void {
+    this.envois = this.envois.filter(e => e !== envoi);
+  }
+
+  ouvrirVideo(v: VideoBibliotheque): void {
+    this.videoOuverte = v;
+  }
+
+  copierLien(v: VideoBibliotheque): void {
+    const lien = this.videotheque.lienPartage(v.uuid);
+    navigator.clipboard?.writeText(lien).then(
+      () => { this.lienCopie = v.uuid; setTimeout(() => (this.lienCopie = ''), 2000); },
+      () => window.prompt('Copiez le lien :', lien),
+    ) ?? window.prompt('Copiez le lien :', lien);
+  }
+
+  commencerEdition(v: VideoBibliotheque): void {
+    this.edition = { uuid: v.uuid, titre: v.titre, description: v.description ?? '' };
+  }
+
+  enregistrerEdition(): void {
+    const e = this.edition;
+    if (!e || !e.titre.trim()) return;
+    this.videotheque.modifier(e.uuid, { titre: e.titre.trim(), description: e.description.trim() || null }).subscribe({
+      next: v => {
+        this.bibliotheque = this.bibliotheque.map(x => (x.uuid === v.uuid ? v : x));
+        this.edition = null;
+      },
+      error: () => (this.messageBibliotheque = 'Modification impossible pour le moment.'),
+    });
+  }
+
+  supprimerVideo(v: VideoBibliotheque): void {
+    if (!confirm(`Supprimer définitivement « ${v.titre} » de votre vidéothèque ?`)) return;
+    this.messageBibliotheque = '';
+    this.videotheque.supprimer(v.uuid).subscribe({
+      next: () => (this.bibliotheque = this.bibliotheque.filter(x => x.uuid !== v.uuid)),
+      error: err => {
+        const formations: { titre: string }[] = err?.error?.formations ?? [];
+        this.messageBibliotheque = err?.status === 409
+          ? `« ${v.titre} » est utilisée dans : ${formations.map(f => f.titre).join(', ')}. Retirez-la de ces formations avant de la supprimer.`
+          : 'Suppression impossible pour le moment.';
+      },
+    });
   }
 
   setView(mode: 'grid' | 'list'): void {

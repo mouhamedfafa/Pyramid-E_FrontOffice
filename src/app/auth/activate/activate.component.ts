@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../shared/service/authentification/auth.service';
+import { RoleRedirectService } from '../../core/services/role-redirect.service';
 import { routes } from '../../shared/service/routes/routes';
 
 @Component({
@@ -19,7 +20,7 @@ export class ActivateComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    private roleRedirect: RoleRedirectService,
     private authService: AuthService
   ) {}
 
@@ -38,11 +39,7 @@ export class ActivateComponent implements OnInit {
         this.userName = u ? (u['prenom'] ? `${u['prenom']} ${u['nom'] ?? ''}`.trim() : (u.name ?? '')) : '';
         const roleId = res.user?.role_id;
         setTimeout(() => {
-          if (roleId === 2)                         this.router.navigate(['/student/student-dashboard']);
-          else if ([3, 10, 6, 13].includes(roleId!)) this.router.navigate(['/instructor/instructor-dashboard']);
-          else if ([4, 5, 9, 14].includes(roleId!))  this.router.navigate(['/adminrh/adminrh-dashboard']);
-          else if (roleId === 1)                    this.router.navigate(['/superadmin/superadmin-dashboard']);
-          else                                      this.router.navigate(['/auth/login']);
+          this.roleRedirect.redirectAfterLogin(roleId!, res.role_type ?? undefined, res.roles);
         }, 2500);
       },
       error: (err) => {

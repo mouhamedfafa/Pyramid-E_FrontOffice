@@ -145,6 +145,16 @@
                                 <small>La date de fin de contrat est requise</small>
                             </div>
                         </div>
+
+                        <!-- Gestionnaire de comptes (équipe Pyramide LMS) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Gestionnaire de comptes</label>
+                            <select class="form-select" formControlName="gestionnaire_id">
+                                <option [ngValue]="null">Non attribué</option>
+                                <option *ngFor="let g of gestionnaires" [ngValue]="g.id">{{ g.nom }}</option>
+                            </select>
+                            <small class="text-muted" *ngIf="!gestionnaires.length">Aucun utilisateur actif ne porte le rôle « Gestionnaire de compte ».</small>
+                        </div>
                     </div>
                 </form>
             </div>

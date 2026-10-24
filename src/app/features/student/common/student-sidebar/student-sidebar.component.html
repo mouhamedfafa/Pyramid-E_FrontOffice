@@ -39,6 +39,13 @@
       </a>
     </li>
 
+    <li *appHasPermission="'voir dashboard employe'" class="menu-item" routerLinkActive="active">
+      <a [routerLink]="routes.dashboardEmploye">
+        <i class="isax isax-chart-2"></i>
+        <span>Mes indicateurs</span>
+      </a>
+    </li>
+
     <!-- ================= MES FORMATIONS ================= -->
     <li class="menu-item" [class.active]="isFormationsActive()">
       <a (click)="toggleGroup('formations')">
@@ -192,7 +199,7 @@
   <!-- ================= DÉCONNEXION ================= -->
   <ul class="main-menu">
     <li class="menu-item logout">
-      <a [routerLink]="routes.login">
+      <a href="javascript:void(0);" (click)="logout()">
         <i class="isax isax-logout"></i>
         <span>D&eacute;connexion</span>
       </a>

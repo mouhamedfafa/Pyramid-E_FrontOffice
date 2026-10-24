@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { HasPermissionDirective } from '../../../../directive/has-permission-directive.directive';
 import { AuthService } from '../../../../shared/service/authentification/auth.service';
-import { RoleRedirectService } from '../../../../shared/service/role/role-redirect.service';
+import { KPI_PLATEFORME, kpiPlateformePermission, kpiPlateformeRoute } from '../../../../core/config/role-routing.config';
 import { ManagerService } from '../../../../shared/service/manager/manager.service';
 import { ManagerStatut } from '../../../../shared/models/manager.models';
 
@@ -17,6 +17,10 @@ import { ManagerStatut } from '../../../../shared/models/manager.models';
 })
 export class SuperadminSidebarComponent implements OnInit {
   public routes = routes;
+  // Dashboards KPI de l'équipe Pyramide LMS : chaque lien n'apparaît qu'avec sa permission
+  public readonly indicateurs = KPI_PLATEFORME.map(k => ({
+    ...k, route: kpiPlateformeRoute(k.slug), permission: kpiPlateformePermission(k.slug),
+  }));
   public base = '';
   public page = '';
   public last = '';
@@ -54,7 +58,6 @@ export class SuperadminSidebarComponent implements OnInit {
   constructor(
     private common: CommonService,
     private auth: AuthService,
-    private roleRedirectService: RoleRedirectService,
     private managerService: ManagerService,
   ) {
     this.common.base.subscribe((base: string) => { this.base = base; });
@@ -68,13 +71,6 @@ export class SuperadminSidebarComponent implements OnInit {
   }
 
   logout(): void {
-    const userData = localStorage.getItem('pyramide_user');
-    let roleId = 0;
-    if (userData) {
-      try { roleId = JSON.parse(userData).role_id; } catch {}
-    }
-    localStorage.removeItem('pyramide_token');
-    localStorage.removeItem('pyramide_user');
-    this.roleRedirectService.redirectByRole(roleId);
+    this.auth.logout();
   }
 }

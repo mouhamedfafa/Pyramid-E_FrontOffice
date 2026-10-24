@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import {
   ROLE_ROUTING,
   LAYOUT_ROUTE_PREFIXES,
+  KPI_ROUTES,
   LayoutType,
   RoleRoutingConfig,
 } from '../config/role-routing.config';
@@ -45,17 +46,30 @@ export class RoleRedirectService {
     return null;
   }
 
-  // Redirige après connexion
+  // Redirige après connexion : dashboard KPI du profil, sinon page par défaut du layout
   redirectAfterLogin(roleId: number, roleType?: string, roleNames?: string[]): void {
     const user = this.authService.getUser();
     const names = roleNames ?? user?.roles ?? [];
-    const config = this.resolveConfig(roleId, roleType, names);
+    const config = this.resolveConfig(roleId, roleType ?? user?.role_type, names);
     if (config) {
-      this.router.navigate([config.defaultRoute]);
+      this.router.navigate([this.kpiRoute(config.layout) ?? config.defaultRoute]);
     } else {
       // Rôle inconnu → page générique
       this.router.navigate(['/index']);
     }
+  }
+
+  // Premier dashboard KPI autorisé (permission + layout). `avecManager` = false pour managerGuard,
+  // sinon un non-N+1 renvoyé vers /manager/dashboard-manager bouclerait.
+  private kpiRoute(layout: LayoutType, avecManager = true): string | null {
+    const user = this.authService.getUser();
+    const allowed = LAYOUT_ROUTE_PREFIXES[layout];
+    const kpi = KPI_ROUTES.find(k =>
+      this.authService.hasPermission(k.permission)
+      && (!k.manager || (avecManager && !!user?.['is_manager']))
+      && (layout === 'superadmin' || allowed.some(prefix => k.route.startsWith(prefix)))
+    );
+    return kpi?.route ?? null;
   }
 
   // Retourne le layout de l'utilisateur connecté
@@ -81,11 +95,12 @@ export class RoleRedirectService {
   }
 
   // Retourne la route par défaut de l'utilisateur connecté
-  getDefaultRoute(): string {
+  getDefaultRoute(avecManager = true): string {
     const user = this.authService.getUser();
     if (!user) return '/auth/login';
     const config = this.resolveConfig(user.role_id, user.role_type, user.roles ?? []);
-    return config?.defaultRoute ?? '/index';
+    if (!config) return '/index';
+    return this.kpiRoute(config.layout, avecManager) ?? config.defaultRoute;
   }
 
   private typeToLayout(type: string): LayoutType | null {

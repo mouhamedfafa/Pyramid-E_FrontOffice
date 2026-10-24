@@ -13,6 +13,8 @@ import { CategorieService, CategorieFormation } from '../../../shared/service/ca
 import { AuthService } from '../../../shared/service/authentification/auth.service';
 import { QuizService } from '../../../shared/service/quiz/quiz.service';
 import { QuestionQuizService } from '../../../shared/service/quiz/question-quiz.service';
+import { VideothequePickerComponent } from '../../../shared/components/videotheque/videotheque-picker.component';
+import { VideoBibliotheque } from '../../../shared/service/videotheque/videotheque.service';
 
 declare var bootstrap: any;
 
@@ -35,6 +37,9 @@ interface Section {
   obligatoire: boolean;
   visible: boolean;
   ordre: number;
+  metadata?: Record<string, any> | null;
+  /** uuid d'une vidéo de la vidéothèque (enregistré dans metadata.videotheque) */
+  videotheque?: string | null;
 }
 
 interface QuizQuestion {
@@ -62,7 +67,7 @@ interface LocalQuiz {
 
 @Component({
   selector: 'app-instructor-course-edit',
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, VideothequePickerComponent],
   templateUrl: './instructor-course-edit.component.html',
   styleUrl: './instructor-course-edit.component.scss'
 })
@@ -116,7 +121,7 @@ export class InstructorCourseEditComponent implements OnInit, OnDestroy {
   currentModuleIndex: number | null = null;
 
   // Section upload (modal)
-  sectionVideoMode: 'url' | 'upload' = 'url';
+  sectionVideoMode: 'url' | 'upload' | 'bibliotheque' = 'url';
   sectionUploadFile: File | null = null;
   sectionUploading = false;
   sectionUploadError = '';
@@ -446,6 +451,7 @@ export class InstructorCourseEditComponent implements OnInit, OnDestroy {
           ressources: Array.isArray(s.ressources)
             ? s.ressources.join(', ')
             : (s.ressources ?? ''),
+          videotheque: s.metadata?.videotheque ?? null,
         })),
       }));
     } catch (error) {
@@ -830,7 +836,7 @@ private validateSectionType(type: string): string {
     this.currentModuleIndex = moduleIndex;
     this.editingSectionIndex = sectionIndex;
     this.currentSection = { ...this.modules[moduleIndex].sections[sectionIndex] };
-    this.sectionVideoMode = 'url';
+    this.sectionVideoMode = this.currentSection.videotheque ? 'bibliotheque' : 'url';
     this.sectionUploadFile = null;
     this.sectionUploading = false;
     this.sectionUploadError = '';
@@ -885,6 +891,20 @@ private validateSectionType(type: string): string {
     } else {
       doSave();
     }
+  }
+
+  /** Vidéo choisie dans la vidéothèque : remplace un éventuel lien / fichier. */
+  choisirVideoBibliotheque(v: VideoBibliotheque | null): void {
+    this.currentSection.videotheque = v?.uuid ?? null;
+    this.currentSection.ressources = '';
+    this.sectionUploadFile = null;
+  }
+
+  /** metadata de la section : clés existantes conservées, vidéothèque ajoutée ou retirée. */
+  private metadataSection(section: any): Record<string, any> | null {
+    const { videotheque: _ancienne, ...autres } = section.metadata ?? {};
+    const metadata = section.type === 'video' && section.videotheque ? { ...autres, videotheque: section.videotheque } : autres;
+    return Object.keys(metadata).length ? metadata : null;
   }
 
   removeSection(moduleIndex: number, sectionIndex: number): void {
@@ -1287,6 +1307,7 @@ private validateSectionType(type: string): string {
               ressources: Array.isArray(section.ressources)
                 ? section.ressources.filter((r: any) => r && String(r).trim())
                 : (section.ressources ? String(section.ressources).split(',').map((r: string) => r.trim()).filter(Boolean) : []),
+              metadata: this.metadataSection(section),
               obligatoire: Boolean(section.obligatoire),
               visible: Boolean(section.visible),
               ordre: section.ordre,

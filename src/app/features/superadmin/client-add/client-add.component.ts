@@ -25,6 +25,8 @@ export class ClientAddComponent implements OnInit, OnChanges {
 
   clientForm!: FormGroup;
   loading: boolean = false;
+  // Gestionnaires de comptes Pyramide LMS : définit le portefeuille de leurs dashboards
+  gestionnaires: { id: number; nom: string }[] = [];
 
   paysList = [
     { code: 'SN', nom: 'Sénégal', flag: '🇸🇳' },
@@ -47,6 +49,10 @@ export class ClientAddComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.initForm();
+    this.clientCompanyService.getGestionnaires().subscribe({
+      next: r => this.gestionnaires = r.data ?? [],
+      error: () => this.gestionnaires = [],
+    });
   }
 
 ngOnChanges() {
@@ -78,6 +84,7 @@ initForm() {
     statut: ['actif', Validators.required],
     date_contrat: ['', Validators.required],
     date_fin_contrat: ['', Validators.required],
+    gestionnaire_id: [null],
     pays: ['SN', Validators.required] // 🔧 Valeur fixe au lieu de this.clientData?.pays
   });
 }
@@ -101,6 +108,7 @@ initForm() {
         statut: this.clientData.statut,
         date_contrat: this.formatDateForInput(this.clientData.date_contrat),
         date_fin_contrat: this.formatDateForInput(this.clientData.date_fin_contrat),
+        gestionnaire_id: this.clientData.gestionnaire_id ?? null,
         pays: this.clientData.pays || 'SN' // 🆕 Ajoutez le champ pays avec fallback
 
       });

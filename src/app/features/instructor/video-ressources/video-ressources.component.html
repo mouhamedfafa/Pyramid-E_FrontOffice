@@ -49,10 +49,116 @@
     <div class="tab" [class.on]="activeTab === 'unused'" (click)="switchTab('unused')">
       <i class="isax isax-warning-2"></i> Non utilisés <span class="tc tc-a">{{ unusedCount }}</span>
     </div>
+    <div *appHasPermission="'gerer videotheque'" class="tab" [class.on]="activeTab === 'bibliotheque'" (click)="switchTab('bibliotheque')">
+      <i class="isax isax-video-play"></i> Ma vidéothèque
+      <span class="tc tc-a" *ngIf="bibliothequeChargee">{{ bibliotheque.length }}</span>
+    </div>
+  </div>
+
+  <!-- ================= MA VIDÉOTHÈQUE ================= -->
+  <div class="tv vt" *ngIf="activeTab === 'bibliotheque'">
+    <div class="toolbar">
+      <div class="search">
+        <i class="isax isax-search-normal-1"></i>
+        <input type="text" [(ngModel)]="rechercheBibliotheque" placeholder="Rechercher par titre ou code..." />
+      </div>
+      <div class="ml"></div>
+      <span class="vt-total" *ngIf="bibliotheque.length">{{ bibliotheque.length }} vidéo(s) · {{ tailleBibliotheque }}</span>
+      <label class="vt-btn">
+        <i class="isax isax-document-upload"></i> Importer des vidéos
+        <input type="file" hidden multiple accept="video/mp4,video/webm,video/quicktime,.mp4,.m4v,.webm,.mov" (change)="importerVideos($event)">
+      </label>
+    </div>
+    <p class="vt-aide">MP4, WebM ou MOV. Les vidéos sont stockées de façon privée : elles ne sont lisibles que par les utilisateurs connectés autorisés, et réutilisables dans toutes vos formations.</p>
+
+    <div class="vt-alerte" *ngIf="messageBibliotheque">
+      <i class="isax isax-info-circle"></i> {{ messageBibliotheque }}
+      <button type="button" (click)="messageBibliotheque = ''"><i class="isax isax-close-circle"></i></button>
+    </div>
+
+    <!-- Envois en cours -->
+    <div class="vt-envoi" *ngFor="let e of envois">
+      <i class="isax" [ngClass]="e.erreur ? 'isax-danger' : 'isax-document-upload'"></i>
+      <div class="vt-envoi-info">
+        <div class="vt-envoi-nom">{{ e.nom }}</div>
+        <div class="st-bar" *ngIf="!e.erreur"><div class="st-fill" [style.width.%]="e.pourcentage"></div></div>
+        <div class="vt-envoi-err" *ngIf="e.erreur">{{ e.erreur }}</div>
+      </div>
+      <span class="vt-envoi-pct" *ngIf="!e.erreur">{{ e.pourcentage }} %</span>
+      <button type="button" class="la-btn" *ngIf="e.erreur" (click)="retirerEnvoi(e)" title="Fermer"><i class="isax isax-close-circle"></i></button>
+    </div>
+
+    <div class="loading-state" *ngIf="!bibliothequeChargee"><div class="spinner"></div><p>Chargement de votre vidéothèque...</p></div>
+    <div class="empty-state" *ngIf="bibliothequeChargee && bibliothequeErreur">
+      <i class="isax isax-folder-cross"></i><p>Vidéothèque indisponible</p><span>Réessayez dans quelques instants</span>
+    </div>
+    <div class="empty-state" *ngIf="bibliothequeChargee && !bibliothequeErreur && bibliothequeFiltree.length === 0">
+      <i class="isax isax-video-add"></i>
+      <p>{{ bibliotheque.length ? 'Aucune vidéo ne correspond à votre recherche' : 'Votre vidéothèque est vide' }}</p>
+      <span>Importez vos vidéos une fois, puis sélectionnez-les lors de la création ou de la modification de vos formations</span>
+    </div>
+
+    <div class="media-grid" *ngIf="bibliothequeFiltree.length">
+      <div class="media-card" *ngFor="let v of bibliothequeFiltree" [class.card-unused]="!v.utilisations">
+        <div class="mc-thumb mc-thumb--video mt-video vt-thumb" (click)="ouvrirVideo(v)">
+          <i class="isax isax-play-circle mc-icon" style="color:#F0CFA8"></i>
+          <span class="mc-duration" *ngIf="v.duree_secondes">{{ formatDuree(v.duree_secondes) }}</span>
+          <span class="mc-formation-tag">{{ v.code }}</span>
+        </div>
+        <div class="mc-body">
+          <ng-container *ngIf="edition?.uuid !== v.uuid; else formEdition">
+            <div class="mc-title">{{ v.titre }}</div>
+            <div class="mc-meta">
+              <i class="isax isax-video-circle"></i> {{ formatTaille(v.taille) }}
+              <span *ngIf="v.duree_secondes">· {{ formatDuree(v.duree_secondes) }}</span>
+            </div>
+            <div class="mc-tags">
+              <span class="mc-tag" *ngIf="v.utilisations; else nonUtilisee" [title]="titresFormations(v)">
+                Utilisée dans {{ v.formations.length }} formation(s)
+              </span>
+              <ng-template #nonUtilisee><span class="mc-tag">Non utilisée</span></ng-template>
+            </div>
+          </ng-container>
+          <ng-template #formEdition>
+            <input class="vt-input" [(ngModel)]="edition!.titre" maxlength="191" placeholder="Titre" />
+            <textarea class="vt-input" [(ngModel)]="edition!.description" rows="2" maxlength="2000" placeholder="Description (optionnelle)"></textarea>
+          </ng-template>
+          <div class="mc-footer">
+            <ng-container *ngIf="edition?.uuid !== v.uuid; else actionsEdition">
+              <div class="mcf-btn mcf-primary" (click)="ouvrirVideo(v)"><i class="isax isax-play"></i> Lire</div>
+              <div class="mcf-btn" (click)="copierLien(v)" [title]="'Copier le lien sécurisé'">
+                <i class="isax" [ngClass]="lienCopie === v.uuid ? 'isax-tick-circle' : 'isax-link-21'"></i>
+              </div>
+              <div class="mcf-btn" (click)="commencerEdition(v)" title="Renommer"><i class="isax isax-edit-2"></i></div>
+              <div class="mcf-btn" (click)="supprimerVideo(v)" title="Supprimer"><i class="isax isax-trash"></i></div>
+            </ng-container>
+            <ng-template #actionsEdition>
+              <div class="mcf-btn mcf-primary" (click)="enregistrerEdition()"><i class="isax isax-tick-circle"></i> Enregistrer</div>
+              <div class="mcf-btn" (click)="edition = null">Annuler</div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lecteur -->
+    <div class="vt-modal" *ngIf="videoOuverte" (click)="videoOuverte = null">
+      <div class="vt-modal-box" (click)="$event.stopPropagation()">
+        <div class="vt-modal-head">
+          <div><b>{{ videoOuverte.titre }}</b><small>{{ videoOuverte.code }}</small></div>
+          <button type="button" class="la-btn" (click)="copierLien(videoOuverte)" title="Copier le lien sécurisé">
+            <i class="isax" [ngClass]="lienCopie === videoOuverte.uuid ? 'isax-tick-circle' : 'isax-link-21'"></i>
+          </button>
+          <button type="button" class="la-btn" (click)="videoOuverte = null" title="Fermer"><i class="isax isax-close-circle"></i></button>
+        </div>
+        <app-video-securisee [uuid]="videoOuverte.uuid" preload="auto"></app-video-securisee>
+        <p class="vt-modal-desc" *ngIf="videoOuverte.description">{{ videoOuverte.description }}</p>
+      </div>
+    </div>
   </div>
 
   <!-- Tab Content -->
-  <div class="tv">
+  <div class="tv" *ngIf="activeTab !== 'bibliotheque'">
     <!-- Main Layout -->
     <div class="main-layout">
       <div class="ml-main">

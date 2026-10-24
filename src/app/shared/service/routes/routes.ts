@@ -2,6 +2,14 @@ import { AdminrhDemandeComponent } from "../../../features/adminrh/adminrh-deman
 import { AdminrhStatementsComponent } from "../../../features/adminrh/adminrh-statements/adminrh-statements.component";
 
 export const routes = {
+  // Dashboards KPI par profil (une permission « voir dashboard <profil> » par page)
+  dashboardAdminRh: '/adminrh/dashboard-admin-rh',
+  dashboardResponsableRh: '/adminrh/dashboard-responsable-rh',
+  dashboardManager: '/manager/dashboard-manager',
+  dashboardFormateur: '/instructor/dashboard-formateur',
+  dashboardConsultant: '/instructor/dashboard-consultant',
+  dashboardEmploye: '/student/dashboard-employe',
+
   // Manager Routes (hiérarchie N+1 / N-1, tout rôle)
   manager_dashboard: '/manager/manager-dashboard',
   managerEquipe: '/manager/manager-equipe',
@@ -33,6 +41,8 @@ export const routes = {
   instructorSession: '/instructor/instructor-session',
   instructorMesSondages: '/instructor/instructor-mes-sondages',
   instructorVideoRessources: '/instructor/video-ressources',
+  instructorImportFormations: '/instructor/import-formations',
+  videothequeLecture: '/videotheque',
   instructorTickets: '/instructor/instructor-tickets',
   instructorMessage: '/instructor/instructor-message',
   instructorQuizDetails: '/instructor/instructor-quiz-details',

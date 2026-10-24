@@ -13,6 +13,7 @@ export interface Client {
   statut: 'actif' | 'inactif' | 'suspendu';
   date_contrat: string | Date;
   date_fin_contrat: string | Date;
+  gestionnaire_id?: number | null;
   created_at?: string | Date;
   updated_at?: string | Date;
   // Relations

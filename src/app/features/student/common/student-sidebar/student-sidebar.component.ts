@@ -9,12 +9,13 @@ import { AuthService } from '../../../../shared/service/authentification/auth.se
 import { StudentThemeService, StudentTheme } from '../student-theme.service';
 import { ManagerService } from '../../../../shared/service/manager/manager.service';
 import { ManagerStatut } from '../../../../shared/models/manager.models';
+import { HasPermissionDirective } from '../../../../directive/has-permission-directive.directive';
 
 @Component({
   selector: 'app-student-sidebar',
   templateUrl: './student-sidebar.component.html',
   styleUrl: './student-sidebar.component.scss',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HasPermissionDirective],
 })
 export class StudentSidebarComponent implements OnInit, OnDestroy {
   public routes = routes;
@@ -136,4 +137,8 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
 
   /** @deprecated use isInLearnerMode() */
   isRhInLearnerMode(): boolean { return this.isInLearnerMode(); }
+
+  logout(): void {
+    this.authService.logout();
+  }
 }

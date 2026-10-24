@@ -68,6 +68,14 @@
         <i class="isax isax-grid-3"></i>
         <span class="sb-item-label">Tableau de bord</span>
       </a>
+      <a *appHasPermission="'voir dashboard admin-rh'" [routerLink]="routes.dashboardAdminRh" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-chart-2"></i>
+        <span class="sb-item-label">Indicateurs KPI</span>
+      </a>
+      <a *appHasPermission="'voir dashboard responsable-rh'" [routerLink]="routes.dashboardResponsableRh" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-chart-2"></i>
+        <span class="sb-item-label">Indicateurs Responsable RH</span>
+      </a>
     </div>
 
     <div class="sb-divider"></div>
@@ -85,7 +93,7 @@
 
       <a [routerLink]="routes.adminrhDirection" routerLinkActive="active" class="sb-item">
         <i class="isax isax-buildings-2"></i>
-        <span class="sb-item-label">Directions</span>
+        <span class="sb-item-label">Entités</span>
       </a>
 
       <a [routerLink]="routes.adminrhOrganigramme" routerLinkActive="active" class="sb-item">
@@ -318,7 +326,7 @@
       </div>
     </div>
 
-    <a [routerLink]="routes.login" class="sb-bottom-item logout">
+    <a href="javascript:void(0);" (click)="logout()" class="sb-bottom-item logout">
       <i class="isax isax-logout"></i> Déconnexion
     </a>
   </div>

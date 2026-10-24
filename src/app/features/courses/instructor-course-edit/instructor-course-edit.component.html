@@ -1229,7 +1229,7 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Type<span class="text-danger">*</span></label>
                             <select class="form-select" [(ngModel)]="currentSection.type" name="type" required
-                                    (ngModelChange)="sectionUploadFile=null;sectionUploadPreview=null;sectionUploadError='';currentSection.ressources=''">
+                                    (ngModelChange)="sectionUploadFile=null;sectionUploadPreview=null;sectionUploadError='';currentSection.ressources='';currentSection.videotheque=null">
                                 <option value="text">Texte / Lecture</option>
                                 <option value="video">Vidéo</option>
                                 <option value="image">Image</option>
@@ -1257,16 +1257,26 @@
                                 <button type="button" class="btn btn-sm"
                                         [class.btn-primary]="sectionVideoMode==='url'"
                                         [class.btn-outline-secondary]="sectionVideoMode!=='url'"
-                                        (click)="sectionVideoMode='url';sectionUploadFile=null;currentSection.ressources=''">
+                                        (click)="sectionVideoMode='url';sectionUploadFile=null;currentSection.ressources='';currentSection.videotheque=null">
                                     <i class="fas fa-link me-1"></i> URL
                                 </button>
                                 <button type="button" class="btn btn-sm"
                                         [class.btn-primary]="sectionVideoMode==='upload'"
                                         [class.btn-outline-secondary]="sectionVideoMode!=='upload'"
-                                        (click)="sectionVideoMode='upload';currentSection.ressources=''">
+                                        (click)="sectionVideoMode='upload';currentSection.ressources='';currentSection.videotheque=null">
                                     <i class="fas fa-upload me-1"></i> Upload fichier
                                 </button>
+                                <button type="button" class="btn btn-sm"
+                                        [class.btn-primary]="sectionVideoMode==='bibliotheque'"
+                                        [class.btn-outline-secondary]="sectionVideoMode!=='bibliotheque'"
+                                        (click)="sectionVideoMode='bibliotheque';sectionUploadFile=null;currentSection.ressources=''">
+                                    <i class="fas fa-photo-video me-1"></i> Ma vidéothèque
+                                </button>
                             </div>
+                            <ng-container *ngIf="sectionVideoMode==='bibliotheque'">
+                                <app-videotheque-picker [selection]="currentSection.videotheque ?? null"
+                                                        (selectionChange)="choisirVideoBibliotheque($event)"></app-videotheque-picker>
+                            </ng-container>
                             <ng-container *ngIf="sectionVideoMode==='url'">
                                 <input type="url" class="form-control" [(ngModel)]="currentSection.ressources"
                                        name="ressources_video_url"

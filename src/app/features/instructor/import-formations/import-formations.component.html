@@ -1,0 +1,231 @@
+<div class="imp">
+  <div class="ph">
+    <div class="ph-icon"><i class="isax isax-document-upload"></i></div>
+    <div>
+      <div class="ph-title">Importer des formations</div>
+      <div class="ph-sub">Formations, modules et sections en un seul classeur Excel.</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    @for (libelle of etapes; track libelle; let i = $index) {
+      <div class="step" [class.on]="etape === i + 1" [class.done]="etape > i + 1">
+        <i>{{ etape > i + 1 ? '✓' : i + 1 }}</i>{{ libelle }}
+      </div>
+    }
+  </div>
+
+  <!-- ═════════ ÉTAPE 1 : FICHIER ═════════ -->
+  @if (etape === 1) {
+    <div class="grid2">
+      <div class="card">
+        <h2>1. Télécharger le modèle</h2>
+        <p class="h">Un classeur, 3 feuilles, avec des listes déroulantes alimentées par vos catégories et votre vidéothèque.</p>
+        <button class="btn p" (click)="telechargerModele()" [disabled]="telechargement">
+          <i class="isax isax-document-download"></i> {{ telechargement ? 'Préparation…' : 'Modèle vierge (.xlsx)' }}
+        </button>
+        <div class="chips">
+          @for (f of feuilles; track f.nom) {
+            <span class="chip gr"><i class="isax" [class]="f.icone"></i> {{ f.nom }}</span>
+          }
+        </div>
+        <p class="h mt">Ordre de remplissage : Formation → Module → Section.</p>
+      </div>
+      <div class="card">
+        <h2>Règles du fichier</h2>
+        <p class="h">Vérifiées avant toute écriture.</p>
+        <ul class="rules">
+          <li>Format <b>.xlsx</b> uniquement, 10 Mo maximum. Les fichiers avec macros (.xlsm) sont refusés.</li>
+          <li>1 000 lignes maximum par feuille. Ne renommez pas les feuilles et ne modifiez pas les lignes 1 à 5.</li>
+          <li>Les <b>ID sont automatiques</b> : saisissez un titre, l'ID apparaît (<span class="mono">FOR-IMP-001</span>…).</li>
+          <li>Dans Module et Section, le rattachement reprend la ligne du dessus ; choisissez un autre ID dans la liste pour changer de formation ou de module.</li>
+          <li>Les ID <span class="mono">…-IMP-…</span> sont provisoires : la plateforme attribue les ID définitifs.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2. Déposer votre fichier</h2>
+      <p class="h">Le fichier n'est pas encore importé : un contrôle complet précède toute écriture.</p>
+      <label class="drop" [class.over]="survol"
+             (dragover)="$event.preventDefault(); survol = true" (dragleave)="survol = false" (drop)="surDepot($event)">
+        <i class="isax isax-document-upload ico"></i>
+        <b>Glissez votre fichier ici ou cliquez pour parcourir</b>
+        <small>.xlsx — 10 Mo max</small>
+        <input type="file" hidden accept=".xlsx,.xlsm" (change)="surChoix($event)">
+      </label>
+      @if (erreurFichier) { <div class="note warn mt">{{ erreurFichier }}</div> }
+    </div>
+  }
+
+  <!-- ═════════ ÉTAPE 2 : CONTRÔLE ═════════ -->
+  @if (etape === 2) {
+    @if (controleEnCours) {
+      <div class="card">
+        <h2>Contrôle en cours…</h2>
+        <p class="h">Lecture du fichier, vérification des formats, des rattachements et des doublons.</p>
+        <div class="bar"><div class="indet"></div></div>
+      </div>
+    } @else if (rapport) {
+      <div class="card">
+        <div class="row">
+          <h2 class="m0">{{ rapport.fichier.nom }}</h2><span class="sp"></span>
+          <span class="chip gr">{{ taille(rapport.fichier.taille) }} · {{ totaux.lues }} lignes</span>
+        </div>
+        <p class="h mt4">Rien n'a encore été écrit sur la plateforme.</p>
+
+        @if (rapport.bloquant) {
+          <div class="note warn">Le fichier ne peut pas être importé en l'état : corrigez les points ci-dessous, puis déposez-le à nouveau.</div>
+        } @else {
+          <div class="kpis">
+            <div class="kpi"><small>Lignes lues</small><b>{{ totaux.lues }}</b></div>
+            <div class="kpi g"><small>Lignes valides</small><b>{{ totaux.valides }}</b></div>
+            <div class="kpi a"><small>Avertissements</small><b>{{ totaux.avertissements }}</b></div>
+            <div class="kpi r"><small>Erreurs bloquantes</small><b>{{ totaux.erreurs }}</b></div>
+          </div>
+          <div class="tabs">
+            <button class="tab" [class.on]="filtreFeuille === 'toutes'" (click)="filtreFeuille = 'toutes'">Toutes les feuilles</button>
+            @for (f of feuilles; track f.nom) {
+              <button class="tab" [class.on]="filtreFeuille === f.nom" (click)="filtreFeuille = f.nom">
+                {{ f.nom }}
+                @if (compte(f.nom, 'E')) { <em>{{ compte(f.nom, 'E') }}</em> }
+                @if (compte(f.nom, 'W')) { <em class="w">{{ compte(f.nom, 'W') }}</em> }
+                @if (!compte(f.nom, 'E') && !compte(f.nom, 'W')) { <em class="k">✓</em> }
+              </button>
+            }
+          </div>
+        }
+
+        <div class="row mb8">
+          <div class="seg">
+            <button [class.on]="filtreNiveau === 'tout'" (click)="filtreNiveau = 'tout'">Tout</button>
+            <button [class.on]="filtreNiveau === 'E'" (click)="filtreNiveau = 'E'">Erreurs</button>
+            <button [class.on]="filtreNiveau === 'W'" (click)="filtreNiveau = 'W'">Avertissements</button>
+          </div>
+          <span class="sp"></span>
+          <button class="btn" (click)="exporterRapport()" [disabled]="!rapport.issues.length">
+            <i class="isax isax-document-download"></i> Rapport (CSV)
+          </button>
+        </div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Feuille</th><th>Ligne</th><th>Colonne</th><th>Code</th><th>Message</th></tr></thead>
+            <tbody>
+              @for (i of anomalies; track $index) {
+                <tr>
+                  <td>{{ i.feuille }}</td><td>{{ i.ligne ?? '—' }}</td><td>{{ i.colonne || '—' }}</td>
+                  <td><span class="chip code" [class.er]="i.niveau === 'E'" [class.wa]="i.niveau === 'W'">{{ i.code }}</span></td>
+                  <td>{{ i.message }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (!anomalies.length) { <div class="empty">Aucun problème sur cette sélection ✓</div> }
+        </div>
+      </div>
+
+      <div class="card">
+        @if (rapport.executable && rapport.nb_erreurs > 0) {
+          <label class="ck">
+            <input type="checkbox" [(ngModel)]="seulementValides">
+            <span><b>Importer uniquement les lignes valides</b><br>
+              <span class="mute">Les lignes en erreur (et celles qui en dépendent) sont ignorées ; vous pourrez les corriger puis les importer à nouveau.</span></span>
+          </label>
+        }
+        @if (!rapport.executable && !rapport.bloquant) {
+          <div class="note warn">Aucune ligne importable : corrigez le fichier puis déposez-le à nouveau.</div>
+        }
+        <div class="row mt">
+          <button class="btn" (click)="recommencer()"><i class="isax isax-arrow-left-2"></i> Corriger le fichier</button>
+          <span class="sp"></span>
+          <button class="btn p" [disabled]="!peutContinuer" (click)="confirmation = false; aller(3)">Continuer <i class="isax isax-arrow-right-3"></i></button>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- ═════════ ÉTAPE 3 : CONFIRMATION ═════════ -->
+  @if (etape === 3 && rapport?.stats; as stats) {
+    <div class="card">
+      <h2>Récapitulatif avant import</h2>
+      <p class="h">Ce qui sera créé, dans l'ordre. Les formations sont créées en brouillon et restent modifiables après l'import.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Objet</th><th>À créer</th><th>Ignoré (erreurs)</th><th>Avertissements</th></tr></thead>
+          <tbody>
+            @for (f of feuilles; track f.nom; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ f.nom }}<div class="mute small">{{ f.objet }}</div></td>
+                <td><b>{{ stats[f.nom].valides }}</b></td>
+                <td>@if (stats[f.nom].erreurs) { <span class="chip er">{{ stats[f.nom].erreurs }}</span> } @else { — }</td>
+                <td>@if (stats[f.nom].avertissements) { <span class="chip wa">{{ stats[f.nom].avertissements }}</span> } @else { — }</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="note">Les ID provisoires <span class="mono">FOR-IMP-001</span>… sont remplacés par les ID définitifs. La correspondance vous est fournie à la fin.</div>
+      <label class="ck mt">
+        <input type="checkbox" [(ngModel)]="confirmation">
+        <span>Je confirme la création de ces formations sur la plateforme.</span>
+      </label>
+      <div class="row mt">
+        <button class="btn" (click)="aller(2)"><i class="isax isax-arrow-left-2"></i> Retour au rapport</button>
+        <span class="sp"></span>
+        <button class="btn p" [disabled]="!confirmation" (click)="lancer()">Lancer l'import</button>
+      </div>
+    </div>
+  }
+
+  <!-- ═════════ ÉTAPE 4 : RÉSULTAT ═════════ -->
+  @if (etape === 4) {
+    <div class="card">
+      @if (importEnCours) {
+        <h2>Import en cours…</h2>
+        <p class="h">Écriture dans l'ordre : formations, modules, sections.</p>
+        <div class="bar"><div class="indet"></div></div>
+      } @else if (erreurImport) {
+        <h2>Import non effectué</h2>
+        <div class="note warn">{{ erreurImport }}</div>
+        <div class="row mt"><button class="btn" (click)="recommencer()">Nouvel import</button></div>
+      } @else if (resultat) {
+        <h2>Import terminé ✓</h2>
+        <p class="h">
+          {{ resultat.compteurs.formations }} formation(s), {{ resultat.compteurs.modules }} module(s) et {{ resultat.compteurs.sections }} section(s) créés
+          · {{ resultat.compteurs.ignorees }} ligne(s) ignorée(s) · {{ resultat.avertissements }} avertissement(s).
+          @if (resultat.compteurs.modules_defaut || resultat.compteurs.sections_defaut) {
+            <br>Ajoutés par défaut : {{ resultat.compteurs.modules_defaut }} module(s) d'introduction, {{ resultat.compteurs.sections_defaut }} section(s).
+          }
+        </p>
+        <div class="row">
+          <a class="btn p" [routerLink]="routes.instructorCourseGrid">Voir mes formations</a>
+          <span class="sp"></span>
+          <button class="btn" (click)="recommencer()">Nouvel import</button>
+        </div>
+      }
+    </div>
+
+    @if (resultat) {
+      <div class="card">
+        <div class="row">
+          <h2 class="m0">Correspondance des ID</h2><span class="sp"></span>
+          <button class="btn" (click)="exporterCorrespondance()"><i class="isax isax-document-download"></i> Télécharger (CSV)</button>
+        </div>
+        <p class="h mt4">ID du fichier → ID attribué par la plateforme.</p>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Objet</th><th>Libellé</th><th>ID du fichier</th><th></th><th>ID plateforme</th></tr></thead>
+            <tbody>
+              @for (c of resultat.correspondance; track c.id_fichier) {
+                <tr><td>{{ c.objet }}</td><td>{{ c.libelle }}</td><td class="mono">{{ c.id_fichier }}</td><td class="mute">→</td><td class="mono"><b>{{ c.id_plateforme }}</b></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>

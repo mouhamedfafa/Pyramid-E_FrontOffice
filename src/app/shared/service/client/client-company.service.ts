@@ -37,6 +37,11 @@ getClient(id: number): Observable<any> {
     return this.http.put<{data: Client}>(`${this.baseUrl}/clients/${id}`, client);
   }
 
+  /** Gestionnaires de comptes (équipe Pyramide LMS) attribuables à un client. */
+  getGestionnaires(): Observable<{ status: boolean; data: { id: number; nom: string }[] }> {
+    return this.http.get<{ status: boolean; data: { id: number; nom: string }[] }>(`${this.baseUrl}/clients/gestionnaires`);
+  }
+
   deleteClient(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/clients/${id}`);
   }

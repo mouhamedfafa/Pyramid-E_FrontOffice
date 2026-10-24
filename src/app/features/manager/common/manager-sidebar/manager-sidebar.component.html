@@ -44,6 +44,10 @@
         <i class="isax isax-grid-3"></i>
         <span class="sb-item-label">Tableau de bord</span>
       </a>
+      <a *appHasPermission="'voir dashboard manager'" [routerLink]="routes.dashboardManager" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-chart-2"></i>
+        <span class="sb-item-label">Indicateurs KPI</span>
+      </a>
     </div>
 
     <div class="sb-divider"></div>

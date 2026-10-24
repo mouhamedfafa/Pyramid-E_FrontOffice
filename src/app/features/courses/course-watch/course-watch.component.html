@@ -94,8 +94,15 @@
           </div>
         </ng-container>
 
+        <!-- ── VIDÉO de la vidéothèque (lien de lecture sécurisé) ── -->
+        <ng-container *ngIf="(activeSection.type === 'video' || activeSection.type === 'lecture') && videothequeUuid(activeSection) as uuid">
+          <div class="cw-media-wrap cw-media-wrap--video">
+            <app-video-securisee class="cw-video-native" [uuid]="uuid"></app-video-securisee>
+          </div>
+        </ng-container>
+
         <!-- ── VIDÉO sans ressource → image couverture ── -->
-        <ng-container *ngIf="(activeSection.type === 'video' || activeSection.type === 'lecture') && !hasResource(activeSection)">
+        <ng-container *ngIf="(activeSection.type === 'video' || activeSection.type === 'lecture') && !hasResource(activeSection) && !videothequeUuid(activeSection)">
           <div class="cw-media-wrap cw-media-wrap--video">
             <img [src]="getImageUrl(formation.image_couverture)"
                  class="cw-cover-fallback" [alt]="activeSection.titre">

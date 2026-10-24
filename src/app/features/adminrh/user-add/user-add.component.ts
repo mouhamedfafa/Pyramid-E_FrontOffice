@@ -151,7 +151,7 @@ export class UserAddComponent implements OnInit, OnChanges {
       role_id: ['', Validators.required],
       entreprise_id: [''],
       manager_id: [null],
-      manager_mode: ['auto'],
+      manager_mode: ['manuel'],
       statut: [1, Validators.required],
       password: ['', pwValidators],
       password_confirmation: ['', pwValidators],
@@ -220,7 +220,8 @@ export class UserAddComponent implements OnInit, OnChanges {
         role_id: rawRoleId ? String(rawRoleId) : '',
         entreprise_id: this.userData.entreprise_id || '',
         manager_id: this.userData.manager_id ?? null,
-        manager_mode: this.userData.manager_mode ?? (this.userData.manager_id ? 'manuel' : 'auto'),
+        // Sans N+1 : on part du mode manuel (choix explicite du manager)
+        manager_mode: this.userData.manager_id ? (this.userData.manager_mode ?? 'manuel') : 'manuel',
         statut: this.userData.statut
       }, { emitEvent: false });
       this.userForm.patchValue({ direction_id: this.userData.direction_id || null });
@@ -230,7 +231,7 @@ export class UserAddComponent implements OnInit, OnChanges {
   }
 
   resetForm() {
-    this.userForm.reset({ statut: 1, manager_id: null, manager_mode: 'auto' }, { emitEvent: false });
+    this.userForm.reset({ statut: 1, manager_id: null, manager_mode: 'manuel' }, { emitEvent: false });
     this.managerCalcule = null;
     this.managerSearch = '';
     this.managerDropdownOpen = false;
@@ -297,6 +298,10 @@ export class UserAddComponent implements OnInit, OnChanges {
 
   choisirManager(u: User): void {
     this.userForm.patchValue({ manager_id: u.id });
+    // Le collaborateur rejoint la direction / entité de son manager (si celui-ci en a une)
+    if (u.direction_id) {
+      this.userForm.patchValue({ direction_id: u.direction_id });
+    }
     this.managerSearch = '';
     this.managerDropdownOpen = false;
   }

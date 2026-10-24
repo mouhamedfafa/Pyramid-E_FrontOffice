@@ -4,6 +4,7 @@ import { PermissionGuard } from './guards/permission-guard.guard';
 import { authGuard } from './guards/auth.guard';
 import { layoutGuard } from './guards/layout.guard';
 import { managerGuard } from './guards/manager.guard';
+import { KPI_PLATEFORME, kpiPlateformePermission } from './core/config/role-routing.config';
 export const routes: Routes = [
     { path:'',
       redirectTo:'index',
@@ -33,6 +34,12 @@ export const routes: Routes = [
     {
         path: 'student/lecture-formation/:id',
         loadComponent: () => import('./features/courses/course-watch/course-watch.component').then(m => m.CourseWatchComponent),
+        canActivate: [authGuard],
+    },
+    // Lien sécurisé d'une vidéo de la vidéothèque — session obligatoire, droit de lecture vérifié par l'API
+    {
+        path: 'videotheque/:uuid',
+        loadComponent: () => import('./features/videotheque/video-lecture.component').then(m => m.VideoLectureComponent),
         canActivate: [authGuard],
     },
     // ✅ Route quiz plein écran — hors layout, même niveau que lecture-formation
@@ -76,6 +83,8 @@ export const routes: Routes = [
         {path : 'instructor',loadComponent:()=>import ('./features/instructor/instructor.component').then((m)=>m.InstructorComponent), canActivate: [layoutGuard],
             children:[
                 {path:'instructor-dashboard',loadComponent:()=>import ('./features/instructor/instructor-dashboard/instructor-dashboard.component').then((m)=>m.InstructorDashboardComponent)},
+                {path:'dashboard-formateur',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard formateur', dashboard: 'formateur' }},
+                {path:'dashboard-consultant',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard consultant', dashboard: 'consultant' }},
                 {path:'instructor-profile',loadComponent:()=>import ('./features/instructor/instructor-profile/instructor-profile.component').then((m)=>m.InstructorProfileComponent)},
                 {path:'instructor-payouts',loadComponent:()=>import ('./features/instructor/instructor-payouts/instructor-payouts.component').then((m)=>m.InstructorPayoutsComponent)},
                 {path:'instructor-tickets',loadComponent:()=>import ('./features/instructor/instructor-tickets/instructor-tickets.component').then((m)=>m.InstructorTicketsComponent)},
@@ -92,6 +101,7 @@ export const routes: Routes = [
                 {path:'instructor-session',loadComponent:()=>import ('./features/instructor/instructor-session/instructor-session.component').then((m)=>m.InstructorSessionComponent)},
                 {path:'instructor-mes-sondages',loadComponent:()=>import ('./features/instructor/instructor-mes-sondages/instructor-mes-sondages.component').then((m)=>m.InstructorMesSondagesComponent)},
                 {path:'video-ressources',loadComponent:()=>import ('./features/instructor/video-ressources/video-ressources.component').then((m)=>m.VideoRessourcesComponent)},
+                {path:'import-formations',loadComponent:()=>import ('./features/instructor/import-formations/import-formations.component').then((m)=>m.ImportFormationsComponent), canActivate: [PermissionGuard], data: { permission: 'importer formations' }},
 
                 {path:'guide-utilisation',loadComponent:()=>import ('./shared/components/help-center/guide-utilisation.component').then((m)=>m.GuideUtilisationComponent)},
                 {path:'tutoriels-video',loadComponent:()=>import ('./shared/components/help-center/tutoriels-video.component').then((m)=>m.TutorielsVideoComponent)},
@@ -118,6 +128,8 @@ export const routes: Routes = [
         {path : 'superadmin',loadComponent:()=>import ('./features/superadmin/superadmin.component').then((m)=>m.SuperadminComponent), canActivate: [layoutGuard],
             children:[
                 {path:'superadmin-dashboard',loadComponent:()=>import ('./features/superadmin/superadmin-dashboard/superadmin-dashboard.component').then((m)=>m.SuperAdminDashboardComponent)},
+                // Dashboards KPI de l'équipe Pyramide LMS : /superadmin/dashboard-<slug>, permission « voir dashboard <slug> »
+                ...KPI_PLATEFORME.map(k => ({path:'dashboard-' + k.slug,loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: kpiPlateformePermission(k.slug), dashboard: k.slug }})),
                 {path:'superadmin-profile',loadComponent:()=>import ('./features/superadmin/superadmin-profile/superadmin-profile.component').then((m)=>m.SuperadminProfileComponent)},
                 {path:'superadmin-payouts',loadComponent:()=>import ('./features/superadmin/superadmin-payouts/superadmin-payouts.component').then((m)=>m.SuperadminPayoutsComponent)},
                 {path:'superadmin-tickets',loadComponent:()=>import ('./features/superadmin/superadmin-tickets/superadmin-tickets.component').then((m)=>m.SuperadminTicketsComponent)},
@@ -178,6 +190,8 @@ export const routes: Routes = [
         {path : 'adminrh',loadComponent:()=>import ('./features/adminrh/adminrh.component').then((m)=>m.AdminrhComponent), canActivate: [layoutGuard],
             children:[
                 {path:'adminrh-dashboard',loadComponent:()=>import ('./features/adminrh/adminrh-dashboard/adminrh-dashboard.component').then((m)=>m.AdminrhDashboardComponent)},
+                {path:'dashboard-admin-rh',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard admin-rh', dashboard: 'admin-rh' }},
+                {path:'dashboard-responsable-rh',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard responsable-rh', dashboard: 'responsable-rh' }},
                 {path:'adminrh-profile',loadComponent:()=>import ('./features/adminrh/adminrh-profile/adminrh-profile.component').then((m)=>m.AdminrhProfileComponent)},
                 {path:'adminrh-payouts',loadComponent:()=>import ('./features/adminrh/adminrh-payouts/adminrh-payouts.component').then((m)=>m.AdminrhPayoutsComponent)},
                 {path:'adminrh-tickets',loadComponent:()=>import ('./features/adminrh/adminrh-tickets/adminrh-tickets.component').then((m)=>m.AdminrhTicketsComponent)},
@@ -282,6 +296,7 @@ export const routes: Routes = [
         {path : 'student',loadComponent:()=>import ('./features/student/student.component').then((m)=>m.StudentComponent), canActivate: [layoutGuard],
     children:[
         {path:'student-dashboard',loadComponent:()=>import ('./features/student/student-dashboard/student-dashboard.component').then((m)=>m.StudentDashboardComponent)},
+        {path:'dashboard-employe',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard employe', dashboard: 'employe' }},
         {path:'student-profile',loadComponent:()=>import ('./features/student/student-profile/student-profile.component').then((m)=>m.StudentProfileComponent)},
 
         // RENOMMÉ : student-courses → mes-catalogues
@@ -360,6 +375,7 @@ export const routes: Routes = [
             children:[
                 {path:'',redirectTo:'manager-dashboard',pathMatch:'full'},
                 {path:'manager-dashboard',loadComponent:()=>import ('./features/manager/manager-dashboard/manager-dashboard.component').then((m)=>m.ManagerDashboardComponent)},
+                {path:'dashboard-manager',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard manager', dashboard: 'manager' }},
                 {path:'manager-equipe',loadComponent:()=>import ('./features/manager/manager-equipe/manager-equipe.component').then((m)=>m.ManagerEquipeComponent)},
                 {path:'manager-collaborateur/:id',loadComponent:()=>import ('./features/manager/manager-collaborateur-details/manager-collaborateur-details.component').then((m)=>m.ManagerCollaborateurDetailsComponent)},
                 {path:'manager-demandes',loadComponent:()=>import ('./features/manager/manager-demandes/manager-demandes.component').then((m)=>m.ManagerDemandesComponent)},
