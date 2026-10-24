@@ -4,6 +4,7 @@ import { PermissionGuard } from './guards/permission-guard.guard';
 import { authGuard } from './guards/auth.guard';
 import { layoutGuard } from './guards/layout.guard';
 import { managerGuard } from './guards/manager.guard';
+import { kpiRedirectGuard } from './guards/kpi-redirect.guard';
 import { KPI_PLATEFORME, kpiPlateformePermission } from './core/config/role-routing.config';
 export const routes: Routes = [
     { path:'',
@@ -82,7 +83,7 @@ export const routes: Routes = [
         },
         {path : 'instructor',loadComponent:()=>import ('./features/instructor/instructor.component').then((m)=>m.InstructorComponent), canActivate: [layoutGuard],
             children:[
-                {path:'instructor-dashboard',loadComponent:()=>import ('./features/instructor/instructor-dashboard/instructor-dashboard.component').then((m)=>m.InstructorDashboardComponent)},
+                {path:'instructor-dashboard',loadComponent:()=>import ('./features/instructor/instructor-dashboard/instructor-dashboard.component').then((m)=>m.InstructorDashboardComponent), canActivate: [kpiRedirectGuard]},
                 {path:'dashboard-formateur',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard formateur', dashboard: 'formateur' }},
                 {path:'dashboard-consultant',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard consultant', dashboard: 'consultant' }},
                 {path:'instructor-profile',loadComponent:()=>import ('./features/instructor/instructor-profile/instructor-profile.component').then((m)=>m.InstructorProfileComponent)},
@@ -127,7 +128,7 @@ export const routes: Routes = [
         },
         {path : 'superadmin',loadComponent:()=>import ('./features/superadmin/superadmin.component').then((m)=>m.SuperadminComponent), canActivate: [layoutGuard],
             children:[
-                {path:'superadmin-dashboard',loadComponent:()=>import ('./features/superadmin/superadmin-dashboard/superadmin-dashboard.component').then((m)=>m.SuperAdminDashboardComponent)},
+                {path:'superadmin-dashboard',loadComponent:()=>import ('./features/superadmin/superadmin-dashboard/superadmin-dashboard.component').then((m)=>m.SuperAdminDashboardComponent), canActivate: [kpiRedirectGuard]},
                 // Dashboards KPI de l'équipe Pyramide LMS : /superadmin/dashboard-<slug>, permission « voir dashboard <slug> »
                 ...KPI_PLATEFORME.map(k => ({path:'dashboard-' + k.slug,loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: kpiPlateformePermission(k.slug), dashboard: k.slug }})),
                 {path:'superadmin-profile',loadComponent:()=>import ('./features/superadmin/superadmin-profile/superadmin-profile.component').then((m)=>m.SuperadminProfileComponent)},
@@ -189,7 +190,7 @@ export const routes: Routes = [
         },
         {path : 'adminrh',loadComponent:()=>import ('./features/adminrh/adminrh.component').then((m)=>m.AdminrhComponent), canActivate: [layoutGuard],
             children:[
-                {path:'adminrh-dashboard',loadComponent:()=>import ('./features/adminrh/adminrh-dashboard/adminrh-dashboard.component').then((m)=>m.AdminrhDashboardComponent)},
+                {path:'adminrh-dashboard',loadComponent:()=>import ('./features/adminrh/adminrh-dashboard/adminrh-dashboard.component').then((m)=>m.AdminrhDashboardComponent), canActivate: [kpiRedirectGuard]},
                 {path:'dashboard-admin-rh',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard admin-rh', dashboard: 'admin-rh' }},
                 {path:'dashboard-responsable-rh',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard responsable-rh', dashboard: 'responsable-rh' }},
                 {path:'adminrh-profile',loadComponent:()=>import ('./features/adminrh/adminrh-profile/adminrh-profile.component').then((m)=>m.AdminrhProfileComponent)},
@@ -295,7 +296,7 @@ export const routes: Routes = [
         },
         {path : 'student',loadComponent:()=>import ('./features/student/student.component').then((m)=>m.StudentComponent), canActivate: [layoutGuard],
     children:[
-        {path:'student-dashboard',loadComponent:()=>import ('./features/student/student-dashboard/student-dashboard.component').then((m)=>m.StudentDashboardComponent)},
+        {path:'student-dashboard',loadComponent:()=>import ('./features/student/student-dashboard/student-dashboard.component').then((m)=>m.StudentDashboardComponent), canActivate: [kpiRedirectGuard]},
         {path:'dashboard-employe',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard employe', dashboard: 'employe' }},
         {path:'student-profile',loadComponent:()=>import ('./features/student/student-profile/student-profile.component').then((m)=>m.StudentProfileComponent)},
 
@@ -374,7 +375,7 @@ export const routes: Routes = [
         {path : 'manager',loadComponent:()=>import ('./features/manager/manager.component').then((m)=>m.ManagerComponent), canActivate: [layoutGuard, managerGuard],
             children:[
                 {path:'',redirectTo:'manager-dashboard',pathMatch:'full'},
-                {path:'manager-dashboard',loadComponent:()=>import ('./features/manager/manager-dashboard/manager-dashboard.component').then((m)=>m.ManagerDashboardComponent)},
+                {path:'manager-dashboard',loadComponent:()=>import ('./features/manager/manager-dashboard/manager-dashboard.component').then((m)=>m.ManagerDashboardComponent), canActivate: [kpiRedirectGuard]},
                 {path:'dashboard-manager',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard manager', dashboard: 'manager' }},
                 {path:'manager-equipe',loadComponent:()=>import ('./features/manager/manager-equipe/manager-equipe.component').then((m)=>m.ManagerEquipeComponent)},
                 {path:'manager-collaborateur/:id',loadComponent:()=>import ('./features/manager/manager-collaborateur-details/manager-collaborateur-details.component').then((m)=>m.ManagerCollaborateurDetailsComponent)},

@@ -72,6 +72,13 @@ export class RoleRedirectService {
     return kpi?.route ?? null;
   }
 
+  // Dashboard KPI autorisé dans un espace donné ('/superadmin', '/adminrh', '/instructor', '/student', '/manager').
+  // Le statut N+1 n'est pas revérifié ici : dans l'espace /manager, managerGuard l'a déjà contrôlé côté serveur.
+  kpiRouteEspace(espace: string): string | null {
+    const kpi = KPI_ROUTES.find(k => k.route.startsWith(espace + '/') && this.authService.hasPermission(k.permission));
+    return kpi?.route ?? null;
+  }
+
   // Retourne le layout de l'utilisateur connecté
   getCurrentLayout(): LayoutType | null {
     const user = this.authService.getUser();
