@@ -32,12 +32,13 @@
   <ul class="main-menu">
 
     <!-- ================= TABLEAU DE BORD ================= -->
+    <!-- Tableau de bord masqué : les indicateurs KPI remplacent le tableau de bord
     <li class="menu-item" [class.active]="isDashboardActive()">
       <a [routerLink]="routes.students_Dashboard">
         <i class="isax isax-grid-35"></i>
         <span>Tableau de bord</span>
       </a>
-    </li>
+    </li> -->
 
     <li *appHasPermission="'voir dashboard employe'" class="menu-item" routerLinkActive="active">
       <a [routerLink]="routes.dashboardEmploye">

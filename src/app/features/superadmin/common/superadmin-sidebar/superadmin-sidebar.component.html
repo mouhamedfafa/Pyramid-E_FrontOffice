@@ -24,9 +24,10 @@
     <!-- VUE D'ENSEMBLE -->
     <div class="sb-section">
       <div class="sb-section-label">Vue d'ensemble</div>
+      <!-- Tableau de bord masqué : les indicateurs KPI remplacent le tableau de bord
       <a [routerLink]="routes.superadmin_dashboard" routerLinkActive="active" class="sb-item">
         <i class="isax isax-grid-3"></i><span class="sb-item-label">Tableau de bord</span>
-      </a>
+      </a> -->
       @for (k of indicateurs; track k.slug) {
         <a *appHasPermission="k.permission" [routerLink]="k.route" routerLinkActive="active" class="sb-item">
           <i class="isax isax-chart-2"></i><span class="sb-item-label">{{ k.label }}</span>

@@ -40,10 +40,11 @@
   <div class="sb-scroll">
     <div class="sb-section">
       <div class="sb-section-label">Vue d'ensemble</div>
+      <!-- Tableau de bord masqué : les indicateurs KPI remplacent le tableau de bord
       <a [routerLink]="routes.manager_dashboard" routerLinkActive="active" class="sb-item">
         <i class="isax isax-grid-3"></i>
         <span class="sb-item-label">Tableau de bord</span>
-      </a>
+      </a> -->
       <a *appHasPermission="'voir dashboard manager'" [routerLink]="routes.dashboardManager" routerLinkActive="active" class="sb-item">
         <i class="isax isax-chart-2"></i>
         <span class="sb-item-label">Indicateurs KPI</span>

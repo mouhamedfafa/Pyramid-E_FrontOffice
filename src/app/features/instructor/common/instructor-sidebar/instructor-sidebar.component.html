@@ -56,10 +56,11 @@
 
     <!-- VUE D'ENSEMBLE -->
     <div class="sb-section-label">Vue d'ensemble</div>
+    <!-- Tableau de bord masqué : les indicateurs KPI remplacent le tableau de bord
     <a [routerLink]="routes.instructor_dashboard" routerLinkActive="active" class="sb-item">
       <i class="isax isax-grid-3 icon"></i>
       <span class="sb-item-label">Tableau de bord</span>
-    </a>
+    </a> -->
     <a *appHasPermission="'voir dashboard formateur'" [routerLink]="routes.dashboardFormateur" routerLinkActive="active" class="sb-item">
       <i class="isax isax-chart-2 icon"></i>
       <span class="sb-item-label">Indicateurs KPI</span>
