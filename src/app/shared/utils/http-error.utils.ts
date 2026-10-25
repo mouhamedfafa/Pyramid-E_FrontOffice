@@ -33,3 +33,24 @@ export function httpErrorMessage(err: any, fallback = 'Une erreur est survenue.'
   }
   return fallback;
 }
+
+/**
+ * Message d'échec d'envoi d'un fichier. Un fichier refusé par le serveur web (413) arrive
+ * souvent sans en-tête CORS : le navigateur ne voit alors qu'un statut 0.
+ */
+export function uploadErrorMessage(err: any): string {
+  const status = err?.status ?? 0;
+
+  if (status === 413) {
+    return 'Le fichier est trop volumineux pour le serveur.';
+  }
+  if (status === 0) {
+    return 'L\'envoi du fichier a échoué : fichier trop volumineux ou serveur injoignable.';
+  }
+  if (status === 422) {
+    const errors = err?.error?.errors;
+    const premier = errors ? Object.values(errors).flat()[0] : null;
+    return (premier as string) || err?.error?.message || 'Fichier refusé par le serveur.';
+  }
+  return httpErrorMessage(err, 'L\'envoi du fichier a échoué.');
+}

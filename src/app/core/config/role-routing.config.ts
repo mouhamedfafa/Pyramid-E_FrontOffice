@@ -51,15 +51,15 @@ export interface KpiPlateforme {
 }
 
 export const KPI_PLATEFORME: KpiPlateforme[] = [
-  { slug: 'sa-ceo',               label: 'Indicateurs KPI — CEO' },
-  { slug: 'sa-cto',               label: 'Indicateurs KPI — CTO' },
-  { slug: 'sa-coo',               label: 'Indicateurs KPI — COO' },
-  { slug: 'customer-experience',  label: 'Indicateurs Customer Experience' },
-  { slug: 'head-sales',           label: 'Indicateurs Ventes' },
-  { slug: 'head-marketing',       label: 'Indicateurs Marketing' },
-  { slug: 'head-product',         label: 'Indicateurs Produit' },
+  { slug: 'sa-ceo',               label: 'Dashboard' },
+  { slug: 'sa-cto',               label: 'Dashboard' },
+  { slug: 'sa-coo',               label: 'Dashboard' },
+  { slug: 'customer-experience',  label: 'Dashboard' },
+  { slug: 'head-sales',           label: 'Dashboard' },
+  { slug: 'head-marketing',       label: 'Dashboard' },
+  { slug: 'head-product',         label: 'Dashboard' },
   { slug: 'gestionnaire-comptes', label: 'Mon portefeuille clients' },
-  { slug: 'qa',                   label: 'Indicateurs QA' },
+  { slug: 'qa',                   label: 'Dashboard' },
 ];
 
 export const kpiPlateformeRoute = (slug: string) => `/superadmin/dashboard-${slug}`;

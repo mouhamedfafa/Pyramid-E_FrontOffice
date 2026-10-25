@@ -7,6 +7,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { FormationService } from '../../../shared/service/formation/formation.service';
+import { uploadErrorMessage } from '../../../shared/utils/http-error.utils';
 import { CommonService } from '../../../shared/service/common/common.service';
 import { AuthService } from '../../../shared/service/authentification/auth.service';
 import { CategorieService, CategorieFormation, CategorieFormationRequest } from '../../../shared/service/categorie/categorie-service.service';
@@ -917,9 +918,15 @@ submitCourse(): void {
   };
 
   if (this.selectedImageFile) {
+    // Image refusée : on n'enregistre pas la formation sans elle, l'utilisateur peut corriger et réessayer
     this.formationService.uploadImageCouverture(this.selectedImageFile).subscribe({
       next: (res) => doCreate(res.path || null),
-      error: () => doCreate(null),
+      error: (err) => {
+        this.saving = false;
+        this.imageError = uploadErrorMessage(err);
+        this.error = `Image de couverture non envoyée : ${this.imageError} La formation n'a pas été enregistrée. Choisissez une image plus légère ou retirez-la, puis réessayez.`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
     });
   } else {
     doCreate(null);
