@@ -558,6 +558,21 @@ $radius-lg: 12px;
   }
 }
 
+// Rôle système (commun à toutes les entreprises)
+.ul-sys-badge {
+  margin-left: 6px;
+  padding: .05rem .4rem;
+  border-radius: 4px;
+  background: #e5f5ec;
+  color: #1a5c38;
+  border: 1px solid #b8e4c9;
+  font-size: .6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
 // ─────────────────────────────────────────
 // ALERT
 // ─────────────────────────────────────────

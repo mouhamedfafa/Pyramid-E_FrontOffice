@@ -58,7 +58,7 @@ export class AdminrhCertificateModeleComponent implements OnInit {
 
             // ✅ Convertir l'URL relative en URL complète pour l'affichage
             if (this.config.logo_url && !this.config.logo_url.startsWith('http')) {
-              const baseUrl = this.apiUrl.replace('/api', '');
+              const baseUrl = this.apiUrl.replace(/\/api$/, '');
               this.config.logo_url = baseUrl + this.config.logo_url;
               console.log('✅ Logo URL chargée:', this.config.logo_url);
             }
@@ -195,7 +195,7 @@ export class AdminrhCertificateModeleComponent implements OnInit {
             this.config.logo_url = res.url;
           } else {
             // Construire l'URL complète pour l'affichage dans l'interface
-            const baseUrl = this.apiUrl.replace('/api', '');
+            const baseUrl = this.apiUrl.replace(/\/api$/, '');
             this.config.logo_url = baseUrl + res.url;
           }
           console.log('✅ Logo URL finale:', this.config.logo_url);

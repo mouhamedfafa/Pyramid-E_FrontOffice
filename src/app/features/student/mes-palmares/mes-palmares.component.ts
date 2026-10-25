@@ -69,7 +69,7 @@ export class MesPalmaresComponent implements OnInit {
     if (!c.url_pdf) return;
     const url = c.url_pdf.startsWith('http')
       ? c.url_pdf
-      : `${environment.apiUrl.replace('/api', '')}/storage/${c.url_pdf}`;
+      : `${environment.apiUrl.replace(/\/api$/, '')}/storage/${c.url_pdf}`;
     window.open(url, '_blank');
   }
 

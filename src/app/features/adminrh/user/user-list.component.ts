@@ -14,12 +14,13 @@ import { sortRoleNames } from '../../../shared/utils/role-sort.utils';
 import { CustomPaginationComponent } from '../../../shared/service/custom-pagination/custom-pagination.component';
 import { UserAddComponent } from '../user-add/user-add.component';
 import { AdminrhRoleComponent } from '../adminrh-role/adminrh-role.component';
+import { SelecteurRoleComponent } from '../../../shared/components/selecteur-role/selecteur-role.component';
 import { pageSelection } from '../../../shared/models/model';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, CommonModule, CustomPaginationComponent, UserAddComponent, AdminrhRoleComponent, HasPermissionDirective],
+  imports: [RouterLink, FormsModule, CommonModule, CustomPaginationComponent, UserAddComponent, AdminrhRoleComponent, HasPermissionDirective, SelecteurRoleComponent],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
@@ -89,6 +90,12 @@ export class UserListComponent implements OnInit {
     return sortRoleNames(roles);
   }
 
+  /** Noms des rôles système (communs à toutes les entreprises), signalés par un badge dans le filtre. */
+  private rolesSysteme = new Set<string>();
+  estRoleSysteme(nom: string): boolean {
+    return this.rolesSysteme.has(nom);
+  }
+
   // ── État ─────────────────────────────────────
   loading      = false;
   error        = '';
@@ -147,6 +154,7 @@ export class UserListComponent implements OnInit {
     this.currentUser = this.authService.getUser();
     this.getUserList();
     this.chargerDirectionsFiltre();
+    this.loadMassInviteRoles();
     if (this.route.snapshot.queryParamMap.get('action') === 'create') {
       this.openNew();
     }
@@ -673,6 +681,7 @@ export class UserListComponent implements OnInit {
     this.roleService.getAllRoles().subscribe({
       next: (res) => {
         this.massInviteRoles = res.roles || res.data || res || [];
+        this.rolesSysteme = new Set(this.massInviteRoles.filter((r: any) => !!Number(r.is_system)).map((r: any) => r.name));
       }
     });
   }

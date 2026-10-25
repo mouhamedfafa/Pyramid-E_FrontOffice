@@ -8,11 +8,12 @@ import { ClientCompanyService } from '../../../shared/service/client/client-comp
 import { sortRoles } from '../../../shared/utils/role-sort.utils';
 import { NoeudOrganigramme, OrganisationService, Ref } from '../../../shared/service/organisation/organisation.service';
 import { SelecteurDirectionComponent } from '../../../shared/components/organisation/selecteur-direction/selecteur-direction.component';
+import { SelecteurRoleComponent } from '../../../shared/components/selecteur-role/selecteur-role.component';
 
 @Component({
   selector: 'app-user-add',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SelecteurDirectionComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SelecteurDirectionComponent, SelecteurRoleComponent],
   templateUrl: './user-add.component.html',
   styleUrl: './user-add.component.scss'
 })

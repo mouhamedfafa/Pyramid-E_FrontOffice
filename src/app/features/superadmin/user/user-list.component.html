@@ -51,7 +51,7 @@
           <div class="ul-dropdown__item"
                *ngFor="let r of allRoles"
                [class.ul-dropdown__item--on]="selectedRoleFilter === r.name"
-               (click)="setRoleFilter(r.name)">{{ r.name }}</div>
+               (click)="setRoleFilter(r.name)">{{ r.name }}<span *ngIf="+r.is_system" class="ul-sys-badge">Système</span></div>
         </div>
       </div>
 

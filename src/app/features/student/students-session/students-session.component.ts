@@ -114,7 +114,7 @@ export class StudentsSessionsComponent implements OnInit {
       titre_affiche:      d.session_formation?.titre ?? `Session #${d.session_formation_id}`,
       sous_titre_affiche: date ? `Début : ${new Date(date).toLocaleDateString('fr-FR')}` : '',
       image_affiche:      d.session_formation?.image_couverture
-        ? (d.session_formation.image_couverture.startsWith('http') ? d.session_formation.image_couverture : `${environment.apiUrl.replace('/api','')}/storage/${d.session_formation.image_couverture}`)
+        ? (d.session_formation.image_couverture.startsWith('http') ? d.session_formation.image_couverture : `${environment.apiUrl.replace(/\/api$/, '')}/storage/${d.session_formation.image_couverture}`)
         : 'assets/img/course/course-01.jpg',
       places_restantes:   Math.max(0, cap - inscrits),
     };

@@ -84,7 +84,7 @@ export class VideoRessourcesComponent implements OnInit {
   formationNames: string[] = [];
 
   private embedCache = new Map<number, SafeResourceUrl | null>();
-  private storageBase = environment.apiUrl.replace('/api', '');
+  private storageBase = environment.apiUrl.replace(/\/api$/, '');
 
   constructor(
     private formationService: FormationService,

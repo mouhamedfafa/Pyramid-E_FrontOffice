@@ -45,7 +45,7 @@ unpublishFormation(id: number): Observable<any> {
 }
 
   private baseUrl = environment.apiUrl;
-  private storageBase = environment.apiUrl.replace('/api', '');
+  private storageBase = environment.apiUrl.replace(/\/api$/, '');
   handleError: any;
   private formateurCache$: Observable<any> | null = null;
 

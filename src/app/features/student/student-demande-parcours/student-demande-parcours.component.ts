@@ -127,7 +127,7 @@ export class StudentDemandeParcoursComponent implements OnInit {
       image_affiche:      d.parcours?.image_couverture
         ? (d.parcours.image_couverture.startsWith('http')
             ? d.parcours.image_couverture
-            : `${environment.apiUrl.replace('/api', '')}/storage/${d.parcours.image_couverture}`)
+            : `${environment.apiUrl.replace(/\/api$/, '')}/storage/${d.parcours.image_couverture}`)
         : 'assets/img/course/course-01.jpg',
     };
   }

@@ -43,11 +43,8 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                                <label class="form-label">Rôle <span class="text-danger">*</span></label>
-                                <select class="form-select" formControlName="role_id">
-                                    <option value="">Sélectionner un rôle</option>
-                                    <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
-                                </select>
+                                <label class="form-label" for="sa-role">Rôle <span class="text-danger">*</span></label>
+                                <app-selecteur-role inputId="sa-role" formControlName="role_id" [roles]="roles"></app-selecteur-role>
                                 <div *ngIf="userForm.get('role_id')?.invalid && userForm.get('role_id')?.touched" class="text-danger mt-1">
                                     <small>Le rôle est requis</small>
                                 </div>

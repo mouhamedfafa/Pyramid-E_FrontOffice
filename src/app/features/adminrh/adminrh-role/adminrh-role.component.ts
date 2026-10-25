@@ -39,12 +39,14 @@ export class AdminrhRoleComponent implements OnInit {
 
   // Rôles système de base (toutes entreprises)
   private readonly BASE_SYSTEM_ROLES = [
+    { name: 'Direction',      type: 'rh',        icon: 'isax-building' },
     { name: 'Responsable RH', type: 'rh',        icon: 'isax-people' },
     { name: 'Admin RH',       type: 'rh',        icon: 'isax-people' },
     { name: 'Admin IT',       type: 'admin',     icon: 'isax-setting-2' },
+    { name: 'DSI',            type: 'rh',        icon: 'isax-monitor' },
     { name: 'Formateur',      type: 'formateur', icon: 'isax-teacher' },
     { name: 'Employé',        type: 'employe',   icon: 'isax-user' },
-    { name: 'Consultant',     type: 'formateur', icon: 'isax-briefcase' },
+    { name: 'Consultant Externe', type: 'formateur', icon: 'isax-briefcase' },
     { name: 'Manager',        type: 'rh',        icon: 'isax-chart' },
   ];
 
@@ -311,10 +313,12 @@ export class AdminrhRoleComponent implements OnInit {
     'Super Admin RH Holding',
     'Administrateur RH Holding',
     'Admin RH Holding',
+    'Direction',
     'Admin RH',
     'Administrateur RH',
     'Admin IT',
     'Administrateur IT',
+    'DSI',
     'Responsable RH Groupe',
     'Responsable RH',
     'Gestionnaire de Contenu',
@@ -323,6 +327,7 @@ export class AdminrhRoleComponent implements OnInit {
     'Admin RH Entreprise',
     'Manager',
     'Formateur',
+    'Consultant Externe',
     'Consultant',
     'Employé',
     'Employe',

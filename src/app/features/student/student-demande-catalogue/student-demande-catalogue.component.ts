@@ -123,7 +123,7 @@ export class StudentDemandeCatalogueComponent implements OnInit {
       titre_affiche:      d.catalogue?.titre       ?? `Catalogue #${d.catalogue_id}`,
       sous_titre_affiche: d.catalogue?.description ?? '',
       image_affiche:      d.catalogue?.image_couverture
-        ? (d.catalogue.image_couverture.startsWith('http') ? d.catalogue.image_couverture : `${environment.apiUrl.replace('/api','')}/storage/${d.catalogue.image_couverture}`)
+        ? (d.catalogue.image_couverture.startsWith('http') ? d.catalogue.image_couverture : `${environment.apiUrl.replace(/\/api$/, '')}/storage/${d.catalogue.image_couverture}`)
         : 'assets/img/course/course-01.jpg',
     };
   }
