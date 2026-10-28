@@ -27,7 +27,7 @@ export class SuperadminRapportsComponent implements OnInit {
     { key: 'certifications',icon: 'isax-medal',         color: 'orange', label: 'Certifications',      sub: 'Délivrés, expirations, renouvellements' },
     { key: 'support',       icon: 'isax-ticket',          color: 'gray',  label: 'Support & tickets',   sub: 'Délais de résolution, satisfaction' },
     { key: 'performance',   icon: 'isax-chart-2',       color: 'purple', label: 'Performance globale', sub: 'KPIs consolidés plateforme' },
-    { key: 'financier',     icon: 'isax-wallet-add',    color: 'gray',   label: 'Financier',           sub: 'Formations, prix, inscrits' },
+    { key: 'financier',     icon: 'isax-wallet-add',    color: 'gray',   label: 'Financier',           sub: 'Formations, coûts, inscrits' },
   ];
 
   periode     = 'trimestre';
@@ -324,7 +324,7 @@ export class SuperadminRapportsComponent implements OnInit {
       'Formation':  f.titre || '—',
       'Entreprise': f.entreprise?.nom || '—',
       'Type':       f.type || '—',
-      'Prix':       f.prix != null && f.prix > 0 ? `${f.prix} XOF` : 'Gratuit',
+      'Coût':       `${parseFloat(f.prix) || 0} XOF`,
       'Statut':     f.est_publie ? 'Publiée' : 'Non publiée',
       'Inscrits':   f.nb_inscriptions ?? '—',
       'Date début': f.date_debut ? new Date(f.date_debut).toLocaleDateString('fr-FR') : '—',

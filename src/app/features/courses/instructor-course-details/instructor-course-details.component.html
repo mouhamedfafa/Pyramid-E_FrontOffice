@@ -402,7 +402,7 @@
           <tr><td>Niveau</td><td>{{ getNiveauLabel(formation.niveau) }}</td></tr>
           <tr><td>Langue</td><td>{{ getLangueLabel(formation.langue) }}</td></tr>
           <tr><td>Durée totale</td><td>{{ formation.duree_totale }}h</td></tr>
-          <tr><td>Prix</td><td>{{ formation.prix == 0 ? 'Gratuit' : formation.prix + ' FCFA' }}</td></tr>
+          <tr><td>Coût</td><td>{{ formation.prix || 0 }} XOF</td></tr>
           <tr><td>Statut</td><td>
             <span class="icd-statut" [class.published]="formation.est_publie">
               {{ formation.est_publie ? 'Publié' : 'Brouillon' }}

@@ -384,6 +384,48 @@ $radius-lg: 12px;
   }
 }
 
+// ─── GRID CARDS (cartes de même taille) ──────
+// Chaque colonne s'étire sur la hauteur de la ligne ; la carte la remplit
+.ac-grid-wrap .row > [class*='col-'] { display: flex; }
+
+.ac-gcard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  // Image à hauteur fixe, recadrée, quel que soit son format d'origine
+  &__img {
+    display: block;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  // Titre et description coupés à 2 lignes ; la description réserve toujours ses 2 lignes
+  &__title,
+  &__desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+
+  &__desc {
+    line-height: 1.5;
+    min-height: 3em;
+  }
+
+  // Actions toujours en bas de la carte
+  &__footer { margin-top: auto; }
+}
+
 // ─── ACTION BUTTONS ──────────────────────────
 .ac-actions { display: flex; gap: 5px; }
 

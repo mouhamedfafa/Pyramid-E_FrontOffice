@@ -33,7 +33,7 @@ export class SuperadminCourseComponent implements OnInit {
   serialNumberArray: number[] = [];
   totalData = 0;
 
-  stats = { active: 0, pending: 0, draft: 0, free: 0, paid: 0 };
+  stats = { active: 0, pending: 0, draft: 0 };
   entrepriseId: number | null = null;
   companies: Company[] = [];
 
@@ -72,14 +72,10 @@ export class SuperadminCourseComponent implements OnInit {
     return c ? c.nom : `#${entrepriseId}`;
   }
 
-  // ✅ prix est string | number | undefined
-  isFormationGratuite(formation: Formation): boolean {
-    return parseFloat(String(formation.prix ?? 0)) === 0;
-  }
-
-  formatPrix(prix: string | number | undefined): string {
-    const montant = parseFloat(String(prix ?? 0));
-    return montant === 0 ? 'Gratuit' : `${montant.toFixed(2)} FCFA`;
+  // Coût de la formation pour l'entreprise (champ « prix » en base) ; 0 si non renseigné
+  formatCout(cout: string | number | undefined): string {
+    const montant = parseFloat(String(cout ?? 0)) || 0;
+    return `${montant.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} XOF`;
   }
 
   trackByFormation(index: number, formation: Formation): number {
@@ -122,9 +118,7 @@ export class SuperadminCourseComponent implements OnInit {
     this.stats = {
       active:  this.allFormations.filter(f => f.est_publie && f.inscription_ouverte).length,
       pending: this.allFormations.filter(f => !f.est_publie && !f.inscription_ouverte).length,
-      draft:   this.allFormations.filter(f => !f.est_publie).length,
-      free:    this.allFormations.filter(f => this.isFormationGratuite(f)).length,
-      paid:    this.allFormations.filter(f => !this.isFormationGratuite(f)).length
+      draft:   this.allFormations.filter(f => !f.est_publie).length
     };
   }
 

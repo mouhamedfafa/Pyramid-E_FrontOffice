@@ -5,6 +5,7 @@ import {
   LAYOUT_ROUTE_PREFIXES,
   KPI_ROUTES,
   LayoutType,
+  ROLE_MANAGER,
   RoleRoutingConfig,
 } from '../config/role-routing.config';
 import { AuthService } from '../../shared/service/authentification/auth.service';
@@ -18,6 +19,11 @@ export class RoleRedirectService {
   // Pour les rôles dynamiques créés par un AdminRH (non listés dans roleIds),
   // on se base sur le champ `type` retourné par le backend au login.
   resolveConfig(roleId: number, roleType?: string, roleNames?: string[]): RoleRoutingConfig | null {
+    // 0. Rôle Manager : type rh en base, mais espace Manager (testé avant le type)
+    if (this.estRoleManager(roleNames)) {
+      return ROLE_ROUTING.find(c => c.layout === 'manager') ?? null;
+    }
+
     // 1. Correspondance directe par role_id
     const numericRoleId = Number(roleId);
     const direct = ROLE_ROUTING.find(c => c.roleIds.includes(numericRoleId));
@@ -108,6 +114,12 @@ export class RoleRedirectService {
     const config = this.resolveConfig(user.role_id, user.role_type, user.roles ?? []);
     if (!config) return '/index';
     return this.kpiRoute(config.layout, avecManager) ?? config.defaultRoute;
+  }
+
+  /** Nom du rôle direct renvoyé à la connexion (role_name), sinon rôles Spatie (sessions ouvertes avant). */
+  private estRoleManager(roleNames?: string[]): boolean {
+    const nomRole = this.authService.getUser()?.['role_name'];
+    return nomRole ? nomRole === ROLE_MANAGER : !!roleNames?.includes(ROLE_MANAGER);
   }
 
   private typeToLayout(type: string): LayoutType | null {

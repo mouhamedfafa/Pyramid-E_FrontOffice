@@ -476,9 +476,7 @@ export class AdminrhCourseComponent implements OnInit {
   stats = {
     active: 0,
     pending: 0,
-    draft: 0,
-    free: 0,
-    paid: 0
+    draft: 0
   };
 
   pageNumberArray: { skip: number; limit: number }[] = [];
@@ -517,10 +515,6 @@ export class AdminrhCourseComponent implements OnInit {
   this.currentUserId = Number(user.id ?? user.user_id ?? user.user?.id ?? 0);
   this.getFormationsList();
 }
-  // ✅ Corrigé : prix peut être undefined ou string ou number
-  isFormationGratuite(formation: Formation): boolean {
-    return parseFloat(String(formation.prix ?? 0)) === 0;
-  }
 canEditFormation(f: Formation): boolean {
   const current = Number(this.currentUserId ?? 0);
   if (!current) return false;
@@ -542,11 +536,6 @@ canEditFormation(f: Formation): boolean {
 
   return ids.has(current);
 }
-  formatPrix(prix: string | number | undefined): string {
-    const montant = parseFloat(String(prix ?? 0));
-    return montant === 0 ? 'Gratuit' : `${montant.toFixed(2)} FCFA`;
-  }
-
   trackByFormation(_index: number, formation: Formation): number {
     return formation.id;
   }
@@ -733,9 +722,7 @@ canEditFormation(f: Formation): boolean {
     this.stats = {
       active:  this.allFormations.filter(f => f.est_publie && f.inscription_ouverte).length,
       pending: this.allFormations.filter(f => !f.est_publie && !f.inscription_ouverte).length,
-      draft:   this.allFormations.filter(f => !f.est_publie).length,
-      free:    this.allFormations.filter(f => this.isFormationGratuite(f)).length,
-      paid:    this.allFormations.filter(f => !this.isFormationGratuite(f)).length
+      draft:   this.allFormations.filter(f => !f.est_publie).length
     };
   }
 

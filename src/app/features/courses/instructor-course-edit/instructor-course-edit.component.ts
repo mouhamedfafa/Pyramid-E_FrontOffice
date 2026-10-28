@@ -1394,7 +1394,7 @@ private validateSectionType(type: string): string {
       'short_description': 'Description courte',
       'description': 'Description',
       'difficulte': 'Difficulté',
-      'prix': 'Prix',
+      'prix': 'Coût',
       'duree_totale': 'Durée totale',
       'public_cible': 'Public cible',
       'nb_max_participants': 'Nombre max de participants'

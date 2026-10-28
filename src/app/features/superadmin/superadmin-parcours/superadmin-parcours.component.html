@@ -12,7 +12,7 @@
   </div>
 
   <!-- ── KPI ── -->
-  <div class="ac-kpi-row" style="grid-template-columns:repeat(5,1fr);">
+  <div class="ac-kpi-row" style="grid-template-columns:repeat(3,1fr);">
     <div class="ac-kpi">
       <div class="ac-kpi__label"><i class="isax isax-routing-2"></i>Total</div>
       <div class="ac-kpi__val">{{ stats.total }}</div>
@@ -25,14 +25,6 @@
     <div class="ac-kpi">
       <div class="ac-kpi__label"><i class="isax isax-pause-circle"></i>Inactifs</div>
       <div class="ac-kpi__val">{{ stats.inactifs }}</div>
-    </div>
-    <div class="ac-kpi">
-      <div class="ac-kpi__label"><i class="isax isax-gift"></i>Gratuits</div>
-      <div class="ac-kpi__val">{{ stats.gratuits }}</div>
-    </div>
-    <div class="ac-kpi">
-      <div class="ac-kpi__label"><i class="isax isax-dollar-circle"></i>Payants</div>
-      <div class="ac-kpi__val">{{ stats.payants }}</div>
     </div>
   </div>
 
@@ -104,7 +96,7 @@
           <th style="width:80px;text-align:center;">Formations</th>
           <th style="width:80px;text-align:center;">Employés</th>
           <th style="width:70px;text-align:center;">Durée</th>
-          <th style="width:90px;text-align:center;">Prix</th>
+          <th style="width:90px;text-align:center;">Coût</th>
           <th style="width:80px;text-align:center;">Statut</th>
           <th style="width:70px;"></th>
         </tr>
@@ -130,12 +122,8 @@
           <td style="text-align:center;font-size:13px;">{{ p.users?.length || 0 }}</td>
           <!-- Durée -->
           <td style="text-align:center;font-size:13px;">{{ p.duree_estimee || 0 }}h</td>
-          <!-- Prix -->
-          <td style="text-align:center;">
-            <span class="ac-status" [attr.data-s]="isGratuit(p.prix) ? 'pub' : 'pending'">
-              {{ formatPrix(p.prix) }}
-            </span>
-          </td>
+          <!-- Coût -->
+          <td style="text-align:center;font-size:13px;">{{ formatCout(p.prix) }}</td>
           <!-- Statut -->
           <td style="text-align:center;">
             <span class="ac-status" [attr.data-s]="p.actif ? 'pub' : 'draft'">

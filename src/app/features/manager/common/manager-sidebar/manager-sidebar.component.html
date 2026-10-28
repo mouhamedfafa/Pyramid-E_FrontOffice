@@ -18,6 +18,24 @@
     </div>
   </div>
 
+  <!-- ── SWITCHER ESPACES (même présentation que les espaces RH et formateur) ── -->
+  <div class="sb-space-switcher">
+    <!-- Retour à l'espace d'origine (RH, formateur, Super Admin, employé) ; absent pour le rôle Manager, déjà chez lui -->
+    <a *ngIf="origine.layout !== 'manager'" [routerLink]="retourRoute" class="sb-bottom-item sb-home-return">
+      <i class="isax isax-arrow-left-2"></i> {{ origine.label }}
+    </a>
+    <ng-container *ngIf="proposerModeEmploye">
+      <a *appHasPermission="'acceder-mode-employe'" [routerLink]="routes.students_Dashboard" class="sb-bottom-item sb-learner-switch">
+        <i class="isax isax-user-octagon"></i> Mode employé
+      </a>
+    </ng-container>
+    <ng-container *ngIf="proposerModeFormateur">
+      <a *appHasPermission="'acceder-mode-formateur'" [routerLink]="routes.instructor_dashboard" class="sb-bottom-item sb-trainer-switch">
+        <i class="isax isax-teacher"></i> Mode formateur
+      </a>
+    </ng-container>
+  </div>
+
   <!-- ── MINI-STATS ── -->
   <div class="sb-ministats">
     <div class="sb-ministat">
@@ -75,43 +93,6 @@
       {{ statut?.demandes_a_traiter }} demande{{ (statut?.demandes_a_traiter ?? 0) > 1 ? 's' : '' }} en attente de votre avis
     </div>
     <a [routerLink]="routes.managerDemandes" class="sb-widget-alert-link">Traiter maintenant →</a>
-  </div>
-
-  <!-- ── CHANGER D'ESPACE ── -->
-  <div class="sb-spaces">
-    <div class="sb-section-label">Changer d'espace</div>
-
-    <!-- Espace d'origine (RH, formateur, Super Admin ou employé) -->
-    <a [routerLink]="retourRoute" class="sb-space sb-space--home">
-      <span class="sb-space__icon"><i class="isax" [ngClass]="origine.icon"></i></span>
-      <span class="sb-space__text">
-        <span class="sb-space__label">{{ origine.label }}</span>
-        <span class="sb-space__sub">{{ origine.sub }}</span>
-      </span>
-      <i class="isax isax-arrow-right-3 sb-space__arrow"></i>
-    </a>
-
-    <ng-container *ngIf="proposerModeEmploye">
-      <a *appHasPermission="'acceder-mode-employe'" [routerLink]="routes.students_Dashboard" class="sb-space sb-space--employe">
-        <span class="sb-space__icon"><i class="isax isax-user-octagon"></i></span>
-        <span class="sb-space__text">
-          <span class="sb-space__label">Mode employé</span>
-          <span class="sb-space__sub">Vos formations et demandes</span>
-        </span>
-        <i class="isax isax-arrow-right-3 sb-space__arrow"></i>
-      </a>
-    </ng-container>
-
-    <ng-container *ngIf="proposerModeFormateur">
-      <a *appHasPermission="'acceder-mode-formateur'" [routerLink]="routes.instructor_dashboard" class="sb-space sb-space--formateur">
-        <span class="sb-space__icon"><i class="isax isax-teacher"></i></span>
-        <span class="sb-space__text">
-          <span class="sb-space__label">Mode formateur</span>
-          <span class="sb-space__sub">Créer et gérer des formations</span>
-        </span>
-        <i class="isax isax-arrow-right-3 sb-space__arrow"></i>
-      </a>
-    </ng-container>
   </div>
 
   <!-- ── BOTTOM ── -->

@@ -32,6 +32,7 @@ export interface LoginResponse {
   permissions?: string[];
   roles?: string[];
   role_type?: string | null;
+  role_name?: string | null;
   user?: {
     id: number;
     email: string;
@@ -112,6 +113,7 @@ export class AuthService {
               permissions: response?.permissions || response?.user?.permissions || [],
               roles:       response?.roles       || response?.user?.roles       || [],
               role_type:   response?.role_type ?? response?.user?.['role_type'] ?? null,
+              role_name:   response?.role_name ?? null,
             };
             this.setUser(userWithPermissions);
           }
@@ -134,6 +136,7 @@ export class AuthService {
               permissions: response?.permissions || response?.user?.permissions || [],
               roles: response?.roles || response?.user?.roles || [],
               role_type: response?.role_type ?? response?.user?.['role_type'] ?? null,
+              role_name: response?.role_name ?? null,
             };
             this.setUser(userWithPermissions);
           }
@@ -173,6 +176,7 @@ export class AuthService {
               permissions: response?.permissions || response?.user?.permissions || [],
               roles:       response?.roles       || response?.user?.roles       || [],
               role_type:   response?.role_type ?? response?.user?.['role_type'] ?? null,
+              role_name:   response?.role_name ?? null,
             });
           }
         }),
@@ -286,6 +290,7 @@ register(data: any): Observable<any> {
             permissions: response.permissions || [],
             roles:       response.roles       || [],
             role_type:   response.role_type   ?? current['role_type'] ?? null,
+            role_name:   response.role_name   ?? current['role_name'] ?? null,
           };
           this.setUser(updated);
         }

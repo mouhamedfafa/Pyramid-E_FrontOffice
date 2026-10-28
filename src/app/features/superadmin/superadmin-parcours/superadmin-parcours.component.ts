@@ -40,7 +40,7 @@ export class SuperadminParcoursComponent implements OnInit {
   totalData = 0;
 
   // Stats
-  stats = { total: 0, actifs: 0, inactifs: 0, gratuits: 0, payants: 0 };
+  stats = { total: 0, actifs: 0, inactifs: 0 };
 
   constructor(
     private parcoursService: ParcoursService,
@@ -88,9 +88,7 @@ export class SuperadminParcoursComponent implements OnInit {
     this.stats = {
       total: this.allParcours.length,
       actifs: this.allParcours.filter(p => p.actif).length,
-      inactifs: this.allParcours.filter(p => !p.actif).length,
-      gratuits: this.allParcours.filter(p => parseFloat(p.prix || '0') === 0).length,
-      payants: this.allParcours.filter(p => parseFloat(p.prix || '0') > 0).length
+      inactifs: this.allParcours.filter(p => !p.actif).length
     };
   }
 
@@ -170,13 +168,10 @@ export class SuperadminParcoursComponent implements OnInit {
     return c ? c.nom : `#${entrepriseId}`;
   }
 
-  formatPrix(prix: string | undefined): string {
-    const v = parseFloat(prix || '0');
-    return v === 0 ? 'Gratuit' : `${v.toFixed(0)} FCFA`;
-  }
-
-  isGratuit(prix: string | undefined): boolean {
-    return parseFloat(prix || '0') === 0;
+  // Coût du parcours pour l'entreprise (champ « prix » en base) ; 0 si non renseigné
+  formatCout(cout: string | undefined): string {
+    const v = parseFloat(cout || '0') || 0;
+    return `${v.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} XOF`;
   }
 
   getNiveauData(niveau: string): string {

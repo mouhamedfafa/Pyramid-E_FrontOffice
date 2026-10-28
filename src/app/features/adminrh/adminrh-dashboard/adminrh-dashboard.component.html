@@ -223,7 +223,7 @@
           <div class="skeleton-loader"><div class="skeleton skeleton-text"></div></div>
         } @else if (dashboardStats?.cout_moyen_heure != null) {
           <h4 class="fw-bold mb-0">
-            {{ dashboardStats!.cout_moyen_heure | number:'1.0-0' }}<span class="fs-14 text-muted ms-1">FCFA/h</span>
+            {{ dashboardStats!.cout_moyen_heure | number:'1.0-0' }}<span class="fs-14 text-muted ms-1">XOF/h</span>
           </h4>
         } @else {
           <h4 class="fw-bold mb-0 text-muted">—</h4>
@@ -246,7 +246,7 @@
           <div class="skeleton-loader"><div class="skeleton skeleton-text"></div></div>
         } @else if (dashboardStats?.cout_moyen_certification != null) {
           <h4 class="fw-bold mb-0">
-            {{ dashboardStats!.cout_moyen_certification | number:'1.0-0' }}<span class="fs-14 text-muted ms-1">FCFA</span>
+            {{ dashboardStats!.cout_moyen_certification | number:'1.0-0' }}<span class="fs-14 text-muted ms-1">XOF</span>
           </h4>
         } @else {
           <h4 class="fw-bold mb-0 text-muted">—</h4>
@@ -269,7 +269,7 @@
           <div class="skeleton-loader"><div class="skeleton skeleton-text"></div></div>
         } @else if (dashboardStats?.cout_moyen_par_employe != null) {
           <h4 class="fw-bold mb-0">
-            {{ dashboardStats!.cout_moyen_par_employe | number:'1.0-0' }}<span class="fs-14 text-muted ms-1">FCFA</span>
+            {{ dashboardStats!.cout_moyen_par_employe | number:'1.0-0' }}<span class="fs-14 text-muted ms-1">XOF</span>
           </h4>
         } @else {
           <h4 class="fw-bold mb-0 text-muted">—</h4>

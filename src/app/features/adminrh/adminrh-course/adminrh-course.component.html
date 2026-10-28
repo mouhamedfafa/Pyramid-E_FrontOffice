@@ -89,7 +89,6 @@
         <tr>
           <th>Formation</th>
           <th>Employés</th>
-          <th>Coût</th>
           <th>Durée</th>
           <th>Statut</th>
           <th>Actions</th>
@@ -113,11 +112,6 @@
           </td>
           <td>
             <span class="ac-pill"><i class="isax isax-people"></i> {{ $any(f).nb_participants || 0 }}/{{ f.nb_max_participants || '∞' }}</span>
-          </td>
-          <td>
-            <span [class]="isFormationGratuite(f) ? 'ac-badge ac-badge--free' : 'ac-badge ac-badge--paid'">
-              {{ formatPrix(f.prix) }}
-            </span>
           </td>
           <td>
             <span class="ac-pill"><i class="isax isax-clock"></i> {{ getDuree(f) }}</span>
@@ -151,7 +145,7 @@
           </td>
         </tr>
         <tr *ngIf="!tableData.length">
-          <td colspan="6" class="ac-empty">
+          <td colspan="5" class="ac-empty">
             <i class="isax isax-book-1" style="font-size:2rem;display:block;margin-bottom:8px"></i>
             Aucune formation trouvée
           </td>
@@ -172,11 +166,6 @@
               </a>
               <div class="position-absolute top-0 end-0 m-2">
                 <span class="ac-status" [attr.data-s]="getStatusKey(f)">{{ getStatusText(f) }}</span>
-              </div>
-              <div class="position-absolute bottom-0 start-0 m-2">
-                <span class="badge" [ngClass]="{'bg-success': isFormationGratuite(f), 'bg-primary': !isFormationGratuite(f)}">
-                  {{ formatPrix(f.prix) }}
-                </span>
               </div>
             </div>
 
@@ -216,7 +205,7 @@
                 </div>
               </div>
 
-              <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center justify-content-between ac-gcard__footer">
                 <div class="ac-gcard__actions">
                   <a [href]="routes.courseDetails + '/' + f.id" target="_blank"
                      class="ac-act" title="Voir"><i class="isax isax-eye"></i></a>
@@ -677,7 +666,7 @@
                    [attr.readonly]="wizardMode === 'view' ? '' : null">
           </div>
           <div class="wz-field">
-            <label class="wz-label">Prix (XOF)</label>
+            <label class="wz-label">Coût (XOF)</label>
             <input type="number" class="wz-input" formControlName="prix"
                    placeholder="0" min="0"
                    [attr.readonly]="wizardMode === 'view' ? '' : null">
@@ -818,7 +807,7 @@
           <div class="wz-recap-row"><span class="wz-rl">Titre</span><span class="wz-rv">{{ wizardForm.value.nom || '—' }}</span></div>
           <div class="wz-recap-row"><span class="wz-rl">Domaine</span><span class="wz-rv">{{ wizardDomain || '—' }}</span></div>
           <div class="wz-recap-row"><span class="wz-rl">Durée estimée</span><span class="wz-rv">{{ wizardForm.value.duree_estimee }} jours</span></div>
-          <div class="wz-recap-row"><span class="wz-rl">Prix</span><span class="wz-rv">{{ wizardForm.value.prix || '0' }} XOF</span></div>
+          <div class="wz-recap-row"><span class="wz-rl">Coût</span><span class="wz-rv">{{ wizardForm.value.prix || '0' }} XOF</span></div>
           <div class="wz-recap-row"><span class="wz-rl">Statut</span><span class="wz-rv">{{ wizardForm.value.actif ? 'Actif' : 'Inactif' }}</span></div>
         </div>
         <div class="wz-recap-card">

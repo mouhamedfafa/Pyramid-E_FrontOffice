@@ -21,7 +21,7 @@
         </div>
 
         <div class="mgr-actions">
-          <a [routerLink]="retourRoute" class="mgr-hbtn mgr-hbtn-outline" [title]="'Revenir à : ' + origine.label">
+          <a *ngIf="origine.layout !== 'manager'" [routerLink]="retourRoute" class="mgr-hbtn mgr-hbtn-outline" [title]="'Revenir à : ' + origine.label">
             <i class="isax isax-arrow-left-2"></i>{{ origine.label }}
           </a>
           <a [routerLink]="routes.managerDemandes" class="mgr-hbtn mgr-hbtn-primary">

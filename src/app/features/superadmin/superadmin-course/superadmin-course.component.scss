@@ -1,5 +1,8 @@
 @import '../../adminrh/adminrh-course/adminrh-course.component';
 
+// ── KPI : 3 tuiles (Publiées, En attente, Brouillons) ──
+.ac-kpi-row--3 { grid-template-columns: repeat(3, 1fr); }
+
 // ── Thumbnail ─────────────────────────────────
 .ac-thumb {
   position: relative;

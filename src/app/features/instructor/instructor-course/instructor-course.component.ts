@@ -175,12 +175,6 @@ export class InstructorCourseComponent implements OnInit {
   }
 
   // ── Helpers ───────────────────────────────────
-  isFormationGratuite(f: any): boolean { return !f.prix || f.prix === 0; }
-
-  formatPrix(prix: number): string {
-    return !prix || prix === 0 ? 'Gratuit' : `${Math.round(prix)} XOF`;
-  }
-
   getFormationImage(f: any): string {
     return this.formationService.getImageUrl(
       f.image_couverture || f.image_url || f.image || f.photo

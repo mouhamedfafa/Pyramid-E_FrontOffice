@@ -15,7 +15,7 @@
   </div>
 
   <!-- ── KPI ── -->
-  <div class="ac-kpi-row">
+  <div class="ac-kpi-row ac-kpi-row--3">
     <div class="ac-kpi">
       <div class="ac-kpi__label"><i class="isax isax-tick-circle"></i>Publiées</div>
       <div class="ac-kpi__val">{{ stats.active }}</div>
@@ -29,14 +29,6 @@
     <div class="ac-kpi">
       <div class="ac-kpi__label"><i class="isax isax-document"></i>Brouillons</div>
       <div class="ac-kpi__val">{{ stats.draft }}</div>
-    </div>
-    <div class="ac-kpi">
-      <div class="ac-kpi__label"><i class="isax isax-gift"></i>Gratuites</div>
-      <div class="ac-kpi__val">{{ stats.free }}</div>
-    </div>
-    <div class="ac-kpi">
-      <div class="ac-kpi__label"><i class="isax isax-dollar-circle"></i>Payantes</div>
-      <div class="ac-kpi__val">{{ stats.paid }}</div>
     </div>
   </div>
 
@@ -141,12 +133,8 @@
           <td style="font-size:12px;">{{ f.entreprise?.nom || getCompanyName(f.entreprise_id) }}</td>
           <!-- Participants -->
           <td style="text-align:center;font-size:13px;">{{ f.nb_max_participants || 0 }}</td>
-          <!-- Prix -->
-          <td style="text-align:center;">
-            <span class="ac-status" [attr.data-s]="isFormationGratuite(f) ? 'pub' : 'pending'">
-              {{ formatPrix(f.prix) }}
-            </span>
-          </td>
+          <!-- Coût -->
+          <td style="text-align:center;font-size:13px;">{{ formatCout(f.prix) }}</td>
           <!-- Durée -->
           <td style="text-align:center;font-size:13px;">{{ f.duree_totale || 0 }}h</td>
           <!-- Statut -->

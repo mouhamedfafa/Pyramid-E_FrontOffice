@@ -26,14 +26,6 @@
         <div class="icg-kpi__icon ki-blue"><i class="isax isax-edit-2"></i></div>
         <div><div class="icg-kpi__val">{{ getDraftFormationsCount() }}</div><div class="icg-kpi__lbl">Brouillons</div></div>
       </div>
-      <div class="icg-kpi">
-        <div class="icg-kpi__icon ki-teal"><i class="isax isax-tag"></i></div>
-        <div><div class="icg-kpi__val">{{ getFreeFormationsCount() }}</div><div class="icg-kpi__lbl">Gratuites</div></div>
-      </div>
-      <div class="icg-kpi">
-        <div class="icg-kpi__icon ki-purple"><i class="isax isax-dollar-circle"></i></div>
-        <div><div class="icg-kpi__val">{{ getPaidFormationsCount() }}</div><div class="icg-kpi__lbl">Payantes</div></div>
-      </div>
     </div>
 
     <!-- Page Header -->
@@ -92,13 +84,6 @@
                     <div class="position-absolute top-0 end-0 m-2">
                         <span class="badge" [ngClass]="getStatusClass(formation)">
                             {{ getStatusText(formation) }}
-                        </span>
-                    </div>
-
-                    <!-- Badge prix -->
-                    <div class="position-absolute bottom-0 start-0 m-2">
-                        <span class="badge" [ngClass]="{'bg-success': isFormationGratuite(formation), 'bg-primary': !isFormationGratuite(formation)}">
-                            {{ formatPrix(formation.prix) }}
                         </span>
                     </div>
                 </div>

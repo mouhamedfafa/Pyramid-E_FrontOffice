@@ -137,21 +137,7 @@ export class InstructorCourseGridComponent implements OnInit {
     return this.allFormations.filter(f => !f.est_publie || f.est_publie === 0).length;
   }
 
-  getFreeFormationsCount(): number {
-    return this.allFormations.filter(f => !f.prix || parseFloat(f.prix) === 0).length;
-  }
-
-  getPaidFormationsCount(): number {
-    return this.allFormations.filter(f => f.prix && parseFloat(f.prix) > 0).length;
-  }
-
   // ── Helpers ───────────────────────────────────
-  isFormationGratuite(f: any): boolean { return !f.prix || parseFloat(f.prix) === 0; }
-
-  formatPrix(prix: string): string {
-    return !prix || parseFloat(prix) === 0 ? 'Gratuit' : `${Math.round(parseFloat(prix))} XOF`;
-  }
-
   getFormationImage(f: any): string {
     return this.formationService.getImageUrl(
       f.image_couverture || f.image_url || f.image || f.photo

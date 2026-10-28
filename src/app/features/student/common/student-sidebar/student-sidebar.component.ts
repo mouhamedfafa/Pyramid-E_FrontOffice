@@ -10,6 +10,7 @@ import { StudentThemeService, StudentTheme } from '../student-theme.service';
 import { ManagerService } from '../../../../shared/service/manager/manager.service';
 import { ManagerStatut } from '../../../../shared/models/manager.models';
 import { HasPermissionDirective } from '../../../../directive/has-permission-directive.directive';
+import { RoleRedirectService } from '../../../../core/services/role-redirect.service';
 
 @Component({
   selector: 'app-student-sidebar',
@@ -47,6 +48,7 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private themeService: StudentThemeService,
     private managerService: ManagerService,
+    private redirectService: RoleRedirectService,
   ) {
     this.common.base.subscribe((b: string) => (this.base = b));
     this.common.page.subscribe((p: string) => (this.page = p));
@@ -122,6 +124,8 @@ export class StudentSidebarComponent implements OnInit, OnDestroy {
     const roleType = user.role_type ?? (user as any)['role_type'] ?? '';
     const roleId   = user.role_id ?? 0;
     if (roleId === 2 || roleType === 'employe') return false;
+    // Rôle Manager : son retour se fait par la bannière « Mode manager » (jamais vers l'espace RH)
+    if (this.redirectService.getCurrentLayout() === 'manager') return false;
     return true;
   }
 

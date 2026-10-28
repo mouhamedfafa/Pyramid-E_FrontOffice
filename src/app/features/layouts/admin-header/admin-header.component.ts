@@ -15,6 +15,7 @@ import { InstructorThemeService } from '../../instructor/common/instructor-theme
 import { StudentThemeService } from '../../student/common/student-theme.service';
 import { ManagerService } from '../../../shared/service/manager/manager.service';
 import { ManagerStatut } from '../../../shared/models/manager.models';
+import { RoleRedirectService } from '../../../core/services/role-redirect.service';
 
 @Component({
     selector: 'app-admin-header',
@@ -66,6 +67,7 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
      private instructorTheme: InstructorThemeService,
      private studentTheme: StudentThemeService,
      private managerService: ManagerService,
+     private redirectService: RoleRedirectService,
    ) {
      this.common.base.subscribe((res: string) => {
        this.base = res;
@@ -194,8 +196,14 @@ checkLoginStatus(): void {
     }
   }
 
+  /** Rôle Manager : type rh en base, mais sans espace RH (menu employé). */
+  private isRoleManager(): boolean {
+    return this.redirectService.getCurrentLayout() === 'manager';
+  }
+
   isRhUser(): boolean {
     if (!this.currentUser) return false;
+    if (this.isRoleManager()) return false;
     const staticRhIds = [4, 5, 9, 14];
     if (staticRhIds.includes(this.currentUser.role_id)) return true;
     const roleType = this.currentUser.role_type ?? this.currentUser['role_type'] ?? '';
@@ -207,7 +215,7 @@ checkLoginStatus(): void {
 
   isEmployee(): boolean {
     if (!this.currentUser) return false;
-    if (this.currentUser.role_id === 2) return true;
+    if (this.currentUser.role_id === 2 || this.isRoleManager()) return true;
     const roleType = this.currentUser.role_type ?? this.currentUser['role_type'] ?? '';
     return roleType === 'employe';
   }
@@ -241,6 +249,7 @@ checkLoginStatus(): void {
     if (!this.currentUser) return 'Utilisateur';
     // Priorité : nom du rôle retourné par le backend (dynamique, fiable)
     if (this.currentUser.role?.name) return this.formatRoleName(this.currentUser.role.name);
+    if (this.currentUser['role_name']) return this.formatRoleName(this.currentUser['role_name']);
     // Fallback : IDs statiques des rôles système
     switch (this.currentUser.role_id) {
       case 1:  return 'Super Admin';

@@ -1,6 +1,9 @@
 import type { KpiDashboardSlug } from '../../shared/service/dashboards/kpi-dashboard.service';
 
-export type LayoutType = 'superadmin' | 'adminrh' | 'formateur' | 'employe';
+export type LayoutType = 'superadmin' | 'adminrh' | 'formateur' | 'employe' | 'manager';
+
+// Rôle « Manager » : de type rh en base, mais son espace est l'espace Manager (jamais l'espace RH)
+export const ROLE_MANAGER = 'Manager';
 
 export interface RoleRoutingConfig {
   roleIds: number[];
@@ -15,7 +18,7 @@ export const ROLE_ROUTING: RoleRoutingConfig[] = [
     layout: 'superadmin',
   },
   {
-    // Admin RH, Responsable RH, Admin Holding, Manager, + tout rôle créé par RH (type='rh')
+    // Admin RH, Responsable RH, Admin Holding, + tout rôle créé par RH (type='rh') ; le rôle Manager a son propre espace
     roleIds: [4, 5, 9, 14],
     defaultRoute: '/adminrh/adminrh-user-list',
     layout: 'adminrh',
@@ -31,6 +34,13 @@ export const ROLE_ROUTING: RoleRoutingConfig[] = [
     roleIds: [2],
     defaultRoute: '/student/student-dashboard',
     layout: 'employe',
+  },
+  {
+    // Rôle Manager, reconnu par son nom (voir ROLE_MANAGER) : arrive sur son dashboard Manager.
+    // Sans collaborateur rattaché, l'espace Manager lui est fermé : il retombe sur l'espace employé.
+    roleIds: [],
+    defaultRoute: '/student/student-dashboard',
+    layout: 'manager',
   },
 ];
 
@@ -83,4 +93,5 @@ export const LAYOUT_ROUTE_PREFIXES: Record<LayoutType, string[]> = {
   adminrh:    ['/adminrh',    '/student', '/instructor', '/courses', '/manager'],
   formateur:  ['/instructor', '/student',               '/courses', '/manager'],
   employe:    ['/student',                              '/courses', '/manager'],
+  manager:    ['/manager', '/student',                  '/courses'],
 };

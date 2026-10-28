@@ -15,6 +15,7 @@ export function espaceOrigine(layout: LayoutType | null): EspaceOrigine {
     case 'adminrh':    return { layout, label: 'Espace RH', sub: 'Gestion RH de votre entreprise', icon: 'isax-buildings-2' };
     case 'formateur':  return { layout, label: 'Espace formateur', sub: 'Vos formations et apprenants', icon: 'isax-teacher' };
     case 'employe':    return { layout, label: 'Espace employé', sub: 'Vos formations et demandes', icon: 'isax-user-octagon' };
+    case 'manager':    return { layout, label: 'Espace Manager', sub: 'Votre équipe', icon: 'isax-hierarchy' };
     default:           return { layout: null, label: 'Mon espace', sub: 'Retour à votre espace', icon: 'isax-home-2' };
   }
 }
