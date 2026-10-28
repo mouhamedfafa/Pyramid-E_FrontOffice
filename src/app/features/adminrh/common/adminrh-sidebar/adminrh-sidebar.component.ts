@@ -15,6 +15,7 @@ import { TicketService } from '../../../../shared/service/ticket/ticket.service'
 import { HasPermissionDirective } from '../../../../directive/has-permission-directive.directive';
 import { ManagerService } from '../../../../shared/service/manager/manager.service';
 import { ManagerStatut } from '../../../../shared/models/manager.models';
+import { RoleRedirectService } from '../../../../core/services/role-redirect.service';
 
 @Component({
     selector: 'app-adminrh-sidebar',
@@ -76,9 +77,20 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
     return u.name || `${u.prenom ?? ''} ${u.nom ?? ''}`.trim() || u.email || 'Admin RH';
   }
 
+  /** Nom du rôle de l'utilisateur (rôle direct renvoyé à la connexion, sinon relation chargée). */
   getRoleLabel(): string {
     const u = this.currentUser;
-    return u?.role?.name || (u?.role_id === 5 ? 'RH Groupe' : 'Administratrice RH');
+    return u?.role_name || u?.role?.name || (u?.role_id === 5 ? 'RH Groupe' : 'Administratrice RH');
+  }
+
+  /** « Espace <rôle> » pour un utilisateur de l'espace RH ; un visiteur (ex. Super Admin) voit « Espace Admin RH ». */
+  getEspaceLabel(): string {
+    return this.redirectService.getCurrentLayout() === 'adminrh' ? this.getRoleLabel() : 'Admin RH';
+  }
+
+  /** Sous le nom : la fonction, sinon le rôle (le rôle est déjà dans le badge). */
+  getSousTitre(): string {
+    return this.currentUser?.fonction || this.getRoleLabel();
   }
 
   getEntrepriseName(): string {
@@ -98,6 +110,7 @@ export class AdminrhSidebarComponent implements OnInit, OnDestroy {
     private router: Router,
     private themeService: AdminrhThemeService,
     private managerService: ManagerService,
+    private redirectService: RoleRedirectService,
   ) {
     this.common.base.subscribe((base: string) => { this.base = base; });
     this.common.page.subscribe((page: string) => { this.page = page; });

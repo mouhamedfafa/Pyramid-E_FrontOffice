@@ -5,7 +5,7 @@
     <div class="sb-logo-mark">P</div>
     <div>
       <div class="sb-logo-text">Pyramide LMS</div>
-      <span class="sb-logo-badge">Espace Admin RH</span>
+      <span class="sb-logo-badge" [title]="'Espace ' + getEspaceLabel()">Espace {{ getEspaceLabel() }}</span>
     </div>
   </div>
 
@@ -14,7 +14,7 @@
     <div class="sb-av">{{ getInitials() }}</div>
     <div class="sb-profile-info">
       <div class="sb-pname">{{ getDisplayName() }}</div>
-      <div class="sb-prole">{{ getRoleLabel() }}</div>
+      <div class="sb-prole">{{ getSousTitre() }}</div>
       <div class="sb-pcompany">
         <i class="isax isax-buildings-2"></i>{{ getEntrepriseName() }}
       </div>

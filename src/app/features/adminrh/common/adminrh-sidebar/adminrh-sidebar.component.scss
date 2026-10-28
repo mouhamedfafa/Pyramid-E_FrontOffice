@@ -86,6 +86,12 @@ $radius: 8px;
     color: var(--sb-accent);
     border: 1px solid var(--sb-accent-light);
     margin-top: 2px;
+    // Nom de rôle long (ex. « Super Admin RH Holding ») : une seule ligne, texte complet au survol
+    max-width: 190px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
   }
 }
 
