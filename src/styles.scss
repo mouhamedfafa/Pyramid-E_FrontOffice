@@ -725,7 +725,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
    (le contenu, en pleine largeur, prend le reste de l'écran), hauteur de l'écran sous l'en-tête et menu défilant à
    l'intérieur : la barre ne déborde jamais de l'écran et reste visible pendant le défilement de la page.
    Sur mobile, elle s'empile au-dessus du contenu, sur toute la largeur. */
-:root { --pyr-sidebar-top: 88px; --pyr-sidebar-largeur: 280px; }
+:root { --pyr-sidebar-top: 88px; --pyr-sidebar-largeur: 316px; }
 app-adminrh-sidebar, app-superadmin-sidebar, app-instructor-sidebar, app-student-sidebar, app-manager-sidebar {
   display: block;
   margin-bottom: 24px;
@@ -733,9 +733,13 @@ app-adminrh-sidebar, app-superadmin-sidebar, app-instructor-sidebar, app-student
   padding-right: 0 !important;
 }
 @media (min-width: 992px) {
-  app-adminrh-sidebar, app-superadmin-sidebar, app-instructor-sidebar, app-student-sidebar, app-manager-sidebar {
+  // Sélecteurs qualifiés par .col-lg-auto : ils priment sur la règle Bootstrap (width: auto) de cette colonne
+  app-adminrh-sidebar.col-lg-auto, app-superadmin-sidebar.col-lg-auto, app-instructor-sidebar.col-lg-auto,
+  app-student-sidebar.col-lg-auto, app-manager-sidebar.col-lg-auto {
     flex: 0 0 var(--pyr-sidebar-largeur);
     width: var(--pyr-sidebar-largeur);
+  }
+  app-adminrh-sidebar, app-superadmin-sidebar, app-instructor-sidebar, app-student-sidebar, app-manager-sidebar {
     position: sticky;
     top: var(--pyr-sidebar-top);
     align-self: flex-start;

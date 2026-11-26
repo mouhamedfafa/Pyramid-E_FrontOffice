@@ -48,7 +48,13 @@ $radius: 8px;
   flex-direction: column;
   height: 100%;          // hauteur fixée par l'hôte (styles.scss) : la barre ne déborde pas de l'écran
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;      // toute la barre défile d'un bloc, barre de défilement visible
+  &::-webkit-scrollbar       { width: 10px; }   // curseur de défilement bien visible
+  &::-webkit-scrollbar-track { background: rgba(255,255,255,.05); }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.4); border-radius: 10px; }
+  &::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.6); }
+  @supports not selector(::-webkit-scrollbar) { scrollbar-width: auto; scrollbar-color: rgba(255,255,255,.4) transparent; }
   border-radius: 12px;
 }
 
@@ -175,9 +181,8 @@ $radius: 8px;
 
 // ── SCROLL ────────────────────────────────────
 .sb-scroll {
-  flex: 1;
-  min-height: 0;         // seul le menu défile
-  overflow-y: auto;
+  flex: 1 0 auto;        // le menu suit le défilement de toute la barre (.sb-shell)
+  overflow-y: visible;
   overflow-x: hidden;
   padding: 6px 0 10px;
 

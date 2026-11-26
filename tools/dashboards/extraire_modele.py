@@ -60,6 +60,10 @@ css += """
    d'au moins 260 px, de même hauteur ; les rangées du modèle ne servent plus qu'à l'ordre des cartes). */
 .hero-stack{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));grid-auto-rows:1fr;gap:14px}
 .hero-stack .hero-row{display:contents}
+/* Indicateurs détaillés : la mise en page sur deux lignes du modèle (visuel sous le libellé) se déclenche selon la
+   largeur du bloc lui-même, pour que le libellé ne soit jamais réduit à un mot par ligne dans une colonne étroite. */
+.cat-block{container:catblock/inline-size}
+@container catblock (max-width:700px){.crow-main{grid-template-columns:8px minmax(0,1fr) auto 28px 14px}.crow-viz{grid-column:2 / -1;grid-row:2}.crow-detail{padding-left:18px}}
 """
 open(out + '/pyramide-dashboard.css', 'w', encoding='utf-8').write(css)
 
