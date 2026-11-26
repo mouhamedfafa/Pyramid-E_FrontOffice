@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -536,7 +537,7 @@ archiveCompany(company: any) {
       },
       error: (error: any) => {
         console.error('Erreur lors de l\'archivage:', error);
-        this.error = 'Erreur lors de l\'archivage de l\'entreprise';
+        this.error = messageErreurApi(error, 'Erreur lors de l\'archivage de l\'entreprise');
       }
     });
   }
@@ -555,7 +556,7 @@ archiveCompany(company: any) {
 //       },
 //       error: (error: any) => {
 //         console.error('Erreur lors de la suspension:', error);
-//         this.error = 'Erreur lors de la suspension de l\'entreprise';
+//         this.error = messageErreurApi(error, 'Erreur lors de la suspension de l\'entreprise');
 //       }
 //     });
 //   }
@@ -575,7 +576,7 @@ reactivateCompany(company: any) {
       },
       error: (error: any) => {
         console.error('Erreur lors de la réactivation:', error);
-        this.error = 'Erreur lors de la réactivation de l\'entreprise';
+        this.error = messageErreurApi(error, 'Erreur lors de la réactivation de l\'entreprise');
       }
     });
   }
@@ -619,7 +620,7 @@ reactivateCompany(company: any) {
       },
       error: (error: any) => {
         console.error('❌ Erreur lors de la suppression:', error);
-        this.error = 'Erreur lors de la suppression de l\'entreprise. Vérifiez qu\'elle ne contient pas de données liées.';
+        this.error = messageErreurApi(error, 'Erreur lors de la suppression de l\'entreprise. Vérifiez qu\'elle ne contient pas de données liées.');
         this.loading = false;
       }
     });

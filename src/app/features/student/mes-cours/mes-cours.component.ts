@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -82,8 +83,8 @@ export class MesCoursComponent implements OnInit, OnDestroy {
         this.applyFilters();
         this.loading = false;
       },
-      error: () => {
-        this.error   = 'Erreur lors du chargement de vos formations.';
+      error: (err: any) => {
+        this.error   = messageErreurApi(err, 'Erreur lors du chargement de vos formations.');
         this.loading = false;
       }
     });

@@ -714,3 +714,31 @@ p-inputotp{
   }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Dashboards KPI : à l'impression (Export PDF), seul le dashboard est imprimé, sans la mise en page de l'application. */
+@media print {
+  body:has(app-kpi-dashboard-page) * { visibility: hidden; }
+  body:has(app-kpi-dashboard-page) app-kpi-dashboard-page { visibility: visible; position: absolute; inset: 0 auto auto 0; width: 100%; }
+}
+
+/* Barres latérales des espaces (Admin RH, Super Admin, Formateur, Employé, Manager) : même largeur fixe partout
+   (le contenu, en pleine largeur, prend le reste de l'écran), hauteur de l'écran sous l'en-tête et menu défilant à
+   l'intérieur : la barre ne déborde jamais de l'écran et reste visible pendant le défilement de la page.
+   Sur mobile, elle s'empile au-dessus du contenu, sur toute la largeur. */
+:root { --pyr-sidebar-top: 88px; --pyr-sidebar-largeur: 280px; }
+app-adminrh-sidebar, app-superadmin-sidebar, app-instructor-sidebar, app-student-sidebar, app-manager-sidebar {
+  display: block;
+  margin-bottom: 24px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+@media (min-width: 992px) {
+  app-adminrh-sidebar, app-superadmin-sidebar, app-instructor-sidebar, app-student-sidebar, app-manager-sidebar {
+    flex: 0 0 var(--pyr-sidebar-largeur);
+    width: var(--pyr-sidebar-largeur);
+    position: sticky;
+    top: var(--pyr-sidebar-top);
+    align-self: flex-start;
+    height: calc(100vh - var(--pyr-sidebar-top) - 16px);
+  }
+}

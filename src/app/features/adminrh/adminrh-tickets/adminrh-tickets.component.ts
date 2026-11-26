@@ -97,6 +97,8 @@ export class AdminrhTicketsComponent implements OnInit {
   selectTicket(ticket: Ticket): void {
     if (this.selectedTicket?.id === ticket.id) { this.selectedTicket = null; return; }
     this.showCreateForm = false;
+    this.actionMessage = '';
+    this.actionErreur  = '';
     this.ticketService.getTicketById(ticket.id).subscribe({
       next: (res) => { this.selectedTicket = res.data || res; },
       error: () => {}
@@ -151,6 +153,49 @@ export class AdminrhTicketsComponent implements OnInit {
         this.sendingMessage = false;
       },
       error: () => { this.sendingMessage = false; }
+    });
+  }
+
+  // ── Traitement interne : fermer ou escalader au support Pyramide ──
+  actionEnCours = false;
+  actionMessage = '';
+  actionErreur  = '';
+
+  fermerTicket(): void {
+    const t = this.selectedTicket;
+    if (!t || this.actionEnCours) return;
+    const resolution = prompt('Réponse ou solution apportée au collaborateur (visible par lui) :');
+    if (resolution === null) return;
+    this.executerAction(this.ticketService.fermer(t.id, { resolution: resolution.trim() }));
+  }
+
+  escaladerTicket(): void {
+    const t = this.selectedTicket;
+    if (!t || this.actionEnCours) return;
+    const raison = prompt('Pourquoi escalader ce ticket au support Pyramide ? (ex. bug de la plateforme)');
+    if (raison === null) return;
+    if (!raison.trim()) { this.actionErreur = 'Indiquez la raison de l\'escalade.'; return; }
+    this.executerAction(this.ticketService.escalader(t.id, { raison: raison.trim() }));
+  }
+
+  private executerAction(obs: any): void {
+    const id = this.selectedTicket!.id;
+    this.actionEnCours = true;
+    this.actionMessage = '';
+    this.actionErreur  = '';
+    obs.subscribe({
+      next: (res: any) => {
+        this.actionEnCours = false;
+        this.actionMessage = res?.message || 'Ticket mis à jour.';
+        this.ticketService.getTicketById(id).subscribe({ next: (r) => this.selectedTicket = r.data || r });
+        this.loadTickets();
+      },
+      error: (err: any) => {
+        this.actionEnCours = false;
+        this.actionErreur = err?.status === 0
+          ? 'Connexion au serveur impossible. Vérifiez votre connexion internet.'
+          : (err?.error?.message || 'L\'action n\'a pas pu être effectuée. Réessayez plus tard.');
+      }
     });
   }
 

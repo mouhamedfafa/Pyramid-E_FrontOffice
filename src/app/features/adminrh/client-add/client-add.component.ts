@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Client } from '../../../shared/models/client-company.models';
@@ -114,7 +115,7 @@ export class ClientAddComponent implements OnInit {
         error: (error) => {
           console.error('Erreur lors de la mise à jour:', error);
           this.loading = false;
-          alert('Erreur lors de la mise à jour du client');
+          alert(messageErreurApi(error, 'Erreur lors de la mise à jour du client'));
         }
       });
     } else {
@@ -129,7 +130,7 @@ export class ClientAddComponent implements OnInit {
         error: (error: any) => {
           console.error('Erreur lors de la création:', error);
           this.loading = false;
-          alert('Erreur lors de la création du client');
+          alert(messageErreurApi(error, 'Erreur lors de la création du client'));
         }
       });
     }

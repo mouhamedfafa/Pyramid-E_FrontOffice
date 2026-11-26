@@ -24,7 +24,7 @@
 
 <!-- Course Form -->
 <div class="content" *ngIf="!loading">
-    <div class="container">
+    <div class="container-fluid px-3 px-lg-4">
         <div class="row">
             <div class="col-lg-10 mx-auto">
                 <button type="button" class="btn-back-formations" (click)="goBack()">
@@ -1155,7 +1155,7 @@
                             <input type="file" class="form-control" name="ressources_image"
                                    accept="image/jpeg,image/png,image/webp,image/gif"
                                    (change)="onSectionFileSelected($event)">
-                            <small class="text-muted">Formats : JPEG, PNG, WebP, GIF</small>
+                            <small class="text-muted">Formats : JPEG, PNG, WebP, GIF — 10 Mo maximum</small>
                             <div *ngIf="sectionUploadPreview" class="mt-2">
                                 <img [src]="sectionUploadPreview" class="img-fluid rounded" style="max-height:180px" alt="aperçu">
                             </div>
@@ -1178,7 +1178,7 @@
                             <input type="file" class="form-control" name="ressources_fichier"
                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt"
                                    (change)="onSectionFileSelected($event)">
-                            <small class="text-muted">PDF, Word, Excel, PowerPoint, ZIP, TXT</small>
+                            <small class="text-muted">PDF, Word, Excel, PowerPoint, ZIP, TXT — 10 Mo maximum</small>
                             <div *ngIf="sectionUploadFile" class="mt-1 text-info small">
                                 <i class="fas fa-paperclip me-1"></i> {{ sectionUploadFile.name }}
                             </div>

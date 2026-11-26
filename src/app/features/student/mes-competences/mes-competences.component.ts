@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -128,7 +129,7 @@ export class MesCompetencesComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur competences acquises:', err);
-        this.error = 'Impossible de charger vos competences acquises.';
+        this.error = messageErreurApi(err, 'Impossible de charger vos competences acquises.');
         this.loading = false;
       },
     });

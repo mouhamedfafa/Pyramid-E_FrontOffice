@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -109,7 +110,7 @@ export class SuperadminCertificateComponent implements OnInit {
         if (i !== -1) { this.certificates[i].statut = statut; this.applyFilters(); }
         if (this.selectedCertificate?.id === id) this.selectedCertificate.statut = statut;
       },
-      error: () => { this.error = 'Erreur lors de la mise à jour du statut.'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de la mise à jour du statut.'); }
     });
   }
 
@@ -125,7 +126,7 @@ export class SuperadminCertificateComponent implements OnInit {
     if (!confirm(`Supprimer définitivement ${cert.code_unique} ?`)) return;
     this.http.delete(`${this.apiUrl}/certificats/${cert.id}`).subscribe({
       next: () => { this.certificates = this.certificates.filter(c => c.id !== cert.id); this.applyFilters(); },
-      error: () => { this.error = 'Erreur lors de la suppression.'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de la suppression.'); }
     });
   }
 

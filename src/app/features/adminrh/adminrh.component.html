@@ -21,7 +21,7 @@
 <!-- /Breadcrumb -->
 
 <div class="content" [ngClass]="'arh-theme-' + currentTheme">
-  <div class="container">
+  <div class="container-fluid px-3 px-lg-4">
       <!-- Header Admin RH -->
       <div class="arh-header">
         <div class="arh-header-top-label">ADMIN RH — GESTION DE SON ENTREPRISE</div>
@@ -99,11 +99,11 @@
       @if(last !== 'students-details') {
         <div class="row">
             <!-- sidebar -->
-            <app-adminrh-sidebar class="col-lg-3"></app-adminrh-sidebar>
+            <app-adminrh-sidebar class="col-lg-auto"></app-adminrh-sidebar>
             <!-- /Sidebar -->
 
             <!-- Instructor Dashboard -->
-            <div class="col-lg-9">
+            <div class="col-lg">
               <router-outlet></router-outlet>
             </div>
             <!-- Instructor Dashboard -->
@@ -194,7 +194,7 @@
       </div>
   </div> -->
   <div class="footer-bottom">
-      <div class="container">
+      <div class="container-fluid px-3 px-lg-4">
           <div class="row row-gap-2">
               <div class="col-md-6">
                   <div class="text-center text-md-start">

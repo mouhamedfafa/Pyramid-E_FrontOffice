@@ -66,6 +66,11 @@ export interface Ticket {
   messages: TicketMessage[];
   pieces_jointes: any[];
   historiques: any[];
+  /** entreprise : traité d'abord par le support interne (RH / Admin IT) ; plateforme : support Pyramide */
+  niveau_support?: 'entreprise' | 'plateforme';
+  niveau_support_display?: string;
+  /** Actions autorisées pour l'utilisateur connecté (calculées par le serveur) */
+  actions?: { peut_escalader: boolean; peut_fermer: boolean; peut_gerer: boolean };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -142,6 +147,11 @@ export class TicketService {
 
   escalader(id: number, data: { raison: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/tickets/${id}/escalader`, data, { headers: this.getHeaders() });
+  }
+
+  /** Fermer le ticket avec la réponse apportée (support interne ou support Pyramide). */
+  fermer(id: number, data: { resolution: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/tickets/${id}/fermer`, data, { headers: this.getHeaders() });
   }
 
   noterSatisfaction(id: number, data: { score: number; commentaire?: string }): Observable<any> {

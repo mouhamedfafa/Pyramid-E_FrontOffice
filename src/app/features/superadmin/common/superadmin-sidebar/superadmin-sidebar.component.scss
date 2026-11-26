@@ -20,10 +20,10 @@ $radius:    8px;
   background: $bg;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 80px);
+  height: 100%;          // hauteur fixée par l'hôte (styles.scss) : la barre ne déborde pas de l'écran
+  min-height: 0;
   overflow: hidden;
   border-radius: 12px;
-  margin-bottom: 24px;
 }
 
 // ── LOGO ──────────────────────────────────────
@@ -85,6 +85,7 @@ $radius:    8px;
 // ── SCROLL AREA ───────────────────────────────
 .sb-scroll {
   flex: 1;
+  min-height: 0;         // seul le menu défile
   overflow-y: auto;
   overflow-x: hidden;
   padding: 6px 0 10px;

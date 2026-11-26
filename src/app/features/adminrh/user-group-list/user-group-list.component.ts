@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -168,7 +169,7 @@ export class UserGroupListComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Erreur lors de la suppression:', error);
-          alert('Erreur lors de la suppression');
+          alert(messageErreurApi(error, 'Erreur lors de la suppression'));
         }
       });
     }

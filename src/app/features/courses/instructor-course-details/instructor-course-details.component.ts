@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -98,7 +99,7 @@ export class InstructorCourseDetailsComponent implements OnInit, OnDestroy {
         this.collectFormationQuizzes();
       },
       error: (err) => {
-        this.error = 'Erreur lors du chargement de la formation';
+        this.error = messageErreurApi(err, 'Erreur lors du chargement de la formation');
         this.loading = false;
       }
     });
@@ -208,7 +209,7 @@ export class InstructorCourseDetailsComponent implements OnInit, OnDestroy {
         this.success = 'Quiz créé avec succès';
         setTimeout(() => this.success = '', 3000);
       },
-      error: () => { this.error = 'Erreur lors de la création du quiz'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de la création du quiz'); }
     });
   }
 
@@ -353,7 +354,7 @@ export class InstructorCourseDetailsComponent implements OnInit, OnDestroy {
         this.success = this.formation.est_publie ? 'Formation publiée' : 'Formation dépubliée';
         setTimeout(() => this.success = '', 3000);
       },
-      error: () => { this.error = 'Erreur lors de la publication'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de la publication'); }
     });
   }
 

@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -91,7 +92,7 @@ export class AdminrhCertificateComponent implements OnInit {
         if (res.created > 0) this.loadCertificats();
         setTimeout(() => this.syncResult = '', 6000);
       },
-      error: () => { this.syncing = false; this.error = 'Erreur lors de la synchronisation.'; }
+      error: (err: any) => { this.syncing = false; this.error = messageErreurApi(err, 'Erreur lors de la synchronisation.'); }
     });
   }
 

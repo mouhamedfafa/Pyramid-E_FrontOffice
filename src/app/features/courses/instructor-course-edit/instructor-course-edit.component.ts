@@ -1,3 +1,5 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
+import { messageErreurUpload, verifierTailleFichier } from '../../../shared/utils/upload-error.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -262,7 +264,7 @@ export class InstructorCourseEditComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Erreur chargement catégories:', err);
         this.categories = [];
-        this.error = 'Impossible de charger les catégories.';
+        this.error = messageErreurApi(err, 'Impossible de charger les catégories.');
       }
     });
     this.subscriptions.add(subscription);
@@ -311,7 +313,7 @@ export class InstructorCourseEditComponent implements OnInit, OnDestroy {
         } else if (err.status === 403) {
           this.error = 'Accès non autorisé à cette formation';
         } else {
-          this.error = 'Erreur lors du chargement de la formation';
+          this.error = messageErreurApi(err, 'Erreur lors du chargement de la formation');
         }
       }
     });
@@ -850,6 +852,13 @@ private validateSectionType(type: string): string {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
+    const tropGros = verifierTailleFichier(file);
+    if (tropGros) {
+      this.sectionUploadFile = null;
+      this.sectionUploadError = tropGros;
+      input.value = '';
+      return;
+    }
     this.sectionUploadFile = file;
     this.sectionUploadError = '';
     if (this.currentSection.type === 'image') {
@@ -884,9 +893,9 @@ private validateSectionType(type: string): string {
           this.currentSection.ressources = res.url || res.path || '';
           doSave();
         },
-        error: () => {
+        error: (err) => {
           this.sectionUploading = false;
-          this.sectionUploadError = 'Échec de l\'upload, veuillez réessayer.';
+          this.sectionUploadError = messageErreurUpload(err);
         }
       });
     } else {
@@ -1225,7 +1234,7 @@ private validateSectionType(type: string): string {
         } else if (err.error?.message) {
           this.error = err.error.message;
         } else {
-          this.error = 'Erreur lors de la mise à jour de la formation.';
+          this.error = messageErreurApi(err, 'Erreur lors de la mise à jour de la formation.');
         }
       }
       });

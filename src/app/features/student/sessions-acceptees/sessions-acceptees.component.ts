@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -102,7 +103,7 @@ export class SessionsAccepteesComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur sessions:', err);
-        this.error   = 'Impossible de charger vos sessions. Veuillez réessayer.';
+        this.error   = messageErreurApi(err, 'Impossible de charger vos sessions. Veuillez réessayer.');
         this.loading = false;
       }
     });

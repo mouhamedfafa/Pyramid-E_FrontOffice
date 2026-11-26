@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -77,6 +78,7 @@ export class AdminrhDemandeComponent implements OnInit {
   // Actions en cours
   validatingIds: Set<number> = new Set();
   refusingIds: Set<number> = new Set();
+  relancingIds: Set<number> = new Set();
 
   constructor(
     private data: DataService,
@@ -370,7 +372,9 @@ export class AdminrhDemandeComponent implements OnInit {
   validerDemande(demande: DemandeFormation, commentaire: string = ''): void {
     if (this.validatingIds.has(demande.id)) return;
 
-    const confirmMessage = `Êtes-vous sûr de vouloir valider la demande de formation "${demande.formation?.titre}" pour ${demande.employe?.name} ?`;
+    const titre = demande.formation?.titre || demande.parcours?.titre || demande.catalogue?.titre || `#${demande.id}`;
+    const confirmMessage = `Êtes-vous sûr de vouloir valider la demande de formation "${titre}" pour ${demande.employe?.name} ?`
+      + (demande.validation_une_etape ? '\n\nVous êtes aussi son manager : cette validation vaut validation manager et RH.' : '');
 
     if (confirm(confirmMessage)) {
       this.validatingIds.add(demande.id);
@@ -379,15 +383,13 @@ export class AdminrhDemandeComponent implements OnInit {
       const data = commentaire ? { commentaire_rh: commentaire } : {};
 
       this.demandeFormationService.validerDemande(demande.id, data).subscribe({
-        next: () => {
-          this.successMessage = `Demande de formation validée avec succès.`;
+        next: (res: any) => {
+          this.successMessage = res?.message || 'Demande de formation validée avec succès.';
           this.validatingIds.delete(demande.id);
           this.refreshData();
-          console.log('✅ Demande validée:', demande.id);
         },
         error: (error) => {
-          console.error('❌ Erreur lors de la validation:', error);
-          this.error = 'Erreur lors de la validation de la demande.';
+          this.error = this.messageServeur(error, 'La demande n\'a pas pu être validée. Réessayez plus tard.');
           this.validatingIds.delete(demande.id);
         }
       });
@@ -411,15 +413,13 @@ export class AdminrhDemandeComponent implements OnInit {
     this.clearMessages();
 
     this.demandeFormationService.refuserDemande(demande.id, { motif_refus: motif }).subscribe({
-      next: () => {
-        this.successMessage = `Demande de formation refusée.`;
+      next: (res: any) => {
+        this.successMessage = res?.message || 'Demande de formation refusée.';
         this.refusingIds.delete(demande.id);
         this.refreshData();
-        console.log('✅ Demande refusée:', demande.id);
       },
       error: (error) => {
-        console.error('❌ Erreur lors du refus:', error);
-        this.error = 'Erreur lors du refus de la demande.';
+        this.error = this.messageServeur(error, 'La demande n\'a pas pu être refusée. Réessayez plus tard.');
         this.refusingIds.delete(demande.id);
       }
     });
@@ -440,7 +440,7 @@ export class AdminrhDemandeComponent implements OnInit {
         },
         error: (error) => {
           console.error('❌ Erreur lors de l\'annulation:', error);
-          this.error = 'Erreur lors de l\'annulation de la demande.';
+          this.error = messageErreurApi(error, 'Erreur lors de l\'annulation de la demande.');
         }
       });
     }
@@ -500,15 +500,49 @@ export class AdminrhDemandeComponent implements OnInit {
     }
   }
 
+  /** En attente RH, ou en attente manager quand je suis moi-même le manager (une seule validation). */
+  private peutDecider(demande: DemandeFormation): boolean {
+    return demande.statut === 'en_attente'
+      || (demande.statut === 'en_attente_manager' && !!demande.validation_une_etape);
+  }
+
   canValidate(demande: DemandeFormation): boolean {
-    return demande.statut === 'en_attente' && !this.validatingIds.has(demande.id);
+    return this.peutDecider(demande) && !this.validatingIds.has(demande.id);
   }
 
   canRefuse(demande: DemandeFormation): boolean {
-    return demande.statut === 'en_attente' && !this.refusingIds.has(demande.id);
+    return this.peutDecider(demande) && !this.refusingIds.has(demande.id);
   }
 
-  // La validation/refus RH reste limitée à 'en_attente' : une demande 'en_attente_manager' est en lecture seule
+  /** Relancer le manager d'une demande qui attend sa validation. */
+  canRelancer(demande: DemandeFormation): boolean {
+    return demande.statut === 'en_attente_manager' && !demande.validation_une_etape;
+  }
+
+  relancerDemande(demande: DemandeFormation): void {
+    if (this.relancingIds.has(demande.id)) return;
+    this.relancingIds.add(demande.id);
+    this.clearMessages();
+    this.demandeFormationService.relancerDemande(demande.id).subscribe({
+      next: (res: any) => {
+        this.relancingIds.delete(demande.id);
+        this.successMessage = (res?.message || 'Relance envoyée.').replace('votre manager', demande.manager?.name || 'le manager');
+        demande.peut_relancer = false;
+      },
+      error: (err) => {
+        this.relancingIds.delete(demande.id);
+        this.error = this.messageServeur(err, 'La relance n\'a pas pu être envoyée. Réessayez plus tard.');
+      }
+    });
+  }
+
+  /** Message renvoyé par l'API (statut, périmètre, motif manquant…), sinon un message par défaut. */
+  private messageServeur(err: any, parDefaut: string): string {
+    if (err?.status === 0) return 'Connexion au serveur impossible. Vérifiez votre connexion internet.';
+    return err?.error?.message || parDefaut;
+  }
+
+  // Une demande 'en_attente_manager' n'est décidée par les RH que s'ils sont aussi le manager du demandeur
   canCancel(demande: DemandeFormation): boolean {
     return ['en_attente_manager', 'en_attente', 'validee'].includes(demande.statut);
   }

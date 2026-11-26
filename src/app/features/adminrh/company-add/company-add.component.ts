@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -102,7 +103,7 @@ export class CompanyAddComponent implements OnInit {
         error: (error) => {
           console.error('Erreur lors de la mise à jour:', error);
           this.loading = false;
-          alert('Erreur lors de la mise à jour de l\'entreprise');
+          alert(messageErreurApi(error, 'Erreur lors de la mise à jour de l\'entreprise'));
         }
       });
     } else {
@@ -117,7 +118,7 @@ export class CompanyAddComponent implements OnInit {
         error: (error: any) => {
           console.error('Erreur lors de la création:', error);
           this.loading = false;
-          alert('Erreur lors de la création de l\'entreprise');
+          alert(messageErreurApi(error, 'Erreur lors de la création de l\'entreprise'));
         }
       });
     }
@@ -168,7 +169,7 @@ export class CompanyAddComponent implements OnInit {
   //       error: (error) => {
   //         console.error('Erreur lors de la mise à jour:', error);
   //         this.loading = false;
-  //         alert('Erreur lors de la mise à jour de l\'entreprise');
+  //         alert(messageErreurApi(error, 'Erreur lors de la mise à jour de l\'entreprise'));
   //       }
   //     });
   //   } else {
@@ -183,7 +184,7 @@ export class CompanyAddComponent implements OnInit {
   //       error: (error: any) => {
   //         console.error('Erreur lors de la création:', error);
   //         this.loading = false;
-  //         alert('Erreur lors de la création de l\'entreprise');
+  //         alert(messageErreurApi(error, 'Erreur lors de la création de l\'entreprise'));
   //       }
   //     });
   //   }

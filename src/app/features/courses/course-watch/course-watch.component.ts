@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
@@ -124,7 +125,7 @@ export class CourseWatchComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (err) => {
-          this.error = 'Impossible de charger la formation';
+          this.error = messageErreurApi(err, 'Impossible de charger la formation');
           this.loading = false;
           console.error(err);
         }
@@ -356,7 +357,7 @@ export class CourseWatchComponent implements OnInit, OnDestroy {
           } else if (status === 422) {
             this.error = 'Données invalides: ' + JSON.stringify(err?.error?.errors ?? err?.error?.message ?? '');
           } else if (status === 500) {
-            this.error = 'Erreur serveur (500). Consultez les logs Laravel.';
+            this.error = messageErreurApi(err, 'Erreur serveur (500). Consultez les logs Laravel.');
           } else if (status === 0) {
             this.error = 'Serveur inaccessible (CORS ou serveur arrêté).';
           } else {

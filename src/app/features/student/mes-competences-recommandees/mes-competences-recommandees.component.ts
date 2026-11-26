@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -67,8 +68,8 @@ export class MesCompetencesRecommandeesComponent implements OnInit {
         this.total = res.total ?? 0;
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Impossible de charger les compétences recommandées.';
+      error: (err: any) => {
+        this.error = messageErreurApi(err, 'Impossible de charger les compétences recommandées.');
         this.loading = false;
       },
     });

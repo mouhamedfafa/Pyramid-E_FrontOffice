@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -157,7 +158,7 @@ export class SuperadminParcoursComponent implements OnInit {
         next: () => this.loadParcours(),
         error: (err) => {
           console.error('Erreur suppression:', err);
-          this.error = 'Erreur lors de la suppression';
+          this.error = messageErreurApi(err, 'Erreur lors de la suppression');
         }
       });
     }

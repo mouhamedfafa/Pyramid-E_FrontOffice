@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -993,7 +994,7 @@ canEditFormation(f: Formation): boolean {
         next: () => this.getFormationsList(),
         error: (error) => {
           console.error('Erreur suppression:', error);
-          this.error = 'Erreur lors de la suppression de la formation';
+          this.error = messageErreurApi(error, 'Erreur lors de la suppression de la formation');
           this.loading = false;
         }
       });
@@ -1120,7 +1121,7 @@ canEditFormation(f: Formation): boolean {
     this.loading = true;
     this.formationService.deleteFormation(formation.id).subscribe({
       next: () => this.getFormationsList(),
-      error: () => { this.error = 'Erreur lors de l\'archivage'; this.loading = false; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de l\'archivage'); this.loading = false; }
     });
   }
 }

@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, TitleCasePipe } from '@angular/common';
@@ -100,7 +101,7 @@ export class CompanyDetailsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur lors du chargement:', error);
-        this.error = 'Erreur lors du chargement des données';
+        this.error = messageErreurApi(error, 'Erreur lors du chargement des données');
         this.loading = false;
       }
     });

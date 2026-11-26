@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -605,7 +606,7 @@ export class AdminrhSessionComponent implements OnInit {
     if (!confirm('Annuler cette session ?')) return;
     this.sessionService.cancelSession(s.id, '').subscribe({
       next: () => { this.successMessage = 'Session annulée.'; this.loadSessions(); },
-      error: () => { this.error = 'Erreur lors de l\'annulation.'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de l\'annulation.'); }
     });
   }
 
@@ -613,7 +614,7 @@ export class AdminrhSessionComponent implements OnInit {
     if (!confirm('Supprimer définitivement cette session ?')) return;
     this.sessionService.deleteSessionRH(s.id).subscribe({
       next: () => { this.successMessage = 'Session supprimée.'; this.loadSessions(); },
-      error: () => { this.error = 'Erreur lors de la suppression.'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de la suppression.'); }
     });
   }
 
@@ -621,7 +622,7 @@ export class AdminrhSessionComponent implements OnInit {
     if (!confirm('Archiver cette session ?')) return;
     this.sessionService.deleteSessionRH(s.id).subscribe({
       next: () => { this.successMessage = 'Session archivée.'; this.loadSessions(); },
-      error: () => { this.error = 'Erreur lors de l\'archivage.'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de l\'archivage.'); }
     });
   }
 
@@ -698,7 +699,7 @@ export class AdminrhSessionComponent implements OnInit {
         this.zoomLoading[s.id] = false;
         this.successMessage = 'Meeting Zoom supprimé.';
       },
-      error: () => { this.zoomLoading[s.id] = false; this.zoomError = 'Erreur lors de la suppression.'; }
+      error: (err: any) => { this.zoomLoading[s.id] = false; this.zoomError = messageErreurApi(err, 'Erreur lors de la suppression.'); }
     });
   }
 

@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -143,7 +144,7 @@ export class MesParcoursComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         console.error('❌ [ParcoursAssignes] Erreur API:', err);
-        this.error   = 'Erreur lors du chargement de vos parcours';
+        this.error   = messageErreurApi(err, 'Erreur lors du chargement de vos parcours');
         this.loading = false;
       }
     });

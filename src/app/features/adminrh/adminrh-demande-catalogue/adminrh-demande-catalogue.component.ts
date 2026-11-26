@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { CircuitDemandeComponent } from '../../../shared/components/circuit-demande/circuit-demande.component';
 import { Component, OnInit } from '@angular/core';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -427,7 +428,7 @@ export class AdminrhDemandeCatalogueComponent implements OnInit {
         },
         error: (error) => {
           console.error('❌ Erreur lors de la validation:', error);
-          this.error = 'Erreur lors de la validation de la demande.';
+          this.error = messageErreurApi(error, 'Erreur lors de la validation de la demande.');
           this.validatingIds.delete(demande.id);
         }
       });
@@ -459,7 +460,7 @@ export class AdminrhDemandeCatalogueComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Erreur lors du refus:', error);
-        this.error = 'Erreur lors du refus de la demande.';
+        this.error = messageErreurApi(error, 'Erreur lors du refus de la demande.');
         this.refusingIds.delete(demande.id);
       }
     });
@@ -480,7 +481,7 @@ export class AdminrhDemandeCatalogueComponent implements OnInit {
         },
         error: (error) => {
           console.error('❌ Erreur lors de l\'annulation:', error);
-          this.error = 'Erreur lors de l\'annulation de la demande.';
+          this.error = messageErreurApi(error, 'Erreur lors de l\'annulation de la demande.');
         }
       });
     }

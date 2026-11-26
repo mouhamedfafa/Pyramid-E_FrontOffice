@@ -192,7 +192,9 @@ export const routes: Routes = [
             children:[
                 {path:'adminrh-dashboard',loadComponent:()=>import ('./features/adminrh/adminrh-dashboard/adminrh-dashboard.component').then((m)=>m.AdminrhDashboardComponent), canActivate: [kpiRedirectGuard]},
                 {path:'dashboard-admin-rh',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard admin-rh', dashboard: 'admin-rh' }},
+                {path:'dashboard-direction',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard direction', dashboard: 'direction' }},
                 {path:'dashboard-responsable-rh',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard responsable-rh', dashboard: 'responsable-rh' }},
+                {path:'dashboard-dsi',loadComponent:()=>import ('./shared/components/kpi-dashboard/kpi-dashboard-page.component').then((m)=>m.KpiDashboardPageComponent), canActivate: [PermissionGuard], data: { permission: 'voir dashboard dsi', dashboard: 'dsi' }},
                 {path:'adminrh-profile',loadComponent:()=>import ('./features/adminrh/adminrh-profile/adminrh-profile.component').then((m)=>m.AdminrhProfileComponent)},
                 {path:'adminrh-payouts',loadComponent:()=>import ('./features/adminrh/adminrh-payouts/adminrh-payouts.component').then((m)=>m.AdminrhPayoutsComponent)},
                 {path:'adminrh-tickets',loadComponent:()=>import ('./features/adminrh/adminrh-tickets/adminrh-tickets.component').then((m)=>m.AdminrhTicketsComponent)},

@@ -1,5 +1,5 @@
 <div class="content" [ngClass]="'stu-theme-' + currentTheme">
-  <div class="container">
+  <div class="container-fluid px-3 px-lg-4">
 
     <!-- ═══════════════════════════════════════════
          BANDE EN-TÊTE EMPLOYÉ
@@ -101,8 +101,8 @@
 
     <!-- Layout sidebar + contenu -->
     <div class="row">
-      <app-student-sidebar *ngIf="!isExplorerRoute" class="col-lg-3"></app-student-sidebar>
-      <div [class]="isExplorerRoute ? 'col-lg-12' : 'col-lg-9'">
+      <app-student-sidebar *ngIf="!isExplorerRoute" class="col-lg-auto"></app-student-sidebar>
+      <div [class]="isExplorerRoute ? 'col-lg-12' : 'col-lg'">
         <router-outlet></router-outlet>
       </div>
     </div>
@@ -190,7 +190,7 @@
     </div>
   </div> -->
   <div class="footer-bottom">
-      <div class="container">
+      <div class="container-fluid px-3 px-lg-4">
           <div class="row row-gap-2">
               <div class="col-md-6">
                   <div class="text-center text-md-start">

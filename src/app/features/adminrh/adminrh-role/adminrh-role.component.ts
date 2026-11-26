@@ -39,6 +39,7 @@ export class AdminrhRoleComponent implements OnInit {
 
   // Rôles système de base (toutes entreprises)
   private readonly BASE_SYSTEM_ROLES = [
+    { name: 'Administrateur entreprise', type: 'rh', icon: 'isax-briefcase' },
     { name: 'Direction',      type: 'rh',        icon: 'isax-building' },
     { name: 'Responsable RH', type: 'rh',        icon: 'isax-people' },
     { name: 'Admin RH',       type: 'rh',        icon: 'isax-people' },
@@ -55,10 +56,12 @@ export class AdminrhRoleComponent implements OnInit {
     { name: 'Superadmin Holding', type: 'admin', icon: 'isax-crown' },
   ];
 
+  // Uniquement les rôles renvoyés par le serveur : un rôle supérieur à celui du connecté n'est jamais affiché
   get SYSTEM_ROLES() {
-    return this.isHoldingRole
+    const candidats = this.isHoldingRole
       ? [...this.BASE_SYSTEM_ROLES, ...this.HOLDING_SYSTEM_ROLES]
       : this.BASE_SYSTEM_ROLES;
+    return candidats.filter(sr => !!this.getSystemRoleFromLoaded(sr.name));
   }
 
   // Types de rôles créables par l'AdminRH
@@ -313,6 +316,7 @@ export class AdminrhRoleComponent implements OnInit {
     'Super Admin RH Holding',
     'Administrateur RH Holding',
     'Admin RH Holding',
+    'Administrateur entreprise',
     'Direction',
     'Admin RH',
     'Administrateur RH',

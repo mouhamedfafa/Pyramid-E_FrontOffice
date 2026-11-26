@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit }        from '@angular/core';
 import { CircuitDemandeComponent } from '../../../shared/components/circuit-demande/circuit-demande.component';
 import { CommonModule }             from '@angular/common';
@@ -275,9 +276,9 @@ export class StudentDemandeParcoursComponent implements OnInit {
         this.loadingParcours = false;
         if (!res.status && res.message) this.showToast('warning', '⚠️ ' + res.message);
       },
-      error: () => {
+      error: (err: any) => {
         this.loadingParcours = false;
-        this.showToast('error', '❌ Erreur lors du chargement des parcours.');
+        this.showToast('error', messageErreurApi(err, '❌ Erreur lors du chargement des parcours.'));
       }
     });
   }
@@ -333,9 +334,9 @@ export class StudentDemandeParcoursComponent implements OnInit {
         this.formations        = res.formations ?? [];
         this.loadingFormations = false;
       },
-      error: () => {
+      error: (err: any) => {
         this.loadingFormations = false;
-        this.showToast('error', '❌ Erreur lors du chargement des formations.');
+        this.showToast('error', messageErreurApi(err, '❌ Erreur lors du chargement des formations.'));
       }
     });
   }

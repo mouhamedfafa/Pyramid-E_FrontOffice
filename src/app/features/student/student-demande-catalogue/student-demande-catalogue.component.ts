@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit }        from '@angular/core';
 import { CircuitDemandeComponent } from '../../../shared/components/circuit-demande/circuit-demande.component';
 import { CommonModule }             from '@angular/common';
@@ -167,15 +168,25 @@ export class StudentDemandeCatalogueComponent implements OnInit {
     });
   }
 
+  /** Libellé du bouton Relancer : qui sera relancé, ou relance déjà envoyée (1 par 24 h). */
+  libelleRelance(d: any): string {
+    if (d?.peut_relancer === false) return 'Relance déjà envoyée — nouvelle relance possible 24 h après';
+    return d?.statut === 'en_attente_manager'
+      ? `Relancer ${d?.manager?.name || 'votre manager'}`
+      : 'Relancer le service RH';
+  }
+
   relancerDemande(id: number, event?: Event): void {
     event?.stopPropagation();
     this.demandeFormationService.relancerDemande(id).subscribe({
-      next: () => {
+      next: (res: any) => {
         this.fermerDetailDemande();
-        this.showToast('success', '✅ Demande relancée avec succès.');
+        this.showToast('success', '✅ ' + (res?.message || 'Relance envoyée.'));
         this.loadDemandes();
       },
-      error: () => this.showToast('error', '❌ Impossible de relancer cette demande.')
+      // 429 : relance déjà envoyée (date de la prochaine possible) ; 422 : plus en attente / aucun valideur
+      error: (err) => this.showToast(err?.status === 429 ? 'warning' : 'error',
+        (err?.status === 429 ? '⏳ ' : '❌ ') + (err?.error?.message || 'La relance n\'a pas pu être envoyée. Réessayez plus tard.'))
     });
   }
 
@@ -282,9 +293,9 @@ export class StudentDemandeCatalogueComponent implements OnInit {
         this.catalogues        = res.catalogues ?? [];
         this.loadingCatalogues = false;
       },
-      error: () => {
+      error: (err: any) => {
         this.loadingCatalogues = false;
-        this.showToast('error', '❌ Erreur lors du chargement des catalogues.');
+        this.showToast('error', messageErreurApi(err, '❌ Erreur lors du chargement des catalogues.'));
       }
     });
   }

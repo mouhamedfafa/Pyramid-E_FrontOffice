@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -375,7 +376,7 @@ export class AdminrhCatalogueComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur suppression:', err);
-        this.error = 'Erreur lors de la suppression.';
+        this.error = messageErreurApi(err, 'Erreur lors de la suppression.');
       }
     });
   }
@@ -385,7 +386,7 @@ export class AdminrhCatalogueComponent implements OnInit {
     if (!confirm(`Archiver le catalogue "${catalogue.titre}" ?`)) return;
     this.catalogueService.deleteCatalogue(catalogue.id).subscribe({
       next: () => { this.success = 'Catalogue archivé.'; this.loadCatalogues(); setTimeout(() => this.success = '', 4000); },
-      error: () => { this.error = 'Erreur lors de l\'archivage.'; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors de l\'archivage.'); }
     });
   }
 

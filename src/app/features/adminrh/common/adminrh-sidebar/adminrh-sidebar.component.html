@@ -69,6 +69,10 @@
         <i class="isax isax-grid-3"></i>
         <span class="sb-item-label">Tableau de bord</span>
       </a> -->
+      <a *appHasPermission="'voir dashboard direction'" [routerLink]="routes.dashboardDirection" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-building"></i>
+        <span class="sb-item-label">Dashboard Direction</span>
+      </a>
       <a *appHasPermission="'voir dashboard admin-rh'" [routerLink]="routes.dashboardAdminRh" routerLinkActive="active" class="sb-item">
         <i class="isax isax-chart-2"></i>
         <span class="sb-item-label">Dashboard</span>
@@ -76,6 +80,10 @@
       <a *appHasPermission="'voir dashboard responsable-rh'" [routerLink]="routes.dashboardResponsableRh" routerLinkActive="active" class="sb-item">
         <i class="isax isax-chart-2"></i>
         <span class="sb-item-label">Dashboard</span>
+      </a>
+      <a *appHasPermission="'voir dashboard dsi'" [routerLink]="routes.dashboardDsi" routerLinkActive="active" class="sb-item">
+        <i class="isax isax-monitor"></i>
+        <span class="sb-item-label">Dashboard DSI</span>
       </a>
     </div>
 

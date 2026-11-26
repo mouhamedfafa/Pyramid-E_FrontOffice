@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,7 +36,7 @@ export class InstructorCertificateComponent implements OnInit {
     this.error = '';
     this.http.get<Certificat[]>(`${this.apiUrl}/certificats`).subscribe({
       next: (data) => { this.certificates = data; this.applyFilters(); this.loading = false; },
-      error: () => { this.error = 'Erreur lors du chargement des certificats.'; this.loading = false; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Erreur lors du chargement des certificats.'); this.loading = false; }
     });
   }
 

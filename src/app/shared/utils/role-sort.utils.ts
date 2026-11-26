@@ -5,6 +5,7 @@ const ROLE_ORDER: string[] = [
   'Super Admin RH Holding',
   'Administrateur RH Holding',
   'Admin RH Holding',
+  'Administrateur entreprise',
   'Direction',
   'Admin RH',
   'Administrateur RH',

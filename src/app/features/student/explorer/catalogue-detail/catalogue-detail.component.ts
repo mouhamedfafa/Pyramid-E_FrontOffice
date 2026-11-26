@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../../shared/utils/erreur-api.utils';
 // filepath: src/app/student/catalogue-detail/catalogue-detail.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
@@ -149,8 +150,8 @@ export class CatalogueDetailComponent implements OnInit, OnDestroy {
           }
         });
       },
-      error: () => {
-        this.error   = 'Impossible de charger le catalogue';
+      error: (err: any) => {
+        this.error   = messageErreurApi(err, 'Impossible de charger le catalogue');
         this.loading = false;
       }
     });

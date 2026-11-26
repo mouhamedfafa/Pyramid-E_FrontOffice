@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -114,7 +115,7 @@ export class AdminrhCertificateModeleComponent implements OnInit {
         this.saveSuccess = true;
         setTimeout(() => this.saveSuccess = false, 3000);
       },
-      error: () => { this.saving = false; this.error = 'Erreur lors de la sauvegarde.'; }
+      error: (err: any) => { this.saving = false; this.error = messageErreurApi(err, 'Erreur lors de la sauvegarde.'); }
     });
   }
 

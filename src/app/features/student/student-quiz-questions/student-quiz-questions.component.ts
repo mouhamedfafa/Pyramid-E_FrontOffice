@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule }                  from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
@@ -121,7 +122,7 @@ selectedReponses: Record<number, number | number[] | string> = {};  textReponses
         }
         this.loading = false;
       },
-      error: () => { this.error = 'Impossible de charger le quiz.'; this.loading = false; }
+      error: (err: any) => { this.error = messageErreurApi(err, 'Impossible de charger le quiz.'); this.loading = false; }
     });
   }
 
@@ -265,7 +266,7 @@ const answers: any[] = this.questions.map(q => {
         if (err?.status === 403) {
           this.error = err?.error?.message ?? 'Accès refusé.';
         } else {
-          this.error = 'Erreur lors de la soumission du quiz.';
+          this.error = messageErreurApi(err, 'Erreur lors de la soumission du quiz.');
         }
       }
     });

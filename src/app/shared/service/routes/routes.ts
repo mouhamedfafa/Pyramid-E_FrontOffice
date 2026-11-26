@@ -5,6 +5,8 @@ export const routes = {
   // Dashboards KPI par profil (une permission « voir dashboard <profil> » par page)
   dashboardAdminRh: '/adminrh/dashboard-admin-rh',
   dashboardResponsableRh: '/adminrh/dashboard-responsable-rh',
+  dashboardDirection: '/adminrh/dashboard-direction',
+  dashboardDsi: '/adminrh/dashboard-dsi',
   dashboardManager: '/manager/dashboard-manager',
   dashboardFormateur: '/instructor/dashboard-formateur',
   dashboardConsultant: '/instructor/dashboard-consultant',

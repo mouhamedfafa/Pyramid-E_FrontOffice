@@ -232,7 +232,7 @@ export class UserAddComponent implements OnInit, OnChanges {
   }
 
   resetForm() {
-    this.userForm.reset({ statut: 1, manager_id: null, manager_mode: 'manuel' }, { emitEvent: false });
+    this.userForm.reset({ statut: 0, manager_id: null, manager_mode: 'manuel' }, { emitEvent: false });
     this.managerCalcule = null;
     this.managerSearch = '';
     this.managerDropdownOpen = false;

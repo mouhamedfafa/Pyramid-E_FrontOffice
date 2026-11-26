@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -83,7 +84,7 @@ export class InstructorSessionComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur sessions:', err);
-        this.error = 'Erreur lors du chargement des sessions.';
+        this.error = messageErreurApi(err, 'Erreur lors du chargement des sessions.');
         this.loading = false;
       }
     });
@@ -270,7 +271,7 @@ export class InstructorSessionComponent implements OnInit {
         this.zoomSuccess = 'Meeting Zoom supprimé.';
         setTimeout(() => this.zoomSuccess = '', 4000);
       },
-      error: () => { this.zoomLoading[s.id] = false; this.zoomError = 'Erreur lors de la suppression.'; }
+      error: (err: any) => { this.zoomLoading[s.id] = false; this.zoomError = messageErreurApi(err, 'Erreur lors de la suppression.'); }
     });
   }
 

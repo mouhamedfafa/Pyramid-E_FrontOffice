@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -37,7 +38,7 @@ export class VerifyCertificateComponent implements OnInit {
           this.cert = null;
         } else {
           this.state = 'error';
-          this.errorMsg = 'Impossible de vérifier le certificat. Veuillez réessayer.';
+          this.errorMsg = messageErreurApi(err, 'Impossible de vérifier le certificat. Veuillez réessayer.');
         }
       }
     });

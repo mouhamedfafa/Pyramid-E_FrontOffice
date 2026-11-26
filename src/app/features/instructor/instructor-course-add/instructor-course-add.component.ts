@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 // import { Component } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -218,15 +219,15 @@ private initIntroductionModule(): void {
       
       // Gestion spécifique des erreurs
       if (err.status === 0) {
-        this.error = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+        this.error = messageErreurApi(err, 'Impossible de contacter le serveur. Vérifiez votre connexion.');
       } else if (err.status === 401) {
         this.error = 'Session expirée. Veuillez vous reconnecter.';
       } else if (err.status === 403) {
         this.error = 'Accès non autorisé aux catégories.';
       } else if (err.status >= 500) {
-        this.error = 'Erreur serveur. Veuillez réessayer plus tard.';
+        this.error = messageErreurApi(err, 'Erreur serveur. Veuillez réessayer plus tard.');
       } else {
-        this.error = 'Impossible de charger les catégories. Veuillez réessayer.';
+        this.error = messageErreurApi(err, 'Impossible de charger les catégories. Veuillez réessayer.');
       }
       
       // Auto-clear error après 8 secondes
@@ -714,7 +715,7 @@ submitCourse(): void {
       } else if (err.error?.message) {
         this.error = err.error.message;
       } else {
-        this.error = 'Erreur lors de la création de la formation. Veuillez réessayer.';
+        this.error = messageErreurApi(err, 'Erreur lors de la création de la formation. Veuillez réessayer.');
       }
     }
   });

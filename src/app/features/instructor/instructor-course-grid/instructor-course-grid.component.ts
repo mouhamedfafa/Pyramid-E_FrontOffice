@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { routes } from '../../../shared/service/routes/routes';
 import { RouterLink } from '@angular/router';
@@ -65,8 +66,8 @@ export class InstructorCourseGridComponent implements OnInit {
         this.loading = false;
         this.applyFilters();
       },
-      error: () => {
-        this.error = 'Erreur lors du chargement des formations';
+      error: (err: any) => {
+        this.error = messageErreurApi(err, 'Erreur lors du chargement des formations');
         this.loading = false;
       }
     });

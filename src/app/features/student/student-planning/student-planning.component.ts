@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { RouterModule }   from '@angular/router';
@@ -107,8 +108,8 @@ export class StudentPlanningComponent implements OnInit {
         this.buildCalendrier();
         this.loading = false;
       },
-      error: () => {
-        this.error   = 'Impossible de charger le planning.';
+      error: (err: any) => {
+        this.error   = messageErreurApi(err, 'Impossible de charger le planning.');
         this.loading = false;
       }
     });

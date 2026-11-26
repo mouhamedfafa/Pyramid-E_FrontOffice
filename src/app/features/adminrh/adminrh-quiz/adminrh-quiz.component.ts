@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -139,7 +140,7 @@ formateursMap: Record<number, any> = {};
         this.editModal?.hide();
       },
       error: (err) => {
-        this.editError = 'Erreur lors de la sauvegarde';
+        this.editError = messageErreurApi(err, 'Erreur lors de la sauvegarde');
         this.saving = false;
         console.error(err);
       }
@@ -151,7 +152,7 @@ formateursMap: Record<number, any> = {};
     if (confirm(`Êtes-vous sûr de vouloir supprimer le quiz "${quiz.titre}" ?`)) {
       const sub = this.quizService.deleteQuiz(quiz.id).subscribe({
         next: ()     => { this.quizzes = this.quizzes.filter(q => q.id !== quiz.id); },
-        error: (err) => { this.error = 'Erreur lors de la suppression'; console.error(err); }
+        error: (err) => { this.error = messageErreurApi(err, 'Erreur lors de la suppression'); console.error(err); }
       });
       this.subscription.add(sub);
     }
@@ -161,7 +162,7 @@ formateursMap: Record<number, any> = {};
     if (!confirm(`Archiver le quiz "${quiz.titre}" ?`)) return;
     const sub = this.quizService.deleteQuiz(quiz.id).subscribe({
       next: ()     => { this.quizzes = this.quizzes.filter(q => q.id !== quiz.id); },
-      error: (err) => { this.error = 'Erreur lors de l\'archivage'; console.error(err); }
+      error: (err) => { this.error = messageErreurApi(err, 'Erreur lors de l\'archivage'); console.error(err); }
     });
     this.subscription.add(sub);
   }

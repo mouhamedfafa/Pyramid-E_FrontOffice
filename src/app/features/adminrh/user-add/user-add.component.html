@@ -64,10 +64,15 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Statut <span class="text-danger">*</span></label>
-                            <select class="form-select" formControlName="statut">
+                            <select *ngIf="isEditMode" class="form-select" formControlName="statut">
                                 <option value="1">Actif</option>
                                 <option value="0">Inactif</option>
                             </select>
+                            <!-- Création : toujours inactif, le compte s'active via le lien envoyé par e-mail -->
+                            <ng-container *ngIf="!isEditMode">
+                                <input type="text" class="form-control" value="Inactif" disabled>
+                                <small class="text-muted">Le compte sera activé par le collaborateur via le lien reçu par e-mail.</small>
+                            </ng-container>
                         </div>
 
                         <div class="col-md-12 mb-3">

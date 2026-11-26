@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component } from '@angular/core';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { httpErrorMessage } from '../../../shared/utils/http-error.utils';
@@ -338,7 +339,7 @@ clearMessages(): void {
       },
       error: (error: any) => {
         console.error('Erreur lors de l\'archivage:', error);
-        this.error = 'Erreur lors de l\'archivage de l\'entreprise';
+        this.error = messageErreurApi(error, 'Erreur lors de l\'archivage de l\'entreprise');
       }
     });
   }
@@ -357,7 +358,7 @@ suspendCompany(company: any) {
       },
       error: (error: any) => {
         console.error('Erreur lors de la suspension:', error);
-        this.error = 'Erreur lors de la suspension de l\'entreprise';
+        this.error = messageErreurApi(error, 'Erreur lors de la suspension de l\'entreprise');
       }
     });
   }
@@ -377,7 +378,7 @@ reactivateCompany(company: any) {
       },
       error: (error: any) => {
         console.error('Erreur lors de la réactivation:', error);
-        this.error = 'Erreur lors de la réactivation de l\'entreprise';
+        this.error = messageErreurApi(error, 'Erreur lors de la réactivation de l\'entreprise');
       }
     });
   }

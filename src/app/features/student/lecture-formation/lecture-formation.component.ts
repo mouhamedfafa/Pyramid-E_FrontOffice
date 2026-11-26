@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 // filepath: src/app/courses/course-watch/lecture-formation.component.ts
 import { Component, OnInit, OnChanges, OnDestroy, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -185,7 +186,7 @@ export class LectureFormationComponent implements OnInit, OnChanges, OnDestroy {
       },
       error: (err) => {
         console.error(`❌ [LectureFormation] getFormationStructure ERREUR:`, err);
-        this.error   = 'Impossible de charger le contenu';
+        this.error   = messageErreurApi(err, 'Impossible de charger le contenu');
         this.loading = false;
       }
     });

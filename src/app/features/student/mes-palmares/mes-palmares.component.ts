@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule }      from '@angular/common';
 import { RouterModule }      from '@angular/router';
@@ -49,8 +50,8 @@ export class MesPalmaresComponent implements OnInit {
         this.certificats = res.data ?? [];
         this.loading     = false;
       },
-      error: () => {
-        this.error   = 'Impossible de charger vos certificats.';
+      error: (err: any) => {
+        this.error   = messageErreurApi(err, 'Impossible de charger vos certificats.');
         this.loading = false;
       }
     });

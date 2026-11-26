@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -247,7 +248,7 @@ export class ExplorerComponent implements OnInit {
         const entrepriseId = user?.entreprise_id;
 
         if (!entrepriseId) {
-          this.error = 'Impossible de charger les formations';
+          this.error = messageErreurApi(err, 'Impossible de charger les formations');
           this.loading = false;
           return;
         }
@@ -260,7 +261,7 @@ export class ExplorerComponent implements OnInit {
             this.loading = false;
           },
           error: () => {
-            this.error = 'Impossible de charger les formations';
+            this.error = messageErreurApi(err, 'Impossible de charger les formations');
             this.loading = false;
           }
         });
@@ -310,7 +311,7 @@ export class ExplorerComponent implements OnInit {
       },
       error: (err) => {
         console.error('❌ Explorer - Erreur chargement catalogues:', err);
-        this.error = 'Impossible de charger les catalogues';
+        this.error = messageErreurApi(err, 'Impossible de charger les catalogues');
         this.loading = false;
       }
     });
@@ -350,7 +351,7 @@ export class ExplorerComponent implements OnInit {
       },
       error: (err) => {
         console.error('❌ Explorer - Erreur chargement parcours:', err);
-        this.error = 'Impossible de charger les parcours';
+        this.error = messageErreurApi(err, 'Impossible de charger les parcours');
         this.loading = false;
       }
     });
@@ -470,7 +471,7 @@ export class ExplorerComponent implements OnInit {
       error: (err) => {
         this.submitting = false;
         console.error('Erreur création demande:', err);
-        alert('Erreur lors de la création de la demande. Veuillez réessayer.');
+        alert(messageErreurApi(err, 'Erreur lors de la création de la demande. Veuillez réessayer.'));
       }
     });
   }

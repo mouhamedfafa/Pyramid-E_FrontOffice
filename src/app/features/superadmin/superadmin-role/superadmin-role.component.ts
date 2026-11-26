@@ -20,6 +20,7 @@ export class SuperadminRoleComponent implements OnInit {
 
   // ── Constantes modal ────────────────────────────────────────────────────────
   readonly SYSTEM_ROLES = [
+    { name: 'Administrateur entreprise', icon: 'isax-briefcase' },
     { name: 'Direction',         icon: 'isax-building' },
     { name: 'Responsable RH',    icon: 'isax-people' },
     { name: 'Admin RH',          icon: 'isax-people' },
@@ -212,6 +213,7 @@ export class SuperadminRoleComponent implements OnInit {
     'Super Admin RH Holding',
     'Administrateur RH Holding',
     'Admin RH Holding',
+    'Administrateur entreprise',
     'Direction',
     'Admin RH',
     'Administrateur RH',

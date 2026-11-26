@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 // import { Component } from '@angular/core';
 
 // @Component({
@@ -370,7 +371,7 @@ private loadDemandes(): void {
         },
         error: (error) => {
           console.error('❌ Erreur lors de la validation:', error);
-          this.error = 'Erreur lors de la validation de la demande.';
+          this.error = messageErreurApi(error, 'Erreur lors de la validation de la demande.');
           this.validatingIds.delete(demande.id);
         }
       });
@@ -402,7 +403,7 @@ private loadDemandes(): void {
       },
       error: (error) => {
         console.error('❌ Erreur lors du refus:', error);
-        this.error = 'Erreur lors du refus de la demande.';
+        this.error = messageErreurApi(error, 'Erreur lors du refus de la demande.');
         this.refusingIds.delete(demande.id);
       }
     });
@@ -423,7 +424,7 @@ private loadDemandes(): void {
         },
         error: (error) => {
           console.error('❌ Erreur lors de l\'annulation:', error);
-          this.error = 'Erreur lors de l\'annulation de la demande.';
+          this.error = messageErreurApi(error, 'Erreur lors de l\'annulation de la demande.');
         }
       });
     }

@@ -77,8 +77,11 @@ export const kpiPlateformePermission = (slug: string) => `voir dashboard ${slug}
 
 export const KPI_ROUTES: KpiRoute[] = [
   ...KPI_PLATEFORME.map(k => ({ permission: kpiPlateformePermission(k.slug), route: kpiPlateformeRoute(k.slug) })),
+  // Direction en premier : page d'accueil par défaut de la Direction et de l'Administrateur entreprise
+  { permission: 'voir dashboard direction',      route: '/adminrh/dashboard-direction' },
   { permission: 'voir dashboard admin-rh',       route: '/adminrh/dashboard-admin-rh' },
   { permission: 'voir dashboard responsable-rh', route: '/adminrh/dashboard-responsable-rh' },
+  { permission: 'voir dashboard dsi',            route: '/adminrh/dashboard-dsi' },
   { permission: 'voir dashboard formateur',      route: '/instructor/dashboard-formateur' },
   { permission: 'voir dashboard consultant',     route: '/instructor/dashboard-consultant' },
   { permission: 'voir dashboard manager',        route: '/manager/dashboard-manager', manager: true },

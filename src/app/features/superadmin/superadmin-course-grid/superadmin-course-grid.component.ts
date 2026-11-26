@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 // import { Component } from '@angular/core';
 // import { routes } from '../../../shared/service/routes/routes';
 // import { CommonModule } from '@angular/common';
@@ -74,7 +75,7 @@ export class SuperadminCourseGridComponent implements OnInit {
         this.getTableData({ skip: 0, limit: this.pageSize });
       },
       error: (error) => {
-        this.error = 'Erreur lors du chargement des formations';
+        this.error = messageErreurApi(error, 'Erreur lors du chargement des formations');
         this.loading = false;
         console.error('Erreur:', error);
       }

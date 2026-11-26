@@ -264,9 +264,9 @@
                   </div>
                   <div class="sc-action-btn sc-action-btn--teal"
                        (click)="relancerDemande(demande.id, $event)"
-                       title="Relancer la demande">
+                       [title]="libelleRelance(demande)">
                     <i class="isax isax-refresh"></i>
-                    <span class="sc-action-btn__tooltip">Relancer la demande</span>
+                    <span class="sc-action-btn__tooltip">{{ libelleRelance(demande) }}</span>
                   </div>
                 </ng-container>
                 <span *ngIf="(demande.statut !== 'en_attente' && demande.statut !== 'en_attente_manager')"
@@ -342,7 +342,7 @@
                     (click)="annulerDemande(demande.id, $event)">
               <i class="isax isax-close-circle"></i>
             </button>
-            <button class="sc-btn-relancer sc-btn--xs" title="Relancer"
+            <button class="sc-btn-relancer sc-btn--xs" [title]="libelleRelance(demande)"
                     (click)="relancerDemande(demande.id, $event)">
               <i class="isax isax-refresh"></i>
             </button>
@@ -391,6 +391,7 @@
           <div>
             <h5 class="modal-title mb-0">{{ demandeSelectionnee.titre_affiche }}</h5>
             <small>Demande du {{ demandeSelectionnee.created_at | date:'dd/MM/yyyy à HH:mm' }}</small>
+            <small class="d-block"><i class="isax isax-user-tick me-1"></i>Manager : {{ demandeSelectionnee.manager?.name || 'aucun (validation directe par les RH)' }}</small>
           </div>
         </div>
         <button type="button" class="btn-close btn-close-white" (click)="fermerDetailDemande()"></button>

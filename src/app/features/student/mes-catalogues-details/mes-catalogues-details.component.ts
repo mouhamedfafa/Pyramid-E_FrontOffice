@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -98,8 +99,8 @@ export class MesCataloguesDetailsComponent implements OnInit, OnDestroy {
         this._syncFormationsDepuisService();
         this.loading = false;
       },
-      error: () => {
-        this.error   = 'Impossible de charger le catalogue. Vérifiez que vous y avez accès.';
+      error: (err: any) => {
+        this.error   = messageErreurApi(err, 'Impossible de charger le catalogue. Vérifiez que vous y avez accès.');
         this.loading = false;
       }
     });

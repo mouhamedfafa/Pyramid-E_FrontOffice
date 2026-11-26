@@ -1,107 +1,70 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 /** Dashboards KPI disponibles — chacun a sa route API et sa permission « voir dashboard <slug> ». */
-export type KpiDashboardSlug = 'admin-rh' | 'responsable-rh' | 'manager' | 'formateur' | 'consultant' | 'employe'
+export type KpiDashboardSlug = 'admin-rh' | 'responsable-rh' | 'direction' | 'manager' | 'formateur' | 'consultant' | 'employe' | 'dsi'
   // Équipe Pyramide LMS (domaine plateforme)
   | 'sa-ceo' | 'sa-cto' | 'sa-coo' | 'customer-experience' | 'head-sales' | 'head-marketing' | 'head-product'
   | 'gestionnaire-comptes' | 'qa';
 
-export type KpiPeriode = 'week' | 'month' | 'quarter';
+/** Erreur remontée au moteur d'affichage : il choisit lui-même l'écran (textes fixes, aucun détail technique). */
+export interface ErreurDashboard { kind: 'auth' | 'notfound' | 'rate' | 'error'; }
 
-export type KpiWidget =
-  | { type: 'gauge' | 'ring'; value: number; max: number; unit: string }
-  | { type: 'bar'; value: number; max: number; unit: string; targetLabel?: string }
-  | { type: 'counter'; unit: string; delta: number | null; deltaUnit?: string }
-  | { type: 'countdown'; days: number; label: string }
-  | { type: 'rank'; rank: number; total: number };
-
-export interface Kpi {
-  id: string;
-  label: string;
-  text: string;
-  n: number | null;
-  dir: 'min' | 'max';
-  warn: number;
-  crit: number;
-  unit: string;
-  freq: string;
-  thrLabel?: string;
-  info?: string;
-  priv?: boolean;
-  widget?: KpiWidget;
-  titulaire?: { label: string };
-}
-
-export interface KpiCell { t: 'text' | 'bar'; v: string | number; max?: number; level?: number; suffix?: string; }
-
-export type KpiBlock =
-  | { type: 'table'; title: string; columns: string[]; rows: KpiCell[][] }
-  | { type: 'quotes'; title: string; items: string[] }
-  | { type: 'chart-bugs'; title: string; subtitle: string; labels: string[]; registered: number[]; resolved: number[]; note: string }
-  | {
-      type: 'compare-table'; title: string; note: string; header: string;
-      columns: { id: string; label: string }[];
-      rows: { id: string; label: string; selected: boolean; total: boolean; cells: Partial<Record<string, { text: string; n: number; level: number }>> }[];
-    };
-
-export interface KpiAlert { label: string; text: string; thrLabel: string; level: number; titulaire: string; watchers: string[]; }
-
-export interface KpiDashboardPayload {
-  meta: { title: string; icon: string; subtitle: string; accent: string; bg: string; userLabel: string };
-  filters: {
-    views: { id: string; label: string }[];
-    view: string;
-    periodAvailable: boolean;
-    period: KpiPeriode;
-    people: { id: string; label: string }[];
-    person: string;
-    personLabel: string;
-    compareAvailable: boolean;
-    compareLabel: string;
-    compare: boolean;
-  };
-  nudges: string[];
-  notices: string[];
-  hero: Kpi[];
-  sections: { title: string; rows: Kpi[] }[];
-  blocks: KpiBlock[];
-  alerts: { own: KpiAlert[]; watched: KpiAlert[] };
-}
-
-export interface KpiDashboardFiltres { view?: string; period?: KpiPeriode; person?: string; compare?: boolean; }
-
+/**
+ * Transport du moteur d'affichage des dashboards (modèle V4.12) vers l'API Laravel.
+ *
+ * Le moteur parle le contrat du modèle (/dashboard, /alerts, /me/pins, /kpi/people…) ; chaque chemin est traduit
+ * ici vers la route API correspondante. Le périmètre des données est toujours fixé côté serveur à partir de
+ * l'utilisateur connecté (jeton ajouté par l'intercepteur) : le navigateur n'envoie que des filtres et identifiants.
+ */
 @Injectable({ providedIn: 'root' })
 export class KpiDashboardService {
-  private readonly baseUrl = `${environment.apiUrl}/dashboards`;
+  private readonly base = `${environment.apiUrl}/dashboards`;
 
   constructor(private http: HttpClient) {}
 
-  // Le jeton est ajouté par l'intercepteur ; le périmètre des données est fixé côté serveur.
-  get(slug: KpiDashboardSlug, filtres: KpiDashboardFiltres = {}): Observable<KpiDashboardPayload> {
-    let params = new HttpParams();
-    if (filtres.view && filtres.view !== 'global') params = params.set('view', filtres.view);
-    if (filtres.period) params = params.set('period', filtres.period);
-    if (filtres.person && filtres.person !== 'all') params = params.set('person', filtres.person);
-    if (filtres.compare) params = params.set('compare', '1');
+  /** Crée le transport d'un dashboard : les alertes arrivent avec le dashboard, une seule requête suffit. */
+  transport(slug: KpiDashboardSlug) {
+    let dernier: Promise<any> = Promise.resolve({ alerts: { own: [], watched: [] } });
 
-    return this.http
-      .get<{ status: boolean; data: KpiDashboardPayload }>(`${this.baseUrl}/${slug}`, { params })
-      .pipe(map(r => r.data));
+    return (method: string, path: string, query: Record<string, string> | null, body: unknown): Promise<any> => {
+      switch (path) {
+        case '/dashboard':     return (dernier = this.appel('GET', `/${slug}`, query));
+        case '/alerts':        return dernier.then(d => d?.alerts ?? { own: [], watched: [] });
+        case '/audit/ui':      return Promise.resolve(null);   // les accès sont journalisés par l'API elle-même
+        case '/me/pins':       return this.appel('PUT', `/${slug}/favoris`, null, body);
+        case '/kpi/people':    return this.appel('GET', `/${slug}/personnes`, query);
+        case '/kpi/reminders': return this.appel('POST', `/${slug}/relances`, null, body);
+      }
+      const route = ROUTES_COMMUNES[`${method} ${path}`];
+      return route ? this.appel(method, route, query, body) : Promise.reject<ErreurDashboard>({ kind: 'notfound' });
+    };
+  }
+
+  private appel(method: string, chemin: string, query: Record<string, string> | null, body?: unknown): Promise<any> {
+    let params = new HttpParams();
+    Object.entries(query ?? {}).forEach(([k, v]) => { if (v !== null && v !== undefined && v !== '') params = params.set(k, String(v)); });
+
+    return firstValueFrom(this.http.request<{ status: boolean; data: any }>(method, `${this.base}${chemin}`, {
+      params, body: method === 'GET' ? undefined : (body ?? {}),
+    }))
+      .then(r => (r && typeof r === 'object' && 'data' in r ? r.data : r))
+      .catch((e: HttpErrorResponse) => {
+        // 403 et 404 : même écran générique (on ne révèle pas l'existence d'une donnée hors périmètre)
+        const kind: ErreurDashboard['kind'] = e.status === 401 ? 'auth' : (e.status === 403 || e.status === 404) ? 'notfound' : e.status === 429 ? 'rate' : 'error';
+        throw { kind } as ErreurDashboard;
+      });
   }
 }
 
-/** Niveau d'un KPI : 0 = dans le seuil, 1 = hors seuil, 2 = critique (même règle que le serveur). */
-export function niveauKpi(k: Kpi): number {
-  if (k.n === null || k.n === undefined) return 0;
-  return k.dir === 'min'
-    ? (k.n < k.crit ? 2 : (k.n < k.warn ? 1 : 0))
-    : (k.n > k.crit ? 2 : (k.n > k.warn ? 1 : 0));
-}
-
-export function seuilKpi(k: Kpi): string {
-  if (k.thrLabel) return k.thrLabel;
-  return (k.dir === 'min' ? '≥ ' : '≤ ') + k.warn.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + k.unit;
-}
+/** Fonctions d'administration de l'Admin RH (seuils, rapport trimestriel) : routes indépendantes du dashboard affiché. */
+const ROUTES_COMMUNES: Record<string, string> = {
+  'GET /settings/thresholds':          '/seuils',
+  'PUT /settings/thresholds':          '/seuils',
+  'GET /reports/quarterly':            '/rapport-trimestriel',
+  'PUT /reports/quarterly':            '/rapport-trimestriel',
+  'POST /reports/quarterly/approve':   '/rapport-trimestriel/valider',
+  'POST /reports/quarterly/revoke':    '/rapport-trimestriel/annuler',
+};

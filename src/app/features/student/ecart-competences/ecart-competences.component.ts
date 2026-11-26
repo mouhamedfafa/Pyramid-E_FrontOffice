@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -75,8 +76,8 @@ export class EcartCompetencesComponent implements OnInit {
         this.loading = false;
         this.currentPage = 1;
       },
-      error: () => {
-        this.error = 'Impossible de charger l’écart de compétences.';
+      error: (err: any) => {
+        this.error = messageErreurApi(err, 'Impossible de charger l’écart de compétences.');
         this.loading = false;
       },
     });

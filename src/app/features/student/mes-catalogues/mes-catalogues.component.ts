@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -96,8 +97,8 @@ export class MesCataloguesComponent implements OnInit, OnDestroy {
         this.applyFilters();
         this.loading = false;
       },
-      error: () => {
-        this.error   = 'Impossible de charger vos catalogues.';
+      error: (err: any) => {
+        this.error   = messageErreurApi(err, 'Impossible de charger vos catalogues.');
         this.loading = false;
       },
     });

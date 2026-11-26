@@ -23,10 +23,10 @@ $radius: 8px;
   background: var(--sb-bg);
   display: flex;
   flex-direction: column;
-  min-height: 520px;
+  height: 100%;          // hauteur fixée par l'hôte (styles.scss) : la barre ne déborde pas de l'écran
+  min-height: 0;
   overflow: hidden;
   border-radius: 12px;
-  margin-bottom: 24px;
 }
 
 // ── LOGO ──
@@ -79,7 +79,12 @@ $radius: 8px;
 .sb-ministat-div { width: 1px; height: 30px; background: var(--sb-border); margin: 0 4px; }
 
 // ── NAV ──
-.sb-scroll { flex: 1; padding: 6px 0 10px; }
+.sb-scroll {
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 6px 0 10px;   // seul le menu défile
+  &::-webkit-scrollbar       { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+}
 .sb-section { margin-bottom: 4px; }
 .sb-section-label {
   font-size: 10px; font-weight: 600; color: var(--sb-text-dim);

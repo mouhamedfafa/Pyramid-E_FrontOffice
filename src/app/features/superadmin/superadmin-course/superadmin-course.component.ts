@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
@@ -264,7 +265,7 @@ export class SuperadminCourseComponent implements OnInit {
         next: () => this.getFormationsList(),
         error: (error) => {
           console.error('Erreur suppression:', error);
-          this.error = 'Erreur lors de la suppression de la formation';
+          this.error = messageErreurApi(error, 'Erreur lors de la suppression de la formation');
           this.loading = false;
         }
       });

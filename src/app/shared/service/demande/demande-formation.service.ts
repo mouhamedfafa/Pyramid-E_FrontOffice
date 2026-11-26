@@ -87,8 +87,12 @@ export class DemandeFormationService {
     ).pipe(catchError(this.handleError.bind(this)));
   }
 
+  // Relancer le décideur en attente (manager ou RH) — une relance par 24 h
   relancerDemande(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/demandes/${id}/relancer`, {});
+    return this.http.post(
+      `${this.apiUrl}/demandes-formation/${id}/relancer`, {},
+      { headers: this.getHeaders() }
+    ).pipe(catchError(this.handleError.bind(this)));
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -117,7 +118,7 @@ export class ParcoursAssigneDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error(`❌ [ParcoursDetail #${this.parcoursId}] Erreur getParcoursDetail:`, err);
-        this.error   = 'Impossible de charger le parcours. Vérifiez que vous y avez accès.';
+        this.error   = messageErreurApi(err, 'Impossible de charger le parcours. Vérifiez que vous y avez accès.');
         this.loading = false;
       }
     });

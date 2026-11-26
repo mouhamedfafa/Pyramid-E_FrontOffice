@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -135,14 +136,14 @@ export class StudentsListComponent implements OnInit {
             this.applyFilters();
             this.loading = false;
           },
-          error: () => {
-            this.error = 'Erreur lors du chargement des apprenants.';
+          error: (err: any) => {
+            this.error = messageErreurApi(err, 'Erreur lors du chargement des apprenants.');
             this.loading = false;
           }
         });
       },
-      error: () => {
-        this.error = 'Erreur lors du chargement des formations.';
+      error: (err: any) => {
+        this.error = messageErreurApi(err, 'Erreur lors du chargement des formations.');
         this.loading = false;
       }
     });

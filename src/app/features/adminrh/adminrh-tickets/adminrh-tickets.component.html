@@ -125,6 +125,8 @@
             <div class="tk-badges">
               <span class="badge" [ngClass]="getSClass(t.statut)">{{ getSLabel(t.statut) }}</span>
               <span class="badge" [ngClass]="getPClass(t.priorite)">{{ getPLabel(t.priorite) }}</span>
+              <span *ngIf="t.niveau_support_display" class="badge"
+                    [ngClass]="t.niveau_support === 'entreprise' ? 's-attente' : 's-encours'">{{ t.niveau_support_display }}</span>
             </div>
             <div class="tk-meta">
               <span>{{ t.categorie }}</span>
@@ -169,7 +171,21 @@
         </div>
 
         <div class="tk-detail__body">
+          <!-- Traitement interne : fermer, ou escalader au support Pyramide -->
+          <div *ngIf="selectedTicket.actions?.peut_fermer || selectedTicket.actions?.peut_escalader" class="form-actions" style="justify-content:flex-start;margin-bottom:12px">
+            <button *ngIf="selectedTicket.actions?.peut_fermer" type="button" class="act-btn primary"
+                    [disabled]="actionEnCours" (click)="fermerTicket()">
+              <i class="isax isax-tick-circle"></i> Fermer (traité en interne)
+            </button>
+            <button *ngIf="selectedTicket.actions?.peut_escalader" type="button" class="act-btn"
+                    [disabled]="actionEnCours" (click)="escaladerTicket()">
+              <i class="isax isax-arrow-up-3"></i> Escalader au support Pyramide
+            </button>
+          </div>
+          <div *ngIf="actionMessage" class="tk-form-err" style="background:#e8f5ee;color:#1a7a4a">{{ actionMessage }}</div>
+          <div *ngIf="actionErreur" class="tk-form-err">{{ actionErreur }}</div>
           <div class="detail-meta">
+            <span *ngIf="selectedTicket.niveau_support_display"><b>Traité par :</b> {{ selectedTicket.niveau_support_display }}</span>
             <span><b>Agent:</b> {{ selectedTicket.agent_assigne?.name || 'Non assigné' }}</span>
             <span><b>Catégorie:</b> {{ selectedTicket.categorie }}</span>
             <span><b>Créé le:</b> {{ selectedTicket.created_at | date:'dd/MM/yyyy HH:mm' }}</span>

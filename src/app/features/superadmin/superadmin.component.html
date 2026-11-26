@@ -20,7 +20,7 @@
 }
 <!-- /Breadcrumb -->
 <div class="content">
-  <div class="container">
+  <div class="container-fluid px-3 px-lg-4">
       <!-- Header Superadmin Gouvernance Globale -->
       <div class="sa-header">
         <div class="sa-header-top-label">SUPERADMIN — GOUVERNANCE GLOBALE</div>
@@ -96,11 +96,11 @@
       @if(last !== 'students-details') {
         <div class="row">
             <!-- sidebar -->
-            <app-superadmin-sidebar class="col-lg-3"></app-superadmin-sidebar>
+            <app-superadmin-sidebar class="col-lg-auto"></app-superadmin-sidebar>
             <!-- /Sidebar -->
 
             <!-- Instructor Dashboard -->
-            <div class="col-lg-9">
+            <div class="col-lg">
               <router-outlet></router-outlet>
             </div>
             <!-- Instructor Dashboard -->
@@ -191,7 +191,7 @@
       </div>
   </div> -->
   <div class="footer-bottom">
-      <div class="container">
+      <div class="container-fluid px-3 px-lg-4">
           <div class="row row-gap-2">
               <div class="col-md-6">
                   <div class="text-center text-md-start">

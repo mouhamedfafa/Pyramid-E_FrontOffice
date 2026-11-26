@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -97,8 +98,8 @@ export class ParcoursDetailsComponent implements OnInit, OnDestroy {
         this._syncFormationsDepuisService();
         this.loading = false;
       },
-      error: () => {
-        this.error   = 'Impossible de charger le parcours.';
+      error: (err: any) => {
+        this.error   = messageErreurApi(err, 'Impossible de charger le parcours.');
         this.loading = false;
       }
     });

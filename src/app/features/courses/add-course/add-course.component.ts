@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -169,7 +170,7 @@ loadCategories(): void {
       this.loading = false;
       console.error('Erreur chargement catégories:', err);
       
-      this.error = 'Impossible de charger les catégories. Utilisation des catégories par défaut.';
+      this.error = messageErreurApi(err, 'Impossible de charger les catégories. Utilisation des catégories par défaut.');
       this.loadFallbackCategories();
       
       // Auto-clear error après 5 secondes
@@ -641,7 +642,7 @@ submitCourse(): void {
       } else if (err.error?.message) {
         this.error = err.error.message;
       } else {
-        this.error = 'Erreur lors de la création de la formation. Veuillez réessayer.';
+        this.error = messageErreurApi(err, 'Erreur lors de la création de la formation. Veuillez réessayer.');
       }
     }
   });

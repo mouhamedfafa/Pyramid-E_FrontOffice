@@ -172,6 +172,13 @@ export interface DemandeFormation {
   session_formation_id?: number | null;
   statut: StatutDemande;
   decision_manager?: DecisionManager | null;
+  /** Manager actuel (N+1) du demandeur */
+  manager?: { id: number; name: string } | null;
+  /** RH : l'utilisateur est aussi le manager du demandeur → une seule validation suffit */
+  validation_une_etape?: boolean;
+  /** Une relance du décideur en attente est possible (1 par 24 h) */
+  peut_relancer?: boolean;
+  derniere_relance?: string | null;
   // Présents sur /mes-demandes-formation (toArray du modèle)
   decideur_manager?: { id: number; name: string; prenom?: string; nom?: string } | null;
   niveau_decideur?: number | null;

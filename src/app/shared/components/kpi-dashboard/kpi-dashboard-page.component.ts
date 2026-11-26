@@ -1,88 +1,71 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
-import { KpiDashboardComponent } from './kpi-dashboard.component';
-import {
-  KpiDashboardFiltres,
-  KpiDashboardPayload,
-  KpiDashboardService,
-  KpiDashboardSlug,
-} from '../../service/dashboards/kpi-dashboard.service';
+import { KpiDashboardService, KpiDashboardSlug } from '../../service/dashboards/kpi-dashboard.service';
+import { AuthService } from '../../service/authentification/auth.service';
+import { creerMoteurDashboard, MoteurDashboard } from './pyramide-dashboard.engine';
 
 /**
- * Page d'un dashboard KPI. Chaque route déclare son profil dans `data.dashboard`
- * et sa permission dans `data.permission` (PermissionGuard) ; l'API applique la même permission.
+ * Page d'un dashboard KPI, rendue à l'identique du modèle « Pyramide LMS — Tableaux de bord V4.12 ».
+ *
+ * Chaque route déclare son profil dans `data.dashboard` et sa permission dans `data.permission` (PermissionGuard) ;
+ * l'API applique la même permission. Le rendu est celui du modèle (pyramide-dashboard.engine.ts et
+ * pyramide-dashboard.css, générés depuis le fichier HTML) : il s'exécute dans un Shadow DOM, si bien que les styles
+ * de l'application ne s'y appliquent pas et que ceux du modèle n'en sortent pas.
  */
 @Component({
   selector: 'app-kpi-dashboard-page',
   standalone: true,
-  imports: [CommonModule, KpiDashboardComponent],
+  encapsulation: ViewEncapsulation.ShadowDom,
+  styleUrls: ['./pyramide-dashboard.css'],
   template: `
-    <div class="kpi-page">
-      @if (payload) {
-        <app-kpi-dashboard [payload]="payload" [class.kpi-page--busy]="chargement"
-          (personChange)="filtrer({ person: $event })"
-          (compareChange)="filtrer({ compare: $event })"
-          (periodChange)="filtrer({ period: $event })"
-          (viewChange)="changerVue($event)" />
-      } @else if (erreur) {
-        <div class="kpi-screen"><h1>{{ erreur[0] }}</h1><p>{{ erreur[1] }}</p></div>
-      } @else {
-        <div class="kpi-screen"><p>Chargement du tableau de bord…</p></div>
-      }
+    <div class="pyr-root">
+      <div class="main">
+        <div class="topbar" id="topbar">
+          <div class="tb-icon" id="tbIcon"></div>
+          <div><div class="tb-title" id="tbTitle"></div><div class="tb-sub" id="tbSub"></div></div>
+          <div class="tb-right">
+            <span class="tb-updated" id="tbUpdated"></span>
+            <div class="bell" id="bell" title="Alertes de seuil"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg> <span class="bn none" id="bellN">0</span></div>
+            <select class="fsel tb-sel" id="periodSel" style="display:none" title="Période des KPIs exprimés par semaine / mois / trimestre">
+              <option value="week">Semaine</option><option value="month" selected>Mois</option><option value="quarter">Trimestre</option>
+            </select>
+            <button class="btn" id="exportBtn" data-act="exportPdf" style="display:none"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg> Export PDF</button>
+          </div>
+        </div>
+        <div class="apanel" id="apanel"></div>
+        <div class="content" id="content"><div class="screen"><p>Chargement du tableau de bord…</p></div></div>
+      </div>
+      <div class="print-wm" id="wm"></div>
     </div>
   `,
-  styles: [`
-    .kpi-page { padding: 4px 0 24px; }
-    .kpi-page--busy { opacity: .6; pointer-events: none; transition: opacity .15s; }
-    .kpi-screen { max-width: 520px; margin: 10vh auto; padding: 28px; background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; text-align: center; }
-    .kpi-screen h1 { font-size: 18px; margin-bottom: 8px; }
-    .kpi-screen p { font-size: 13px; color: #475569; margin: 0; }
-  `],
 })
-export class KpiDashboardPageComponent implements OnInit {
-  payload: KpiDashboardPayload | null = null;
-  erreur: [string, string] | null = null;
-  chargement = false;
+export class KpiDashboardPageComponent implements AfterViewInit, OnDestroy {
+  private moteur?: MoteurDashboard;
 
-  private slug!: KpiDashboardSlug;
-  private filtres: KpiDashboardFiltres = {};
+  constructor(
+    private route: ActivatedRoute,
+    private service: KpiDashboardService,
+    private auth: AuthService,
+    private host: ElementRef<HTMLElement>,
+  ) {}
 
-  constructor(private route: ActivatedRoute, private service: KpiDashboardService) {}
+  ngAfterViewInit(): void {
+    const shadow = this.host.nativeElement.shadowRoot;
+    const racine = shadow?.querySelector<HTMLElement>('.pyr-root');
+    if (!shadow || !racine) return;
 
-  ngOnInit(): void {
-    this.slug = this.route.snapshot.data['dashboard'];
-    this.charger();
+    const slug: KpiDashboardSlug = this.route.snapshot.data['dashboard'];
+    this.moteur = creerMoteurDashboard(shadow, racine, this.service.transport(slug), this.libelleUtilisateur());
+    this.moteur.demarrer();
   }
 
-  /** Nouvelle vue : filtres personne / comparaison / période remis à zéro (propres à chaque vue côté serveur). */
-  changerVue(view: string): void {
-    this.filtres = { view };
-    this.charger();
+  ngOnDestroy(): void {
+    this.moteur?.detruire();
   }
 
-  filtrer(changement: KpiDashboardFiltres): void {
-    this.filtres = { ...this.filtres, ...changement };
-    this.charger();
-  }
-
-  private charger(): void {
-    this.chargement = true;
-    this.service.get(this.slug, this.filtres).subscribe({
-      next: payload => {
-        this.payload = payload;
-        this.erreur = null;
-        this.chargement = false;
-      },
-      error: (e: HttpErrorResponse) => {
-        this.payload = null;
-        this.chargement = false;
-        // 403 et 404 : même message générique (on ne révèle pas l'existence d'une donnée hors périmètre)
-        this.erreur = e.status === 403 || e.status === 404
-          ? ['Contenu introuvable', "Ce tableau de bord n'existe pas ou vous n'y avez pas accès."]
-          : ['Service momentanément indisponible', 'Veuillez réessayer dans quelques instants.'];
-      },
-    });
+  /** Nom affiché dans le filigrane d'impression (« Document confidentiel — … »). */
+  private libelleUtilisateur(): string {
+    const u = this.auth.getUser();
+    return u ? [u.prenom, u.nom].filter(Boolean).join(' ') || u.name || u.email || '' : '';
   }
 }

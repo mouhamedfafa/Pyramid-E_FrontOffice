@@ -158,6 +158,12 @@
             <span *ngIf="d.date_souhaitee_debut"><i class="isax isax-calendar-1"></i> {{ formatDate(d.date_souhaitee_debut) }}</span>
             <span *ngIf="d.formation?.duree_totale"><i class="isax isax-clock"></i> {{ d.formation?.duree_totale }}h</span>
             <span class="pb pb-{{ d.priorite }}">{{ d.priorite_display }}</span>
+            <span [title]="'Manager actuel (N+1) du collaborateur'">
+              <i class="isax isax-user-tick"></i> Manager : {{ d.manager?.name || 'aucun' }}
+            </span>
+          </div>
+          <div *ngIf="d.validation_une_etape" class="d-meta">
+            <span><i class="isax isax-info-circle"></i> Vous êtes son manager : une seule validation suffit.</span>
           </div>
 
           <div *ngIf="d.motif_demande" class="d-msg" [title]="d.motif_demande">
@@ -197,6 +203,13 @@
               <span *ngIf="refusingIds.has(d.id)" class="act-spin"></span>
               <i *ngIf="!refusingIds.has(d.id)" class="isax isax-close-circle"></i>
               Refuser
+            </button>
+            <button *ngIf="canRelancer(d)" type="button" class="act-btn act-cancel"
+                    [title]="d.peut_relancer === false ? 'Relance déjà envoyée — nouvelle relance possible 24 h après' : 'Relancer ' + (d.manager?.name || 'le manager')"
+                    [disabled]="relancingIds.has(d.id)" (click)="relancerDemande(d)">
+              <span *ngIf="relancingIds.has(d.id)" class="act-spin"></span>
+              <i *ngIf="!relancingIds.has(d.id)" class="isax isax-notification"></i>
+              Relancer
             </button>
             <button *ngIf="canCancel(d)" type="button" class="act-btn act-cancel" title="Annuler" (click)="annulerDemande(d)" aria-label="Annuler">
               <i class="isax isax-minus-circle"></i>

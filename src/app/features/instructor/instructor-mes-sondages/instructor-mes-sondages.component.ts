@@ -1,3 +1,4 @@
+import { messageErreurApi } from '../../../shared/utils/erreur-api.utils';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -40,7 +41,7 @@ export class InstructorMesSondagesComponent implements OnInit {
         this.sondagesRepondus = all.filter((s: any) => s.deja_repondu);
         this.loading = false;
       },
-      error: () => { this.error = 'Impossible de charger les enquêtes.'; this.loading = false; },
+      error: (err: any) => { this.error = messageErreurApi(err, 'Impossible de charger les enquêtes.'); this.loading = false; },
     });
   }
 
