@@ -109,37 +109,6 @@
         <i class="isax isax-hierarchy"></i>
         <span class="sb-item-label">Organigramme</span>
       </a>
-
-      <!-- Demandes avec sous-items -->
-      <div *appHasPermission="'lister demandes formation'" class="sb-group">
-        <div class="sb-group-header" [class.open]="openGroups['demandes']"
-             (click)="toggleGroup('demandes')">
-          <i class="isax isax-document-text icon"></i>
-          <span>Demandes</span>
-          <span *ngIf="demandesEnAttenteCount > 0" class="sb-badge sb-badge--red">{{ demandesEnAttenteCount }}</span>
-          <i class="isax isax-arrow-right-3 arr"></i>
-        </div>
-        <div class="sb-sub" *ngIf="openGroups['demandes']">
-          <a [routerLink]="routes.adminrhDemande" routerLinkActive="active" class="sb-sub-item">
-            <span class="sb-sub-label">Formations</span>
-            <span *ngIf="demandesEnAttenteCount > 0" class="sb-badge sb-badge--red sb-badge--sm">{{ demandesEnAttenteCount }}</span>
-          </a>
-
-          <a [routerLink]="routes.adminrhDemandeCatalogue" routerLinkActive="active" class="sb-sub-item">
-            <span class="sb-sub-label">Catalogue</span>
-          </a>
-
-          <a [routerLink]="routes.adminrhDemandeParcours" routerLinkActive="active" class="sb-sub-item">
-            <span class="sb-sub-label">Parcours</span>
-          </a>
-
-             <a [routerLink]="routes.adminrhDemandeSession" routerLinkActive="active" class="sb-sub-item">
-            <span class="sb-sub-label">Sessions</span>
-          </a>
-
-
-        </div>
-      </div>
     </div>
 
     <div class="sb-divider"></div>
@@ -178,6 +147,32 @@
         <span class="sb-item-label">Sessions</span>
         <span *ngIf="sessionsAVenirCount > 0" class="sb-badge sb-badge--amber">{{ sessionsAVenirCount }} à venir</span>
       </a>
+
+      <!-- Demandes avec sous-items -->
+      <div *appHasPermission="'lister demandes formation'" class="sb-group">
+        <div class="sb-group-header" [class.open]="openGroups['demandes']"
+             (click)="toggleGroup('demandes')">
+          <i class="isax isax-document-text icon"></i>
+          <span>Demandes</span>
+          <span *ngIf="demandesEnAttenteCount > 0" class="sb-badge sb-badge--red">{{ demandesEnAttenteCount }}</span>
+          <i class="isax isax-arrow-right-3 arr"></i>
+        </div>
+        <div class="sb-sub" *ngIf="openGroups['demandes']">
+          <a [routerLink]="routes.adminrhDemande" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Formations</span>
+            <span *ngIf="demandesEnAttenteCount > 0" class="sb-badge sb-badge--red sb-badge--sm">{{ demandesEnAttenteCount }}</span>
+          </a>
+          <a [routerLink]="routes.adminrhDemandeCatalogue" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Catalogue</span>
+          </a>
+          <a [routerLink]="routes.adminrhDemandeParcours" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Parcours</span>
+          </a>
+          <a [routerLink]="routes.adminrhDemandeSession" routerLinkActive="active" class="sb-sub-item">
+            <span class="sb-sub-label">Sessions</span>
+          </a>
+        </div>
+      </div>
     </div>
 
     <div class="sb-divider"></div>
