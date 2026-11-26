@@ -70,7 +70,7 @@ export interface Ticket {
   niveau_support?: 'entreprise' | 'plateforme';
   niveau_support_display?: string;
   /** Actions autorisées pour l'utilisateur connecté (calculées par le serveur) */
-  actions?: { peut_escalader: boolean; peut_fermer: boolean; peut_gerer: boolean };
+  actions?: { peut_affecter?: boolean; peut_escalader: boolean; peut_fermer: boolean; peut_gerer: boolean };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -139,6 +139,11 @@ export class TicketService {
 
   ajouterMessage(id: number, data: { contenu: string; est_interne?: boolean }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/tickets/${id}/messages`, data, { headers: this.getHeaders() });
+  }
+
+  /** Agents à qui le ticket peut être transmis (workflow Admin RH ↔ Admin IT, ou équipe Pyramide). */
+  getAgents(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/tickets/${id}/agents`, { headers: this.getHeaders() });
   }
 
   assigner(id: number, data: { agent_id: number }): Observable<any> {

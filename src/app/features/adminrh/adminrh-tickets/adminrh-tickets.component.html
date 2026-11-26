@@ -3,8 +3,13 @@
   <!-- HEADER -->
   <div class="tk-header">
     <div>
-      <div class="tk-header__title">Tickets support</div>
-      <div class="tk-header__sub">Incidents et demandes de votre entreprise</div>
+      @if (espace === 'employe') {
+        <div class="tk-header__title">Mes tickets support</div>
+        <div class="tk-header__sub">Vos demandes sont transmises au support interne de votre entreprise (Admin RH et Admin IT), qui les traite ou les transmet à l'équipe Support Pyramide.</div>
+      } @else {
+        <div class="tk-header__title">Tickets support</div>
+        <div class="tk-header__sub">Incidents et demandes de votre entreprise : traitez-les et fermez-les, ou escaladez-les au support Pyramide</div>
+      }
     </div>
     <button type="button" class="tk-new-btn" (click)="toggleCreateForm()">
       <i class="isax isax-add-circle"></i>
@@ -26,6 +31,12 @@
       <div class="kpi__icon ki-done"><i class="isax isax-tick-circle"></i></div>
       <div><div class="kpi__val">{{ stats.resolu }}</div><div class="kpi__lbl">Résolus</div></div>
     </div>
+  </div>
+
+  <!-- Confirmation de création : à qui le ticket a été transmis -->
+  <div *ngIf="confirmation" class="tk-form-err" style="background:#e8f5ee;color:#1a7a4a;display:flex;justify-content:space-between;gap:12px">
+    <span><i class="isax isax-tick-circle"></i> {{ confirmation }}</span>
+    <a href="javascript:void(0)" (click)="confirmation = ''" style="color:inherit">Fermer</a>
   </div>
 
   <!-- CREATE FORM -->
@@ -182,11 +193,41 @@
               <i class="isax isax-arrow-up-3"></i> Escalader au support Pyramide
             </button>
           </div>
+          <!-- Workflow interne entre l'Admin RH et l'Admin IT : prise en charge et transfert -->
+          <div *ngIf="selectedTicket.actions?.peut_affecter" class="form-actions" style="justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <button *ngIf="!prisEnChargeParMoi" type="button" class="act-btn" [disabled]="actionEnCours" (click)="prendreEnCharge()">
+              <i class="isax isax-user-tick"></i> Prendre en charge
+            </button>
+            <ng-container *ngIf="agentsTransfert.length">
+              <select class="tk-select" [(ngModel)]="agentTransfert" aria-label="Transférer à">
+                <option [ngValue]="null">Transférer à…</option>
+                <option *ngFor="let a of agentsTransfert" [ngValue]="a.id">{{ a.nom }} — {{ a.role }}</option>
+              </select>
+              <button type="button" class="act-btn" [disabled]="actionEnCours || !agentTransfert" (click)="transferer()">
+                <i class="isax isax-arrow-swap-horizontal"></i> Transférer
+              </button>
+            </ng-container>
+          </div>
+
+          <!-- Auteur du ticket : annuler sa demande, puis noter la réponse une fois traitée -->
+          <div *ngIf="peutAnnuler" class="form-actions" style="justify-content:flex-start;margin-bottom:12px">
+            <button type="button" class="act-btn" [disabled]="actionEnCours" (click)="annulerTicket()">
+              <i class="isax isax-close-circle"></i> Annuler ma demande
+            </button>
+          </div>
+          <div *ngIf="peutNoter" class="form-actions" style="justify-content:flex-start;align-items:center;gap:6px;margin-bottom:12px">
+            <span style="font-size:13px">Notez la réponse reçue :</span>
+            <button *ngFor="let n of [1, 2, 3, 4, 5]" type="button" class="act-btn" [disabled]="actionEnCours"
+                    (click)="noter(n)" [title]="n + ' / 5'">{{ n }} ★</button>
+          </div>
+          <div *ngIf="selectedTicket.satisfaction_score" class="detail-meta" style="margin-bottom:8px">
+            <span><b>Satisfaction :</b> {{ selectedTicket.satisfaction_score }} / 5</span>
+          </div>
           <div *ngIf="actionMessage" class="tk-form-err" style="background:#e8f5ee;color:#1a7a4a">{{ actionMessage }}</div>
           <div *ngIf="actionErreur" class="tk-form-err">{{ actionErreur }}</div>
           <div class="detail-meta">
             <span *ngIf="selectedTicket.niveau_support_display"><b>Traité par :</b> {{ selectedTicket.niveau_support_display }}</span>
-            <span><b>Agent:</b> {{ selectedTicket.agent_assigne?.name || 'Non assigné' }}</span>
+            <span><b>Pris en charge par :</b> {{ selectedTicket.agent_assigne?.name || 'Personne pour l\'instant' }}</span>
             <span><b>Catégorie:</b> {{ selectedTicket.categorie }}</span>
             <span><b>Créé le:</b> {{ selectedTicket.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>

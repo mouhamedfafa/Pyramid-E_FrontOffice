@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TicketService, Ticket } from '../../../shared/service/ticket/ticket.service';
@@ -13,6 +13,13 @@ import { routes } from '../../../shared/service/routes/routes';
 })
 export class AdminrhTicketsComponent implements OnInit {
   public routes = routes;
+
+  /**
+   * support : page du support interne (Admin RH, Administrateur entreprise, informatique) — tickets de l'entreprise ;
+   * employe : espace Employé — uniquement ses propres demandes, transmises au support interne de son entreprise.
+   * Les actions de traitement (fermer, escalader) ne sont jamais décidées ici : le serveur les fournit (ticket.actions).
+   */
+  @Input() espace: 'support' | 'employe' = 'support';
 
   tickets: Ticket[] = [];
   selectedTicket: Ticket | null = null;
@@ -54,6 +61,8 @@ export class AdminrhTicketsComponent implements OnInit {
     this.loading = true;
     // Le périmètre (ses tickets + ceux des utilisateurs de son entreprise) est appliqué par le serveur
     const p: any = { page: this.currentPage, par_page: this.pageSize };
+    // Espace Employé : uniquement ses propres demandes (même pour un membre du support en mode employé)
+    if (this.espace === 'employe' && this.currentUser?.id) p['user_id'] = this.currentUser.id;
     if (this.filterStatut) p['statut'] = this.filterStatut;
     if (this.searchQuery)  p['search'] = this.searchQuery;
 
@@ -100,16 +109,80 @@ export class AdminrhTicketsComponent implements OnInit {
     this.actionMessage = '';
     this.actionErreur  = '';
     this.ticketService.getTicketById(ticket.id).subscribe({
-      next: (res) => { this.selectedTicket = res.data || res; },
+      next: (res) => { this.selectedTicket = res.data || res; this.chargerAgents(); },
       error: () => {}
     });
+  }
+
+  // ── Workflow interne Admin RH ↔ Admin IT : prise en charge et transfert ──
+  agents: { id: number; nom: string; role: string; moi: boolean }[] = [];
+  agentTransfert: number | null = null;
+
+  /** Le ticket affiché est déjà pris en charge par l'utilisateur connecté. */
+  get prisEnChargeParMoi(): boolean {
+    return !!this.selectedTicket && Number(this.selectedTicket.assigned_to) === Number(this.currentUser?.id);
+  }
+
+  /** Collègues du support à qui transférer le ticket (hors soi-même et hors agent actuel). */
+  get agentsTransfert() {
+    return this.agents.filter(a => !a.moi && Number(a.id) !== Number(this.selectedTicket?.assigned_to));
+  }
+
+  private chargerAgents(): void {
+    this.agents = [];
+    this.agentTransfert = null;
+    const t = this.selectedTicket;
+    if (!t?.actions?.peut_affecter) return;
+    this.ticketService.getAgents(t.id).subscribe({ next: (res) => this.agents = res?.data || [], error: () => {} });
+  }
+
+  prendreEnCharge(): void {
+    const t = this.selectedTicket;
+    if (!t || this.actionEnCours || !this.currentUser?.id) return;
+    this.executerAction(this.ticketService.assigner(t.id, { agent_id: this.currentUser.id }));
+  }
+
+  transferer(): void {
+    const t = this.selectedTicket;
+    if (!t || this.actionEnCours || !this.agentTransfert) return;
+    this.executerAction(this.ticketService.assigner(t.id, { agent_id: this.agentTransfert }));
   }
 
   closeDetail(): void { this.selectedTicket = null; }
 
   toggleCreateForm(): void {
     this.showCreateForm = !this.showCreateForm;
-    if (this.showCreateForm) { this.selectedTicket = null; this.submitError = ''; }
+    if (this.showCreateForm) { this.selectedTicket = null; this.submitError = ''; this.confirmation = ''; }
+  }
+
+  /** Confirmation affichée après la création d'un ticket. */
+  confirmation = '';
+
+  /** L'utilisateur connecté est l'auteur du ticket affiché. */
+  get estAuteur(): boolean {
+    return !!this.selectedTicket && Number(this.selectedTicket.user_id) === Number(this.currentUser?.id);
+  }
+
+  /** L'auteur peut annuler sa demande tant qu'elle n'est pas traitée. */
+  get peutAnnuler(): boolean {
+    return this.estAuteur && ['ouvert', 'en_cours', 'en_attente'].includes(this.selectedTicket!.statut);
+  }
+
+  /** L'auteur note la réponse reçue, une fois le ticket traité. */
+  get peutNoter(): boolean {
+    return this.estAuteur && ['resolu', 'ferme'].includes(this.selectedTicket!.statut) && !this.selectedTicket!.satisfaction_score;
+  }
+
+  annulerTicket(): void {
+    const t = this.selectedTicket;
+    if (!t || this.actionEnCours || !confirm('Annuler cette demande ? Le support ne la traitera pas.')) return;
+    this.executerAction(this.ticketService.updateTicket(t.id, { statut: 'annule' }));
+  }
+
+  noter(score: number): void {
+    const t = this.selectedTicket;
+    if (!t || this.actionEnCours) return;
+    this.executerAction(this.ticketService.noterSatisfaction(t.id, { score }));
   }
 
   soumettre(): void {
@@ -120,9 +193,11 @@ export class AdminrhTicketsComponent implements OnInit {
     const payload: any = { ...this.newTicket };
     if (this.currentUser?.entreprise_id) payload['entreprise_id'] = this.currentUser.entreprise_id;
     this.ticketService.createTicket(payload as Partial<Ticket>).subscribe({
-      next: () => {
+      next: (res) => {
         this.submitting = false;
         this.showCreateForm = false;
+        // Le serveur indique à qui le ticket a été transmis (support interne ou support Pyramide)
+        this.confirmation = res?.message || 'Ticket créé.';
         this.newTicket = { sujet: '', description: '', categorie: 'technique', priorite: 'moyenne', type: 'incident' };
         this.currentPage = 1;
         this.loadTickets();
@@ -187,7 +262,7 @@ export class AdminrhTicketsComponent implements OnInit {
       next: (res: any) => {
         this.actionEnCours = false;
         this.actionMessage = res?.message || 'Ticket mis à jour.';
-        this.ticketService.getTicketById(id).subscribe({ next: (r) => this.selectedTicket = r.data || r });
+        this.ticketService.getTicketById(id).subscribe({ next: (r) => { this.selectedTicket = r.data || r; this.chargerAgents(); } });
         this.loadTickets();
       },
       error: (err: any) => {
